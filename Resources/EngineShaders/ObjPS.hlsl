@@ -1,9 +1,5 @@
 #include "Obj.hlsli"
 
-#if !KAMATAENGINE_DYNAMIC_RESOURCES
-Texture2D tex : register(t0);
-#endif
-
 SamplerState smp : register(s0);      // 0番スロットに設定されたサンプラー
 
 float4 main(VSOutput input) : SV_TARGET {
@@ -11,9 +7,7 @@ float4 main(VSOutput input) : SV_TARGET {
 	float2 uv = float2(
 	    input.uv.x * m_uv_scale.x + m_uv_offset.x, input.uv.y * m_uv_scale.y + m_uv_offset.y);
 	// テクスチャマッピング
-#if KAMATAENGINE_DYNAMIC_RESOURCES
 	Texture2D tex = ResourceDescriptorHeap[m_textureDescriptorIndex];
-#endif
 	float4 texcolor = tex.Sample(smp, uv);
 
 	// 光沢度
