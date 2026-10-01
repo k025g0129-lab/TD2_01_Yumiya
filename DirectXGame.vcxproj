@@ -178,7 +178,57 @@ xcopy "$(ProjectDir)..\External\KamataEngine\shaders" "$(ProjectDir)Resources\En
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BaseEffect.cpp" />
+    <ClCompile Include="BaseEnemy.cpp" />
+    <ClCompile Include="CameraController.cpp" />
+    <ClCompile Include="Collision.cpp" />
+    <ClCompile Include="DeathParticles.cpp" />
+    <ClCompile Include="Ease.cpp" />
+    <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="Fade.cpp" />
+    <ClCompile Include="GameInput.cpp" />
+    <ClCompile Include="GameScene.cpp" />
+    <ClCompile Include="GlobalVariables.cpp" />
+    <ClCompile Include="GuardEffect.cpp" />
+    <ClCompile Include="HitEffect.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MapChipField.cpp" />
+    <ClCompile Include="Matrix4x4Util.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Rect.cpp" />
+    <ClCompile Include="ShieldEnemy.cpp" />
+    <ClCompile Include="Skydome.cpp" />
+    <ClCompile Include="StageManager.cpp" />
+    <ClCompile Include="TitleScene.cpp" />
+    <ClCompile Include="Vector3Util.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BaseEffect.h" />
+    <ClInclude Include="BaseEnemy.h" />
+    <ClInclude Include="CameraController.h" />
+    <ClInclude Include="Collision.h" />
+    <ClInclude Include="DeathParticles.h" />
+    <ClInclude Include="Ease.h" />
+    <ClInclude Include="Enemy.h" />
+    <ClInclude Include="Fade.h" />
+    <ClInclude Include="GameInput.h" />
+    <ClInclude Include="GameScene.h" />
+    <ClInclude Include="GlobalVariables.h" />
+    <ClInclude Include="GuardEffect.h" />
+    <ClInclude Include="HitEffect.h" />
+    <ClInclude Include="LRDirection.h" />
+    <ClInclude Include="MapChipField.h" />
+    <ClInclude Include="Matrix4x4Util.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="Rect.h" />
+    <ClInclude Include="ShieldEnemy.h" />
+    <ClInclude Include="Skydome.h" />
+    <ClInclude Include="StageManager.h" />
+    <ClInclude Include="TitleScene.h" />
+    <ClInclude Include="Vector3Util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="exclusion.dic" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
