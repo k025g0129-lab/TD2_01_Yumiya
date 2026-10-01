@@ -98,6 +98,7 @@ void Player::Update() {
 
 		// 振る舞いリクエストの初期化
 		behaviorRequest_ = Behavior::kUnknown;
+
 	}
 
 	switch (behavior_) {
