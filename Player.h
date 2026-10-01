@@ -190,6 +190,8 @@ class Player {
 	// ジャンプの初速
 	static inline float kJumpAcceleration = 0.8f;
 
+	//ジャンプでの通り抜け
+	bool isJumpThrough_ = false;
 
 
 	//============================================================

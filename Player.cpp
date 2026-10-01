@@ -50,6 +50,10 @@ void Player::Initialize(Model* model, Model* modelAttack, Camera* camera, Vector
 
 	attackParameter_ = 0.0f;
 	attackPhase_ = AttackPhase::kBefore;
+
+	//ジャンプ通り抜けるフラグ初期化
+	isJumpThrough_ = false;
+
 }
 
 void Player::Update() {
@@ -146,6 +150,23 @@ void Player::Update() {
 		// 自キャラの角度を設定する
 		worldTransform_.rotation_.y = std::lerp(turnFirstRotationY_, destinationRotationY, easedT);
 	}
+
+	//削除予定
+	#ifdef _DEBUG
+
+	ImGui::Begin("JumpThrough");
+
+	// リロードボタン
+	if (isJumpThrough_) {
+		ImGui::Text("JumpThrough: ON");
+	} else {
+		ImGui::Text("JumpThrough: OFF");
+	}
+
+
+	ImGui::End();
+
+#endif // _DEBUG
 
 	// ワールド変換の更新
 	WorldTransformUpdate(worldTransform_);
@@ -300,6 +321,14 @@ void Player::BehaviorRootUpdate() {
 
 	if (GameInput::IsTrigger(GameAction::kNormalAttack)) {
 		behaviorRequest_ = Behavior::kAttack;
+	}
+
+	if (Input::GetInstance()->TriggerKey(DIK_Y)) {
+		if (isJumpThrough_) {
+			isJumpThrough_ = false;
+		} else {
+			isJumpThrough_ = true;
+		}
 	}
 
 	ResolveMapChipCollision(velocity_);
@@ -475,6 +504,12 @@ void Player::MapChipCollisionTop(CollisionMapInfo& info) {
 		return;
 	}
 
+	//通り抜ける
+	if (isJumpThrough_) {
+		return;
+	
+	}
+
 	// 移動後の4つの角の座標
 	std::array<Vector3, kNumCorner> positionsNew{};
 
@@ -527,6 +562,11 @@ void Player::MapChipCollisionTop(CollisionMapInfo& info) {
 void Player::MapChipCollisionBottom(CollisionMapInfo& info) {
 	// 下降あり？
 	if (info.moveDistance.y >= 0.0f) {
+		return;
+	}
+
+	// 通り抜ける
+	if (isJumpThrough_) {
 		return;
 	}
 
