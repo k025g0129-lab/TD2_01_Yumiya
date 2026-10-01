@@ -2,6 +2,8 @@
 #include "Collision.h"
 #include "KamataEngine.h"
 #include "LRDirection.h"
+#include "MapChipField.h"
+
 
 // 前方宣言
 class MapChipField;
@@ -183,6 +185,8 @@ private:
 
 	//ジャンプでの通り抜け
 	bool isJumpThrough_ = false;
+
+	float jumpThroughPoint_ = RectByIndex(uint32_t xIndex, uint32_t yIndex);
 
 
 	//============================================================

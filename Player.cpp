@@ -12,6 +12,7 @@
 
 using namespace KamataEngine;
 
+
 void Player::Initialize(Model* model, Model* modelAttack, Camera* camera, Vector3 position) {
 
 	assert(model);
