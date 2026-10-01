@@ -1,14 +1,14 @@
 #define NOMINMAX
-#include"Player.h"
-#include<assert.h>
-#include"Matrix4x4Util.h"
-#include<numbers>
-#include "Vector3Util.h"
-#include<algorithm>
-#include"Ease.h"
-#include"MapChipField.h"
-#include "GlobalVariables.h"
+#include "Player.h"
+#include "Ease.h"
 #include "GameInput.h"
+#include "GlobalVariables.h"
+#include "MapChipField.h"
+#include "Matrix4x4Util.h"
+#include "Vector3Util.h"
+#include <algorithm>
+#include <assert.h>
+#include <numbers>
 
 using namespace KamataEngine;
 
@@ -53,6 +53,10 @@ void Player::Initialize(Model* model, Model* modelAttack, Camera* camera, Vector
 }
 
 void Player::Update() {
+	ImGui::Begin("test");
+	ImGui::Text("%d", playerDirection_);
+	ImGui::End();
+
 	// 外部からのノックバック要求を処理
 	if (isKnockbackRequested_) {
 		// 攻撃中のスケールが残らないように戻す
@@ -183,66 +187,68 @@ void Player::BehaviorRootUpdate() {
 	if (isGround_) {
 		// 左右移動操作
 		// 左右を同時に入力されている場合、入力無しと扱う（入力優先順位をつけないようにしたり、摩擦の処理との整合性を保つため）
-		if (GameInput::IsPress(GameAction::kMoveRight) ^ GameInput::IsPress(GameAction::kMoveLeft)) {
-			// 左右加速
-			Vector3 acceleration{};
+		// if (GameInput::IsPress(GameAction::kMoveRight) ^ GameInput::IsPress(GameAction::kMoveLeft)) {
+		//	// 左右加速
+		//	Vector3 acceleration{};
 
-			// 右入力
-			if (GameInput::IsPress(GameAction::kMoveRight)) {
-				// 向きの更新
-				if (lrDirection_ != LRDirection::kRight) {
-					lrDirection_ = LRDirection::kRight;
+		//	// 右入力
+		//	if (GameInput::IsPress(GameAction::kMoveRight)) {
+		//		// 向きの更新
+		//		if (lrDirection_ != LRDirection::kRight) {
+		//			lrDirection_ = LRDirection::kRight;
 
-					// 旋回開始時の角度を記録する
-					turnFirstRotationY_ = worldTransform_.rotation_.y;
+		//			// 旋回開始時の角度を記録する
+		//			turnFirstRotationY_ = worldTransform_.rotation_.y;
 
-					// 旋回タイマーに時間を設定する
-					turnTimer_ = kTurnTime;
-				}
+		//			// 旋回タイマーに時間を設定する
+		//			turnTimer_ = kTurnTime;
+		//		}
 
-				// 速度と逆方向に入力中は急ブレーキ
-				if (velocity_.x < 0.0f) {
-					velocity_.x *= (1.0f - kAttenuation);
-				}
+		//		// 速度と逆方向に入力中は急ブレーキ
+		//		if (velocity_.x < 0.0f) {
+		//			velocity_.x *= (1.0f - kAttenuation);
+		//		}
 
-				acceleration.x += kAcceleration;
-			}
+		//		acceleration.x += kAcceleration;
+		//	}
 
-			// 左入力
-			if (GameInput::IsPress(GameAction::kMoveLeft)) {
-				// 向きの更新
-				if (lrDirection_ != LRDirection::kLeft) {
-					lrDirection_ = LRDirection::kLeft;
+		//	// 左入力
+		//	if (GameInput::IsPress(GameAction::kMoveLeft)) {
+		//		// 向きの更新
+		//		if (lrDirection_ != LRDirection::kLeft) {
+		//			lrDirection_ = LRDirection::kLeft;
 
-					// 旋回開始時の角度を記録する
-					turnFirstRotationY_ = worldTransform_.rotation_.y;
+		//			// 旋回開始時の角度を記録する
+		//			turnFirstRotationY_ = worldTransform_.rotation_.y;
 
-					// 旋回タイマーに時間を設定する
-					turnTimer_ = kTurnTime;
-				}
+		//			// 旋回タイマーに時間を設定する
+		//			turnTimer_ = kTurnTime;
+		//		}
 
-				// 速度と逆方向に入力中は急ブレーキ
-				if (velocity_.x > 0.0f) {
-					velocity_.x *= (1.0f - kAttenuation);
-				}
+		//		// 速度と逆方向に入力中は急ブレーキ
+		//		if (velocity_.x > 0.0f) {
+		//			velocity_.x *= (1.0f - kAttenuation);
+		//		}
 
-				acceleration.x -= kAcceleration;
-			}
+		//		acceleration.x -= kAcceleration;
+		//	}
 
-			// 加速を反映
-			velocity_ += acceleration;
+		//	// 加速を反映
+		//	velocity_ += acceleration;
 
-			// 速度制限
-			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
+		//	// 速度制限
+		//	velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
 
-		} else {
-			// 左右移動操作がない場合は減速
-			velocity_.x *= (1.0f - kAttenuation);
-		}
+		//} else {
+		//	// 左右移動操作がない場合は減速
+		//	velocity_.x *= (1.0f - kAttenuation);
+		//}
 
 		// ジャンプ操作
-		if (GameInput::IsPress(GameAction::kJump)) {
-			velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
+		if (playerDirection_ == PlayerDirection::kDown) {
+			if (GameInput::IsTrigger(GameAction::kNormalAttack)) {
+				velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
+			}
 		}
 
 		// 空中
@@ -298,9 +304,13 @@ void Player::BehaviorRootUpdate() {
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
 
-	if (GameInput::IsTrigger(GameAction::kNormalAttack)) {
-		behaviorRequest_ = Behavior::kAttack;
-	}
+	// 方向変更処理
+	PlayerDirectionUpdate();
+
+	// 攻撃状態へのリクエスト
+	//if (GameInput::IsTrigger(GameAction::kNormalAttack)) {
+	//	behaviorRequest_ = Behavior::kAttack;
+	//}
 
 	ResolveMapChipCollision(velocity_);
 }
@@ -379,7 +389,7 @@ void Player::BehaviorAttackUpdate() {
 	ResolveMapChipCollision(attackVelocity);
 }
 
-void Player::BehaviorKnockInitialize () {
+void Player::BehaviorKnockInitialize() {
 	// 攻撃中の変形を戻す
 	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
 
@@ -403,7 +413,7 @@ void Player::BehaviorKnockInitialize () {
 	velocity_ = {knockbackDirection * kKnockbackSpeed, 0.0f, 0.0f};
 }
 
-void Player::BehaviorKnockUpdate () {
+void Player::BehaviorKnockUpdate() {
 	knockbackParameter_ += 1.0f / 60.0f;
 
 	switch (knockbackPhase_) {
@@ -701,9 +711,7 @@ void Player::MapChipCollisionRight(CollisionMapInfo& info) {
 	}
 }
 
-void Player::ApplyCollisionResult(const CollisionMapInfo& info) {
-	worldTransform_.translation_ += info.moveDistance;
-}
+void Player::ApplyCollisionResult(const CollisionMapInfo& info) { worldTransform_.translation_ += info.moveDistance; }
 
 void Player::HandleCeilingCollision(const CollisionMapInfo& info) {
 	if (info.isHitCeiling) {
@@ -777,11 +785,9 @@ void Player::ChangeGroundState(const CollisionMapInfo& info) {
 	}
 }
 
-const WorldTransform& Player::GetWorldTransform() {
-	return worldTransform_;
-}
+const WorldTransform& Player::GetWorldTransform() { return worldTransform_; }
 
-Vector3 Player::GetWorldPosition() const{
+Vector3 Player::GetWorldPosition() const {
 	Vector3 worldPosition{};
 	worldPosition.x = worldTransform_.matWorld_.m[3][0];
 	worldPosition.y = worldTransform_.matWorld_.m[3][1];
@@ -825,10 +831,10 @@ void Player::OnCollision(const BaseEnemy* enemy) {
 
 Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
 	Vector3 offsetTable[static_cast<uint32_t>(Corner::kNumCorner)] = {
-		Vector3(kWidth / 2.0f,	 -kHeight / 2.0f,	 0.0f),  // 右下
-		Vector3(-kWidth / 2.0f,	 -kHeight / 2.0f,	 0.0f), // 左下
-		Vector3(kWidth / 2.0f,	 kHeight / 2.0f,	 0.0f),   // 右上
-		Vector3(-kWidth / 2.0f,	 kHeight / 2.0f,	 0.0f)   // 左上
+	    Vector3(kWidth / 2.0f, -kHeight / 2.0f, 0.0f),  // 右下
+	    Vector3(-kWidth / 2.0f, -kHeight / 2.0f, 0.0f), // 左下
+	    Vector3(kWidth / 2.0f, kHeight / 2.0f, 0.0f),   // 右上
+	    Vector3(-kWidth / 2.0f, kHeight / 2.0f, 0.0f)   // 左上
 	};
 
 	return center + offsetTable[static_cast<uint32_t>(corner)];
@@ -941,16 +947,10 @@ bool Player::IsBlockOnRightSide() {
 
 	// 右上と右下を少しだけ右側にずらして、壁があるか調べる
 	KamataEngine::Vector3 rightTop = {
-		worldTransform_.translation_.x + kWidth / 2.0f + kScreenSqueezeCheckOffset,
-		worldTransform_.translation_.y + kHeight / 2.0f - kScreenSqueezeCheckOffset,
-		worldTransform_.translation_.z
-	};
+	    worldTransform_.translation_.x + kWidth / 2.0f + kScreenSqueezeCheckOffset, worldTransform_.translation_.y + kHeight / 2.0f - kScreenSqueezeCheckOffset, worldTransform_.translation_.z};
 
 	KamataEngine::Vector3 rightBottom = {
-		worldTransform_.translation_.x + kWidth / 2.0f + kScreenSqueezeCheckOffset,
-		worldTransform_.translation_.y - kHeight / 2.0f + kScreenSqueezeCheckOffset,
-		worldTransform_.translation_.z
-	};
+	    worldTransform_.translation_.x + kWidth / 2.0f + kScreenSqueezeCheckOffset, worldTransform_.translation_.y - kHeight / 2.0f + kScreenSqueezeCheckOffset, worldTransform_.translation_.z};
 
 	IndexSet indexSet{};
 
@@ -1027,4 +1027,30 @@ bool Player::ShouldDraw() const {
 
 	// 通常死亡では描画しない
 	return false;
+}
+
+void Player::PlayerDirectionUpdate() {
+	// 方向の初期化
+	SetPlayerDirection(PlayerDirection::kRight);
+
+	// 入力に応じて方向を設定
+	if ((Input::GetInstance()->PushKey(DIK_W) || Input::GetInstance()->PushKey(DIK_UP)) && !(Input::GetInstance()->PushKey(DIK_S) || Input::GetInstance()->PushKey(DIK_DOWN)) &&
+	    !(Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_RIGHT))) {
+		SetPlayerDirection(PlayerDirection::kUp);
+
+	} else if (
+	    (Input::GetInstance()->PushKey(DIK_W) || Input::GetInstance()->PushKey(DIK_UP)) && !(Input::GetInstance()->PushKey(DIK_S) || Input::GetInstance()->PushKey(DIK_DOWN)) &&
+	    (Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_RIGHT))) {
+		SetPlayerDirection(PlayerDirection::kRightUp);
+
+	} else if (
+	    !(Input::GetInstance()->PushKey(DIK_W) || Input::GetInstance()->PushKey(DIK_UP)) && (Input::GetInstance()->PushKey(DIK_S) || Input::GetInstance()->PushKey(DIK_DOWN)) &&
+	    (Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_RIGHT))) {
+		SetPlayerDirection(PlayerDirection::kRightDown);
+
+	} else if (
+	    !(Input::GetInstance()->PushKey(DIK_W) || Input::GetInstance()->PushKey(DIK_UP)) && (Input::GetInstance()->PushKey(DIK_S) || Input::GetInstance()->PushKey(DIK_DOWN)) &&
+	    !(Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_RIGHT))) {
+		SetPlayerDirection(PlayerDirection::kDown);
+	}
 }
