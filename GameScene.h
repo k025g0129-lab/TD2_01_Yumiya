@@ -53,6 +53,9 @@ class GameScene {
 	// プレイヤー攻撃エフェクト用モデル
 	KamataEngine::Model* modelAttack_ = nullptr;
 
+	//プレイヤー弾用モデル
+	KamataEngine::Model* modelArrow_ = nullptr;
+
 	// ヒットエフェクト用モデル
 	KamataEngine::Model* modelHitEffect_ = nullptr;
 
