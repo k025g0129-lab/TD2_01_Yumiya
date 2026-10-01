@@ -13,147 +13,228 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Enemy">
+      <UniqueIdentifier>{9dff596b-79d8-4378-ac78-2aeb988f250d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Enemy\BaseEnemy">
+      <UniqueIdentifier>{f7695738-c6eb-40ea-a82b-f452af7241f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Effect">
+      <UniqueIdentifier>{a287732e-14b5-483b-8236-391149617757}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Effect\BaseEffect">
+      <UniqueIdentifier>{aa4db7e0-3936-4d16-b12f-2ffc35cbaddd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CameraController">
+      <UniqueIdentifier>{4f385016-bb45-4bd0-bae1-48e407d9d7a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collision">
+      <UniqueIdentifier>{b67c7d6c-d87b-4c05-8735-eed30911488e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Deathparticle">
+      <UniqueIdentifier>{e14b5db4-623e-477a-923d-5333cffdfe20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ease">
+      <UniqueIdentifier>{26ec6495-8464-49be-bab9-a66d649dea28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fade">
+      <UniqueIdentifier>{5bfbdad0-7793-4a31-ba31-7771041a41da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{8985804c-4ccf-43c9-ba21-bf1fd375f6ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{02dcd7c0-778f-4095-ae7d-fbc1e5e53d61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GlobalVariables">
+      <UniqueIdentifier>{cf0ec4c5-10f3-45be-a7a5-f6acbc6c7049}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Effect\GuardEffect">
+      <UniqueIdentifier>{f76567e8-95a3-423e-b7ad-967912558fa0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Effect\HitEffect">
+      <UniqueIdentifier>{9407727d-1996-408b-b256-190ed9b4a590}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MapChipField">
+      <UniqueIdentifier>{b85b3b3d-25b0-441b-b227-3fc1b9d3af22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rect">
+      <UniqueIdentifier>{047e0555-3349-4873-a982-ad2bb88ee067}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene\Game">
+      <UniqueIdentifier>{7fc0f061-989a-420f-8987-ce21173f4f0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene\Title">
+      <UniqueIdentifier>{b4ee35ce-4484-4d5c-8587-1ecaa08fecde}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Skydome">
+      <UniqueIdentifier>{79fe2784-88fd-4edf-a9b3-b116ac2432ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Enemy\ShieldEnemy">
+      <UniqueIdentifier>{b950aecb-5f45-456e-a32f-fa5f98bebc6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Enemy\NormalEnemy">
+      <UniqueIdentifier>{287f4aa4-002b-4ce9-b48c-14038b9a2865}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StageManager">
+      <UniqueIdentifier>{53632a87-347a-4490-9d35-04f8256e0877}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utilities">
+      <UniqueIdentifier>{13909bdf-6277-4499-b656-e21157f63626}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utilities\Vector3Util">
+      <UniqueIdentifier>{644f4194-b954-4a1f-9710-06f8e3f412ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utilities\Matrix4x4Util">
+      <UniqueIdentifier>{99571702-9bf1-49dc-8a09-bb1c862dd62c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Player">
+      <UniqueIdentifier>{776287f4-14a5-47b9-9a61-bfdfdd7e3783}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LRDirection">
+      <UniqueIdentifier>{2ccde691-7f94-413e-a3cd-7ae1cb8638da}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="BaseEffect.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Player.cpp">
+      <Filter>Player</Filter>
     </ClCompile>
     <ClCompile Include="BaseEnemy.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Enemy\BaseEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseEffect.cpp">
+      <Filter>Effect\BaseEffect</Filter>
     </ClCompile>
     <ClCompile Include="CameraController.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>CameraController</Filter>
     </ClCompile>
     <ClCompile Include="Collision.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Collision</Filter>
     </ClCompile>
     <ClCompile Include="DeathParticles.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Deathparticle</Filter>
     </ClCompile>
     <ClCompile Include="Ease.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Enemy.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Ease</Filter>
     </ClCompile>
     <ClCompile Include="Fade.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Fade</Filter>
     </ClCompile>
     <ClCompile Include="GameInput.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GameScene.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Input</Filter>
     </ClCompile>
     <ClCompile Include="GlobalVariables.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>GlobalVariables</Filter>
     </ClCompile>
     <ClCompile Include="GuardEffect.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Effect\GuardEffect</Filter>
     </ClCompile>
     <ClCompile Include="HitEffect.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Effect\HitEffect</Filter>
     </ClCompile>
     <ClCompile Include="MapChipField.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Matrix4x4Util.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>MapChipField</Filter>
     </ClCompile>
     <ClCompile Include="Rect.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Rect</Filter>
     </ClCompile>
-    <ClCompile Include="ShieldEnemy.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Skydome.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="StageManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameScene.cpp">
+      <Filter>Scene\Game</Filter>
     </ClCompile>
     <ClCompile Include="TitleScene.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Scene\Title</Filter>
     </ClCompile>
     <ClCompile Include="Vector3Util.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Utilities\Vector3Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Skydome.cpp">
+      <Filter>Skydome</Filter>
+    </ClCompile>
+    <ClCompile Include="ShieldEnemy.cpp">
+      <Filter>Enemy\ShieldEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Enemy.cpp">
+      <Filter>Enemy\NormalEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="StageManager.cpp">
+      <Filter>StageManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix4x4Util.cpp">
+      <Filter>Utilities\Matrix4x4Util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BaseEffect.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Player.h">
+      <Filter>Player</Filter>
     </ClInclude>
     <ClInclude Include="BaseEnemy.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Enemy\BaseEnemy</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseEffect.h">
+      <Filter>Effect\BaseEffect</Filter>
     </ClInclude>
     <ClInclude Include="CameraController.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>CameraController</Filter>
     </ClInclude>
     <ClInclude Include="Collision.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Collision</Filter>
     </ClInclude>
     <ClInclude Include="DeathParticles.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Deathparticle</Filter>
     </ClInclude>
     <ClInclude Include="Ease.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Enemy.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Ease</Filter>
     </ClInclude>
     <ClInclude Include="Fade.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Fade</Filter>
     </ClInclude>
     <ClInclude Include="GameInput.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameScene.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Input</Filter>
     </ClInclude>
     <ClInclude Include="GlobalVariables.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>GlobalVariables</Filter>
     </ClInclude>
     <ClInclude Include="GuardEffect.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Effect\GuardEffect</Filter>
     </ClInclude>
     <ClInclude Include="HitEffect.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="LRDirection.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Effect\HitEffect</Filter>
     </ClInclude>
     <ClInclude Include="MapChipField.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Matrix4x4Util.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>MapChipField</Filter>
     </ClInclude>
     <ClInclude Include="Rect.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Rect</Filter>
     </ClInclude>
-    <ClInclude Include="ShieldEnemy.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Skydome.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="StageManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameScene.h">
+      <Filter>Scene\Game</Filter>
     </ClInclude>
     <ClInclude Include="TitleScene.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Scene\Title</Filter>
     </ClInclude>
     <ClInclude Include="Vector3Util.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Utilities\Vector3Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Skydome.h">
+      <Filter>Skydome</Filter>
+    </ClInclude>
+    <ClInclude Include="ShieldEnemy.h">
+      <Filter>Enemy\ShieldEnemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.h">
+      <Filter>Enemy\NormalEnemy</Filter>
+    </ClInclude>
+    <ClInclude Include="StageManager.h">
+      <Filter>StageManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix4x4Util.h">
+      <Filter>Utilities\Matrix4x4Util</Filter>
+    </ClInclude>
+    <ClInclude Include="LRDirection.h">
+      <Filter>LRDirection</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
