@@ -55,6 +55,9 @@ void Player::Initialize(Model* model, Model* modelAttack, Camera* camera, Vector
 	//ジャンプ通り抜けるフラグ初期化
 	isJumpThrough_ = false;
 
+	//通過ポイント初期化
+	JumpThroughInitialize();
+
 }
 
 void Player::Update() {
@@ -170,6 +173,9 @@ void Player::Update() {
 		ImGui::Text("JumpThrough: OFF");
 	}
 
+	ImGui::Text("worldTransform_.translation_.y = %f , jumpThroughPoint_ = %f", worldTransform_.translation_.y, jumpThroughPoint[1].pos_);
+	ImGui::Text("velocity_.y = %f ", velocity_.y);
+
 
 	ImGui::End();
 
@@ -275,49 +281,49 @@ void Player::BehaviorRootUpdate() {
 
 		// 空中
 	} else {
-		// 左右を同時に入力されている場合、入力無しと扱う
-		if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft) ^ GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
-			// 空中での左右加速
-			Vector3 acceleration{};
+		//// 左右を同時に入力されている場合、入力無しと扱う
+		//if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft) ^ GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
+		//	// 空中での左右加速
+		//	Vector3 acceleration{};
 
-			// 右入力
-			if (GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
-				// 向きの更新
-				if (lrDirection_ != LRDirection::kRight) {
-					lrDirection_ = LRDirection::kRight;
+		//	// 右入力
+		//	if (GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
+		//		// 向きの更新
+		//		if (lrDirection_ != LRDirection::kRight) {
+		//			lrDirection_ = LRDirection::kRight;
 
-					// 旋回開始時の角度を記録する
-					turnFirstRotationY_ = worldTransform_.rotation_.y;
+		//			// 旋回開始時の角度を記録する
+		//			turnFirstRotationY_ = worldTransform_.rotation_.y;
 
-					// 旋回タイマーに時間を設定する
-					turnTimer_ = kTurnTime;
-				}
+		//			// 旋回タイマーに時間を設定する
+		//			turnTimer_ = kTurnTime;
+		//		}
 
-				acceleration.x += kAcceleration * kAirAccelerationRate;
-			}
+		//		acceleration.x += kAcceleration * kAirAccelerationRate;
+		//	}
 
-			// 左入力
-			if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft)) {
-				// 向きの更新
-				if (lrDirection_ != LRDirection::kLeft) {
-					lrDirection_ = LRDirection::kLeft;
+		//	// 左入力
+		//	if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft)) {
+		//		// 向きの更新
+		//		if (lrDirection_ != LRDirection::kLeft) {
+		//			lrDirection_ = LRDirection::kLeft;
 
-					// 旋回開始時の角度を記録する
-					turnFirstRotationY_ = worldTransform_.rotation_.y;
+		//			// 旋回開始時の角度を記録する
+		//			turnFirstRotationY_ = worldTransform_.rotation_.y;
 
-					// 旋回タイマーに時間を設定する
-					turnTimer_ = kTurnTime;
-				}
+		//			// 旋回タイマーに時間を設定する
+		//			turnTimer_ = kTurnTime;
+		//		}
 
-				acceleration.x -= kAcceleration * kAirAccelerationRate;
-			}
+		//		acceleration.x -= kAcceleration * kAirAccelerationRate;
+		//	}
 
-			// 加速を反映
-			velocity_ += acceleration;
+		//	// 加速を反映
+		//	velocity_ += acceleration;
 
-			// 速度制限
-			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
-		}
+		//	// 速度制限
+		//	velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
+		//}
 
 		// 落下速度
 		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f);
@@ -334,6 +340,38 @@ void Player::BehaviorRootUpdate() {
 	//	behaviorRequest_ = Behavior::kAttack;
 	//}
 
+	//通過ポイント更新
+	JumpThroughUpdate();
+
+	ResolveMapChipCollision(velocity_);
+}
+
+void Player::JumpThroughInitialize() {
+
+	int blockSpace = 3;
+
+	for (int i = 0; i < maxJumpThroughPointIndex; i++) {
+		jumpThroughPoint[i].pos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), uint32_t(20 - (blockSpace * (i + 1)))).y;
+
+		if (worldTransform_.translation_.y > jumpThroughPoint[i].pos_) {
+			jumpThroughPoint[i].isOver = true;
+
+		} else {
+			jumpThroughPoint[i].isOver = false;
+		}
+
+		jumpThroughPoint[i].isPreOver = jumpThroughPoint[i].isOver;
+	}
+
+	jumpThroughPoint_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), uint32_t(16)).y;
+
+	isPreOverJumpThroughPoint = isOverJumpThroughPoint;
+
+}
+
+void Player::JumpThroughUpdate() {
+
+	//デバック用通過切り替え、後々消す
 	if (Input::GetInstance()->TriggerKey(DIK_Y)) {
 		if (isJumpThrough_) {
 			isJumpThrough_ = false;
@@ -342,7 +380,25 @@ void Player::BehaviorRootUpdate() {
 		}
 	}
 
-	ResolveMapChipCollision(velocity_);
+
+	for (int i = 0; i < maxJumpThroughPointIndex; i++) {
+
+		//通過ポイントより上か下かの処理
+		if (worldTransform_.translation_.y > jumpThroughPoint[i].pos_) {
+			jumpThroughPoint[i].isOver = true;
+		} else {
+			jumpThroughPoint[i].isOver = false;
+		}
+
+		//通過したなら他の場所を透過出来ないように
+		if (jumpThroughPoint[i].isOver != jumpThroughPoint[i].isPreOver) {
+			isJumpThrough_ = false;
+		}
+
+		// トリガー用
+		jumpThroughPoint[i].isPreOver = jumpThroughPoint[i].isOver;
+	}
+
 }
 
 void Player::BehaviorAttackInitialize() {
@@ -518,8 +574,8 @@ void Player::MapChipCollisionTop(CollisionMapInfo& info) {
 	//通り抜ける
 	if (isJumpThrough_) {
 		return;
-	
 	}
+	
 
 	// 移動後の4つの角の座標
 	std::array<Vector3, kNumCorner> positionsNew{};

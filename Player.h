@@ -18,6 +18,13 @@ struct CollisionMapInfo {
 	KamataEngine::Vector3 moveDistance = {};
 };
 
+struct JumpThroughPoint {
+
+	float pos_ ;
+	bool isOver;
+	bool isPreOver;
+};
+
 // 自機の方向
 enum class PlayerDirection { kUp = 0, kRightUp = 1, kRight = 2, kRightDown = 3, kDown = 4 };
 
@@ -159,6 +166,12 @@ private:
 	// 通常行動更新
 	void BehaviorRootUpdate();
 
+	// 通過ポイントの初期化
+	void JumpThroughInitialize();
+
+	// 通過ポイント更新
+	void JumpThroughUpdate();
+
 	// 歩行時の加速度
 	static inline float kAcceleration = 0.02f;
 
@@ -186,7 +199,17 @@ private:
 	//ジャンプでの通り抜け
 	bool isJumpThrough_ = false;
 
-	float jumpThroughPoint_ = RectByIndex(uint32_t xIndex, uint32_t yIndex);
+	//通過ポイント
+	float jumpThroughPoint_ = 0.0f;
+
+	//通過ポイントより上か
+	bool isOverJumpThroughPoint = false;
+	bool isPreOverJumpThroughPoint = false;
+
+
+	static inline const int maxJumpThroughPointIndex = 2;
+
+	JumpThroughPoint jumpThroughPoint[maxJumpThroughPointIndex];
 
 
 	//============================================================
