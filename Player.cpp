@@ -183,12 +183,12 @@ void Player::BehaviorRootUpdate() {
 	if (isGround_) {
 		// 左右移動操作
 		// 左右を同時に入力されている場合、入力無しと扱う（入力優先順位をつけないようにしたり、摩擦の処理との整合性を保つため）
-		if (GameInput::IsPress(GameAction::kMoveRight) ^ GameInput::IsPress(GameAction::kMoveLeft)) {
+		if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft) ^ GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
 			// 左右加速
 			Vector3 acceleration{};
 
 			// 右入力
-			if (GameInput::IsPress(GameAction::kMoveRight)) {
+			if (GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
 				// 向きの更新
 				if (lrDirection_ != LRDirection::kRight) {
 					lrDirection_ = LRDirection::kRight;
@@ -209,7 +209,7 @@ void Player::BehaviorRootUpdate() {
 			}
 
 			// 左入力
-			if (GameInput::IsPress(GameAction::kMoveLeft)) {
+			if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft)) {
 				// 向きの更新
 				if (lrDirection_ != LRDirection::kLeft) {
 					lrDirection_ = LRDirection::kLeft;
@@ -241,19 +241,19 @@ void Player::BehaviorRootUpdate() {
 		}
 
 		// ジャンプ操作
-		if (GameInput::IsPress(GameAction::kJump)) {
+		if (GameInput::GetInstance()->IsPress(GameAction::kMoveUp)) {
 			velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
 		}
 
 		// 空中
 	} else {
 		// 左右を同時に入力されている場合、入力無しと扱う
-		if (GameInput::IsPress(GameAction::kMoveRight) ^ GameInput::IsPress(GameAction::kMoveLeft)) {
+		if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft) ^ GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
 			// 空中での左右加速
 			Vector3 acceleration{};
 
 			// 右入力
-			if (GameInput::IsPress(GameAction::kMoveRight)) {
+			if (GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
 				// 向きの更新
 				if (lrDirection_ != LRDirection::kRight) {
 					lrDirection_ = LRDirection::kRight;
@@ -269,7 +269,7 @@ void Player::BehaviorRootUpdate() {
 			}
 
 			// 左入力
-			if (GameInput::IsPress(GameAction::kMoveLeft)) {
+			if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft)) {
 				// 向きの更新
 				if (lrDirection_ != LRDirection::kLeft) {
 					lrDirection_ = LRDirection::kLeft;
@@ -298,7 +298,7 @@ void Player::BehaviorRootUpdate() {
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
 
-	if (GameInput::IsTrigger(GameAction::kNormalAttack)) {
+	if (GameInput::GetInstance()->IsTrigger(GameAction::kAttack)) {
 		behaviorRequest_ = Behavior::kAttack;
 	}
 

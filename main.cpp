@@ -6,6 +6,7 @@
 #include "GlobalVariables.h"
 #include <fstream>
 #include <string>
+#include "GameInput.h"
 
 using namespace KamataEngine;
 
@@ -78,6 +79,10 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		if (Update()) {
 			break;
 		}
+
+		// インプットの更新
+		GameInput::GetInstance()->Update();
+
 
 		// ImGui受付開始
 		imGuiManager->Begin();
