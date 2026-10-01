@@ -1,19 +1,13 @@
 #pragma once
-#include "KamataEngine.h"
 #include "Collision.h"
+#include "KamataEngine.h"
 #include "LRDirection.h"
 
 // 前方宣言
 class MapChipField;
 class BaseEnemy;
 
-enum Corner {
-	kRightBottom,
-	kLeftBottom,
-	kRightTop,
-	kLeftTop,
-	kNumCorner
-};
+enum Corner { kRightBottom, kLeftBottom, kRightTop, kLeftTop, kNumCorner };
 
 struct CollisionMapInfo {
 	bool isHitCeiling = false;
@@ -22,9 +16,11 @@ struct CollisionMapInfo {
 	KamataEngine::Vector3 moveDistance = {};
 };
 
-class Player {
-  public:
+// 自機の方向
+enum class PlayerDirection { kUp = 0, kRightUp = 1, kRight = 2, kRightDown = 3, kDown = 4 };
 
+class Player {
+public:
 	// 初期化処理
 	void Initialize(KamataEngine::Model* model, KamataEngine::Model* modelAttack, KamataEngine::Camera* camera, KamataEngine::Vector3 position);
 
@@ -38,16 +34,13 @@ class Player {
 	void OnCollision(const BaseEnemy* enemy);
 
 	// ノックバックを要求
-	void RequestKnockback () {
-		isKnockbackRequested_ = true;
-	}
+	void RequestKnockback() { isKnockbackRequested_ = true; }
 
 	// 調整項目を登録
 	static void RegisterGlobalVariables();
 
 	// 調整項目を適用
 	static void ApplyGlobalVariables();
-
 
 	//============================================================
 	// ゲッター・セッター
@@ -73,10 +66,12 @@ class Player {
 
 	LRDirection GetLRDirection() const { return lrDirection_; }
 
+	/// <summary>
+	/// 自機の方向の設定
+	/// </summary>
+	void SetPlayerDirection(const PlayerDirection playerDirection) { playerDirection_ = playerDirection; }
 
-
-  private:
-
+private:
 	// ワールド変換データ
 	KamataEngine::WorldTransform worldTransform_;
 
@@ -115,8 +110,6 @@ class Player {
 	// 接地確認用の微小な下方向オフセット
 	static inline const float kGroundCheckOffset = 0.1f;
 
-
-
 	//============================================================
 	// 振る舞い
 	//============================================================
@@ -132,8 +125,6 @@ class Player {
 	Behavior behavior_ = Behavior::kRoot;
 	Behavior behaviorRequest_ = Behavior::kUnknown;
 
-
-
 	//============================================================
 	// 死亡周り
 	//============================================================
@@ -141,8 +132,8 @@ class Player {
 	// 死亡の種類
 	enum class DeathType {
 		kNone,
-		kNormal,   // 通常死
-		kSqueeze,  // 挟まれ
+		kNormal,  // 通常死
+		kSqueeze, // 挟まれ
 	};
 
 	DeathType deathType_ = DeathType::kNone;
@@ -198,7 +189,6 @@ class Player {
 	// ノックバック
 	//============================================================
 
-
 	// ノックバックのフェーズ
 	enum class KnockbackPhase {
 		kKnockback, // 吹っ飛ばされる
@@ -213,7 +203,6 @@ class Player {
 
 	// ノックバックの吹っ飛ばされている時間かどうか
 	bool IsKnockbackInvincible() const { return (behavior_ == Behavior::kKnockback && knockbackPhase_ == KnockbackPhase::kKnockback); }
-
 
 	// ノックバック要求フラグ
 	bool isKnockbackRequested_ = false;
@@ -236,22 +225,19 @@ class Player {
 	// ノックバック後の減速率
 	static inline float kKnockbackAttenuation = 0.15f;
 
-
-
 	//============================================================
 	// 攻撃行動
 	//============================================================
 
 	// 攻撃のフェーズ
 	enum class AttackPhase {
-		kBefore,    // 前隙
-		kAttack,    // 攻撃
-		kAfter      // 後隙
+		kBefore, // 前隙
+		kAttack, // 攻撃
+		kAfter   // 後隙
 	};
 
 	// 攻撃のフェーズ
 	AttackPhase attackPhase_ = AttackPhase::kBefore;
-
 
 	// 攻撃行動の初期化
 	void BehaviorAttackInitialize();
@@ -280,12 +266,9 @@ class Player {
 	// 攻撃時の突進速度
 	static inline float kAttackMoveSpeed = 0.5f;
 
-
-
 	//============================================================
 	// マップチップ回り
 	//============================================================
-
 
 	// マップチップとの衝突を解決する
 	void ResolveMapChipCollision(const KamataEngine::Vector3& velocity);
@@ -318,8 +301,6 @@ class Player {
 	// めり込み防止用の微小な余白
 	static inline const float kBlank = 0.05f;
 
-
-
 	//============================================================
 	// 強制スクロール
 	//============================================================
@@ -345,15 +326,11 @@ class Player {
 	// 挟まれ死亡演出の更新
 	void BehaviorSqueezeDeathUpdate();
 
-
-
 	// 画面端挟まれ死亡判定を有効にするか
 	bool isScreenSqueezeDeathEnabled_ = false;
 
 	// 挟まれ死亡演出タイマー
 	float squeezeDeathTimer_ = 0.0f;
-
-
 
 	// 画面端接触判定の許容誤差
 	static inline const float kScreenEdgeCheckTolerance = 0.05f;
@@ -378,4 +355,12 @@ class Player {
 	static inline const float kScreenRightLimit = 11.0f;
 	static inline const float kScreenBottomLimit = -8.0f;
 	static inline const float kScreenTopLimit = 10.0f;
+
+	/// =============================
+	/// 方向制御
+	/// =============================
+
+	PlayerDirection playerDirection_ = PlayerDirection::kRight;
+
+	void PlayerDirectionUpdate();
 };

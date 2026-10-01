@@ -1,0 +1,20 @@
+{
+    "Player": {
+        "Acceleration": 0.019999999552965164,
+        "AirAccelerationRate": 0.699999988079071,
+        "AttackAfterTime": 0.20000000298023224,
+        "AttackBeforeTime": 0.20000000298023224,
+        "AttackMoveSpeed": 0.5,
+        "AttackTime": 0.20000000298023224,
+        "Attenuation": 0.10000000149011612,
+        "AttenuationLanding": 0.05000000074505806,
+        "AttenuationWall": 0.20000000298023224,
+        "JumpAcceleration": 0.800000011920929,
+        "KnockbackAfterTime": 0.10000000149011612,
+        "KnockbackAttenuation": 0.15000000596046448,
+        "KnockbackSpeed": 0.30000001192092896,
+        "KnockbackTime": 0.15000000596046448,
+        "LimitRunSpeed": 0.30000001192092896,
+        "TurnTime": 0.30000001192092896
+    }
+}
