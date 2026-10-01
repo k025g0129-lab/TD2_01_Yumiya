@@ -266,21 +266,19 @@ void Player::BehaviorRootUpdate() {
 		//}
 
 		// ジャンプ操作
-		if (playerDirection_ == PlayerDirection::kDown) {
-			if (GameInput::IsTrigger(GameAction::kNormalAttack)) {
-				velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
-			}
+		if (GameInput::GetInstance()->IsPress(GameAction::kMoveUp)) {
+			velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
 		}
 
 		// 空中
 	} else {
 		// 左右を同時に入力されている場合、入力無しと扱う
-		if (GameInput::IsPress(GameAction::kMoveRight) ^ GameInput::IsPress(GameAction::kMoveLeft)) {
+		if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft) ^ GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
 			// 空中での左右加速
 			Vector3 acceleration{};
 
 			// 右入力
-			if (GameInput::IsPress(GameAction::kMoveRight)) {
+			if (GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
 				// 向きの更新
 				if (lrDirection_ != LRDirection::kRight) {
 					lrDirection_ = LRDirection::kRight;
@@ -296,7 +294,7 @@ void Player::BehaviorRootUpdate() {
 			}
 
 			// 左入力
-			if (GameInput::IsPress(GameAction::kMoveLeft)) {
+			if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft)) {
 				// 向きの更新
 				if (lrDirection_ != LRDirection::kLeft) {
 					lrDirection_ = LRDirection::kLeft;
