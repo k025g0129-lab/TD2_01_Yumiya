@@ -12,15 +12,23 @@
 
 using namespace KamataEngine;
 
-void Player::Initialize(Model* model, Model* modelAttack, Camera* camera, Vector3 position) {
+Player::~Player() {
+	for (PlayerBullet* bullet : bullets_) {
+		delete bullet;
+	}
+}
+
+void Player::Initialize(Model* model, Model* modelAttack, KamataEngine::Model* modelArrow, Camera* camera, Vector3 position) {
 
 	assert(model);
 	assert(camera);
 	assert(modelAttack);
+	assert(modelArrow);
 
 	// 引数で渡されたモデルをメンバ変数に保存
 	model_ = model;
 	modelAttack_ = modelAttack;
+	modelArrow_ = modelArrow;
 
 	// 死亡フラグを初期化
 	isDead_ = false;
@@ -51,15 +59,21 @@ void Player::Initialize(Model* model, Model* modelAttack, Camera* camera, Vector
 	attackParameter_ = 0.0f;
 	attackPhase_ = AttackPhase::kBefore;
 
-	//ジャンプ通り抜けるフラグ初期化
+	// ジャンプ通り抜けるフラグ初期化
 	isJumpThrough_ = false;
-
 }
 
 void Player::Update() {
-	ImGui::Begin("test");
-	ImGui::Text("%d", playerDirection_);
-	ImGui::End();
+	// 弾の更新
+	for (int i = static_cast<int>(bullets_.size()) - 1; i >= 0; --i) {
+		bullets_[i]->Update();
+
+		// 弾がカメラ外に出た場合解放
+		if (!bullets_[i]->GetisInCamera()) {
+			delete bullets_[i];
+			bullets_.erase(bullets_.begin() + i);
+		}
+	}
 
 	// 外部からのノックバック要求を処理
 	if (isKnockbackRequested_) {
@@ -98,7 +112,6 @@ void Player::Update() {
 
 		// 振る舞いリクエストの初期化
 		behaviorRequest_ = Behavior::kUnknown;
-
 	}
 
 	switch (behavior_) {
@@ -156,8 +169,8 @@ void Player::Update() {
 		worldTransform_.rotation_.y = std::lerp(turnFirstRotationY_, destinationRotationY, easedT);
 	}
 
-	//削除予定
-	#ifdef _DEBUG
+// 削除予定
+#ifdef _DEBUG
 
 	ImGui::Begin("JumpThrough");
 
@@ -167,7 +180,6 @@ void Player::Update() {
 	} else {
 		ImGui::Text("JumpThrough: OFF");
 	}
-
 
 	ImGui::End();
 
@@ -188,16 +200,18 @@ void Player::Draw() {
 		return;
 	}
 
+	// 描画前処理
 	Model::PreDraw();
 
-	if (behavior_ == Behavior::kAttack) {
-		if (attackPhase_ == AttackPhase::kAttack) {
-			modelAttack_->Draw(worldTransformAttack_, *camera_);
-		}
+	// 弾の描画
+	for (PlayerBullet* bullet : bullets_) {
+		bullet->Draw();
 	}
 
+	// 自機の描画
 	model_->Draw(worldTransform_, *camera_);
 
+	// 描画後処理
 	Model::PostDraw();
 }
 
@@ -207,69 +221,6 @@ void Player::BehaviorRootUpdate() {
 	// 移動入力
 	// 接地状態
 	if (isGround_) {
-		// 左右移動操作
-		// 左右を同時に入力されている場合、入力無しと扱う（入力優先順位をつけないようにしたり、摩擦の処理との整合性を保つため）
-		// if (GameInput::IsPress(GameAction::kMoveRight) ^ GameInput::IsPress(GameAction::kMoveLeft)) {
-		//	// 左右加速
-		//	Vector3 acceleration{};
-
-		//	// 右入力
-		//	if (GameInput::IsPress(GameAction::kMoveRight)) {
-		//		// 向きの更新
-		//		if (lrDirection_ != LRDirection::kRight) {
-		//			lrDirection_ = LRDirection::kRight;
-
-		//			// 旋回開始時の角度を記録する
-		//			turnFirstRotationY_ = worldTransform_.rotation_.y;
-
-		//			// 旋回タイマーに時間を設定する
-		//			turnTimer_ = kTurnTime;
-		//		}
-
-		//		// 速度と逆方向に入力中は急ブレーキ
-		//		if (velocity_.x < 0.0f) {
-		//			velocity_.x *= (1.0f - kAttenuation);
-		//		}
-
-		//		acceleration.x += kAcceleration;
-		//	}
-
-		//	// 左入力
-		//	if (GameInput::IsPress(GameAction::kMoveLeft)) {
-		//		// 向きの更新
-		//		if (lrDirection_ != LRDirection::kLeft) {
-		//			lrDirection_ = LRDirection::kLeft;
-
-		//			// 旋回開始時の角度を記録する
-		//			turnFirstRotationY_ = worldTransform_.rotation_.y;
-
-		//			// 旋回タイマーに時間を設定する
-		//			turnTimer_ = kTurnTime;
-		//		}
-
-		//		// 速度と逆方向に入力中は急ブレーキ
-		//		if (velocity_.x > 0.0f) {
-		//			velocity_.x *= (1.0f - kAttenuation);
-		//		}
-
-		//		acceleration.x -= kAcceleration;
-		//	}
-
-		//	// 加速を反映
-		//	velocity_ += acceleration;
-
-		//	// 速度制限
-		//	velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
-
-		//} else {
-		//	// 左右移動操作がない場合は減速
-		//	velocity_.x *= (1.0f - kAttenuation);
-		//}
-
-		// ジャンプ操作
-		if (GameInput::GetInstance()->IsPress(GameAction::kMoveUp)) {
-			velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
-		}
 
 		// 空中
 	} else {
@@ -328,9 +279,9 @@ void Player::BehaviorRootUpdate() {
 	PlayerDirectionUpdate();
 
 	// 攻撃状態へのリクエスト
-	//if (GameInput::IsTrigger(GameAction::kNormalAttack)) {
-	//	behaviorRequest_ = Behavior::kAttack;
-	//}
+	if (GameInput::GetInstance()->IsTrigger(GameAction::kAttack)) {
+		behaviorRequest_ = Behavior::kAttack;
+	}
 
 	if (Input::GetInstance()->TriggerKey(DIK_Y)) {
 		if (isJumpThrough_) {
@@ -355,66 +306,28 @@ void Player::BehaviorAttackInitialize() {
 }
 
 void Player::BehaviorAttackUpdate() {
-	attackParameter_ += 1.0f / 60.0f;
+	// 方向変更処理
+	PlayerDirectionUpdate();
 
-	// 攻撃動作用の速度
-	Vector3 attackVelocity{};
+	// 攻撃キーリリース時に弾生成
+	if (GameInput::GetInstance()->IsRelease(GameAction::kAttack)) {
+		// 弾生成
+		PlayerBullet* bullet = new PlayerBullet();
 
-	switch (attackPhase_) {
-	case AttackPhase::kBefore: {
-		// 溜め動作
-		float t = std::clamp(attackParameter_ / kAttackBeforeTime, 0.0f, 1.0f);
+		// 弾初期化
+		bullet->Initialize(modelArrow_, camera_, worldTransform_.translation_, PlayerDirectionToPlayerBulletDirection());
 
-		worldTransform_.scale_.z = Lerp(1.0f, 0.3f, Ease::EaseOut(t));
-		worldTransform_.scale_.y = Lerp(1.0f, 1.6f, Ease::EaseOut(t));
+		// 配列更新
+		bullets_.push_back(bullet);
 
-		velocity_ = {0.0f, 0.0f, 0.0f};
+		// 通常状態へのリクエスト
+		behaviorRequest_ = Behavior::kRoot;
 
-		if (attackParameter_ >= kAttackBeforeTime) {
-			attackPhase_ = AttackPhase::kAttack;
-			attackParameter_ = 0.0f;
+		// ジャンプ
+		if (direction_ == Direction::kDown) {
+				velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
 		}
-		break;
 	}
-
-	case AttackPhase::kAttack: {
-		// 突進動作
-		float t = std::clamp(attackParameter_ / kAttackTime, 0.0f, 1.0f);
-
-		worldTransform_.scale_.z = Lerp(0.3f, 1.3f, Ease::EaseOut(t));
-		worldTransform_.scale_.y = Lerp(1.6f, 0.7f, Ease::EaseIn(t));
-
-		if (lrDirection_ == LRDirection::kRight) {
-			attackVelocity.x = kAttackMoveSpeed;
-		} else {
-			attackVelocity.x = -kAttackMoveSpeed;
-		}
-
-		if (attackParameter_ >= kAttackTime) {
-			attackPhase_ = AttackPhase::kAfter;
-			attackParameter_ = 0.0f;
-		}
-		break;
-	}
-
-	case AttackPhase::kAfter: {
-		// 余韻動作
-		float t = std::clamp(attackParameter_ / kAttackAfterTime, 0.0f, 1.0f);
-
-		worldTransform_.scale_.z = Lerp(1.3f, 1.0f, Ease::EaseOut(t));
-		worldTransform_.scale_.y = Lerp(0.7f, 1.0f, Ease::EaseOut(t));
-
-		attackVelocity.x = 0.0f;
-
-		if (attackParameter_ >= kAttackAfterTime) {
-			worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
-			behaviorRequest_ = Behavior::kRoot;
-		}
-		break;
-	}
-	}
-
-	ResolveMapChipCollision(attackVelocity);
 }
 
 void Player::BehaviorKnockInitialize() {
@@ -513,10 +426,9 @@ void Player::MapChipCollisionTop(CollisionMapInfo& info) {
 		return;
 	}
 
-	//通り抜ける
+	// 通り抜ける
 	if (isJumpThrough_) {
 		return;
-	
 	}
 
 	// 移動後の4つの角の座標
@@ -1070,26 +982,48 @@ bool Player::ShouldDraw() const {
 
 void Player::PlayerDirectionUpdate() {
 	// 方向の初期化
-	SetPlayerDirection(PlayerDirection::kRight);
+	SetPlayerDirection(Direction::kRight);
 
 	// 入力に応じて方向を設定
-	if ((Input::GetInstance()->PushKey(DIK_W) || Input::GetInstance()->PushKey(DIK_UP)) && !(Input::GetInstance()->PushKey(DIK_S) || Input::GetInstance()->PushKey(DIK_DOWN)) &&
-	    !(Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_RIGHT))) {
-		SetPlayerDirection(PlayerDirection::kUp);
+	if (GameInput::GetInstance()->IsPress(GameAction::kDirectionUp) && !GameInput::GetInstance()->IsPress(GameAction::kDirectionDown) &&
+	    !GameInput::GetInstance()->IsPress(GameAction::kDirectionRight)) {
+		SetPlayerDirection(Direction::kUp);
 
 	} else if (
-	    (Input::GetInstance()->PushKey(DIK_W) || Input::GetInstance()->PushKey(DIK_UP)) && !(Input::GetInstance()->PushKey(DIK_S) || Input::GetInstance()->PushKey(DIK_DOWN)) &&
-	    (Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_RIGHT))) {
-		SetPlayerDirection(PlayerDirection::kRightUp);
+	    GameInput::GetInstance()->IsPress(GameAction::kDirectionUp) && !GameInput::GetInstance()->IsPress(GameAction::kDirectionDown) &&
+	    GameInput::GetInstance()->IsPress(GameAction::kDirectionRight)) {
+		SetPlayerDirection(Direction::kRightUp);
 
 	} else if (
-	    !(Input::GetInstance()->PushKey(DIK_W) || Input::GetInstance()->PushKey(DIK_UP)) && (Input::GetInstance()->PushKey(DIK_S) || Input::GetInstance()->PushKey(DIK_DOWN)) &&
-	    (Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_RIGHT))) {
-		SetPlayerDirection(PlayerDirection::kRightDown);
+	    !GameInput::GetInstance()->IsPress(GameAction::kDirectionUp) && GameInput::GetInstance()->IsPress(GameAction::kDirectionDown) &&
+	    GameInput::GetInstance()->IsPress(GameAction::kDirectionRight)) {
+		SetPlayerDirection(Direction::kRightDown);
 
 	} else if (
-	    !(Input::GetInstance()->PushKey(DIK_W) || Input::GetInstance()->PushKey(DIK_UP)) && (Input::GetInstance()->PushKey(DIK_S) || Input::GetInstance()->PushKey(DIK_DOWN)) &&
-	    !(Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_RIGHT))) {
-		SetPlayerDirection(PlayerDirection::kDown);
+	    !GameInput::GetInstance()->IsPress(GameAction::kDirectionUp) && GameInput::GetInstance()->IsPress(GameAction::kDirectionDown) &&
+	    !GameInput::GetInstance()->IsPress(GameAction::kDirectionRight)) {
+		SetPlayerDirection(Direction::kDown);
+	}
+}
+
+PlayerBullet::Direction Player::PlayerDirectionToPlayerBulletDirection() {
+	switch (direction_) {
+	case Direction::kUp:
+		return PlayerBullet::Direction::kUp;
+
+	case Direction::kRightUp:
+		return PlayerBullet::Direction::kRightUp;
+
+	case Direction::kRight:
+		return PlayerBullet::Direction::kRight;
+
+	case Direction::kRightDown:
+		return PlayerBullet::Direction::kRightDown;
+
+	case Direction::kDown:
+		return PlayerBullet::Direction::kDown;
+
+	default:
+		return PlayerBullet::Direction::kRight;
 	}
 }

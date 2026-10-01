@@ -1,10 +1,10 @@
 #include "GameScene.h"
-#include "Matrix4x4Util.h"
-#include "MapChipField.h"
-#include "HitEffect.h"
 #include "Enemy.h"
-#include "ShieldEnemy.h"
 #include "GuardEffect.h"
+#include "HitEffect.h"
+#include "MapChipField.h"
+#include "Matrix4x4Util.h"
+#include "ShieldEnemy.h"
 #include "StageManager.h"
 
 using namespace KamataEngine;
@@ -35,7 +35,6 @@ void GameScene::Initialize(StageManager* stageManager) {
 	cameraController_->Initialize(&camera_);
 	cameraController_->SetMode(CameraMode::kFollow);
 
-
 	// 天球の生成
 	skydome_ = new Skydome();
 	modelSkydome_ = Model::CreateFromOBJ("SkyDome", true);
@@ -54,8 +53,11 @@ void GameScene::Initialize(StageManager* stageManager) {
 	mapChipField_->LoadMapChipCsv(stageFileName);
 
 	// プレイヤー
-	mPlayerModel_ = Model::CreateFromOBJ("player",true);
+	mPlayerModel_ = Model::CreateFromOBJ("player", true);
 	modelAttack_ = KamataEngine::Model::CreateFromOBJ("hit_effect", true);
+
+	// 矢
+	modelArrow_ = Model::CreateFromOBJ("Arrow", true);
 
 	// デスパーティクル
 	modelDeathParticles_ = Model::CreateFromOBJ("deathParticle", true);
@@ -125,7 +127,7 @@ void GameScene::Update() {
 		break;
 	}
 
-	#ifdef _DEBUG
+#ifdef _DEBUG
 
 	ImGui::Begin("Debug");
 
@@ -146,7 +148,7 @@ void GameScene::Update() {
 
 	ImGui::End();
 
-	#endif // _DEBUG
+#endif // _DEBUG
 }
 
 void GameScene::Draw() {
@@ -196,7 +198,7 @@ void GameScene::GenerateFieldObjects() {
 		// 1列の要素数の設定
 		worldTransformBlocks_[i].resize(numBlockHorizontal);
 	}
-	
+
 	// 生成
 	for (uint32_t i = 0; i < numBlockVertical; ++i) {
 		for (uint32_t j = 0; j < numBlockHorizontal; ++j) {
@@ -219,7 +221,7 @@ void GameScene::GenerateFieldObjects() {
 				assert(player_ == nullptr && "自キャラを二重に配置しようとしています");
 
 				player_ = new Player();
-				player_->Initialize(mPlayerModel_, modelAttack_, &camera_, mapPosition);
+				player_->Initialize(mPlayerModel_, modelAttack_, modelArrow_, &camera_, mapPosition);
 				player_->SetMapChipField(mapChipField_);
 
 				break;
@@ -233,11 +235,11 @@ void GameScene::GenerateFieldObjects() {
 	}
 }
 
-void GameScene::GenerateEnemy(Vector3 &position,uint8_t type) {
+void GameScene::GenerateEnemy(Vector3& position, uint8_t type) {
 	switch (static_cast<EnemySpawnType>(type)) {
 		// 歩行敵の生成
 	case EnemySpawnType::kNormal: {
-	
+
 		Enemy* newEnemy = new Enemy();
 		newEnemy->Initialize(mEnemyModel_, &camera_, position);
 		newEnemy->SetGameScene(this);
@@ -248,7 +250,7 @@ void GameScene::GenerateEnemy(Vector3 &position,uint8_t type) {
 
 		// 盾敵の生成
 	case EnemySpawnType::kShield: {
-	
+
 		ShieldEnemy* newShieldEnemy = new ShieldEnemy();
 		newShieldEnemy->Initialize(mShieldEnemyModel_, &camera_, position);
 		newShieldEnemy->SetGameScene(this);
@@ -332,7 +334,7 @@ void GameScene::UpdatePlayPhase() {
 	}
 
 	// 死んだ敵を削除
-	enemies_.remove_if([] (BaseEnemy * enemy) {
+	enemies_.remove_if([](BaseEnemy* enemy) {
 		if (enemy->IsDead()) {
 			delete enemy;
 			return true;
@@ -342,14 +344,14 @@ void GameScene::UpdatePlayPhase() {
 
 	skydome_->Update();
 
-	#ifdef _DEBUG
+#ifdef _DEBUG
 
 	// Cを押すとデバッグカメラの有効化フラグをトグル
 	if (Input::GetInstance()->TriggerKey(DIK_C)) {
 		isDebugCameraActive_ = !isDebugCameraActive_;
 	}
 
-	#endif // _DEBUG
+#endif // _DEBUG
 
 	// カメラの処理
 	if (isDebugCameraActive_) {
@@ -384,7 +386,6 @@ void GameScene::UpdatePlayPhase() {
 	// ヒットエフェクトの更新
 	UpdateHitEffects();
 }
-
 
 void GameScene::UpdateDeathPhase() {
 	player_->Update();
