@@ -205,30 +205,40 @@ void GameScene::GenerateFieldObjects() {
 
 			switch (mapChipField_->GetMapChipTypeByIndex(j, i)) {
 				// ブロック
-			case MapChipType::kBlock: {
+				case MapChipType::kBlock: {
+					WorldTransform* worldTransform = new WorldTransform();
+					worldTransform->Initialize();
+					worldTransformBlocks_[i][j] = worldTransform;
+					worldTransformBlocks_[i][j]->translation_ = mapPosition;
+					break;
+				}
+
+				// プレイヤー
+				case MapChipType::kPlayer: {
+					// 既にプレイヤーが生成されているなら停止
+					assert(player_ == nullptr && "自キャラを二重に配置しようとしています");
+
+					player_ = new Player();
+					player_->Initialize(mPlayerModel_, modelAttack_, &camera_, mapPosition);
+					player_->SetMapChipField(mapChipField_);
+
+					break;
+				}
+
+				case MapChipType::kEnemy: {
+					GenerateEnemy(mapPosition, mapChipField_->GetMapChipSubIDByIndex(j, i));
+				}
+			}
+
+			//ブロックを横に伸ばす
+			if (mapChipField_->GetMapChipTypeByIndex(0, i) == MapChipType::kBlock) {
 				WorldTransform* worldTransform = new WorldTransform();
 				worldTransform->Initialize();
 				worldTransformBlocks_[i][j] = worldTransform;
 				worldTransformBlocks_[i][j]->translation_ = mapPosition;
-				break;
 			}
 
-				// プレイヤー
-			case MapChipType::kPlayer: {
-				// 既にプレイヤーが生成されているなら停止
-				assert(player_ == nullptr && "自キャラを二重に配置しようとしています");
-
-				player_ = new Player();
-				player_->Initialize(mPlayerModel_, modelAttack_, &camera_, mapPosition);
-				player_->SetMapChipField(mapChipField_);
-
-				break;
-			}
-
-			case MapChipType::kEnemy: {
-				GenerateEnemy(mapPosition, mapChipField_->GetMapChipSubIDByIndex(j, i));
-			}
-			}
+			
 		}
 	}
 }

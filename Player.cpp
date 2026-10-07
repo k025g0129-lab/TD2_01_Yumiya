@@ -594,6 +594,10 @@ void Player::MapChipCollisionTop(CollisionMapInfo& info) {
 
 	// 左上点の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop]);
+	
+	//判定するx場所を固定
+	indexSet.xIndex = 0;
+	
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
 
@@ -604,6 +608,10 @@ void Player::MapChipCollisionTop(CollisionMapInfo& info) {
 
 	// 右上点の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop]);
+
+	// 判定するx場所を固定
+	indexSet.xIndex = 0;
+
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
 
@@ -654,6 +662,10 @@ void Player::MapChipCollisionBottom(CollisionMapInfo& info) {
 
 	// 左下点の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom]);
+
+	// 判定するx場所を固定
+	indexSet.xIndex = 0;
+
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
 
@@ -664,6 +676,10 @@ void Player::MapChipCollisionBottom(CollisionMapInfo& info) {
 
 	// 右下点の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
+
+	// 判定するx場所を固定
+	indexSet.xIndex = 0;
+
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
 
