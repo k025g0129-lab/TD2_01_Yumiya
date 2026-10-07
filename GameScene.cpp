@@ -219,9 +219,8 @@ void GameScene::GenerateFieldObjects() {
 					assert(player_ == nullptr && "自キャラを二重に配置しようとしています");
 
 					player_ = new Player();
-					player_->Initialize(mPlayerModel_, modelAttack_, &camera_, mapPosition);
 					player_->SetMapChipField(mapChipField_);
-
+					player_->Initialize(mPlayerModel_, modelAttack_, &camera_, mapPosition);
 					break;
 				}
 

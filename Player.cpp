@@ -173,7 +173,7 @@ void Player::Update() {
 		ImGui::Text("JumpThrough: OFF");
 	}
 
-	ImGui::Text("worldTransform_.translation_.y = %f , jumpThroughPoint_ = %f", worldTransform_.translation_.y, jumpThroughPoint[1].pos_);
+	ImGui::Text("worldTransform_.translation_.y = %f , jumpThroughPoint_ = %f", worldTransform_.translation_.y, jumpThroughPoint[1].yPos_);
 	ImGui::Text("velocity_.y = %f ", velocity_.y);
 
 
@@ -348,24 +348,45 @@ void Player::BehaviorRootUpdate() {
 
 void Player::JumpThroughInitialize() {
 
-	int blockSpace = 3;
+	//成功次第削除予定
 
-	for (int i = 0; i < maxJumpThroughPointIndex; i++) {
-		jumpThroughPoint[i].pos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), uint32_t(20 - (blockSpace * (i + 1)))).y;
+	//int blockSpace = 3;
 
-		if (worldTransform_.translation_.y > jumpThroughPoint[i].pos_) {
-			jumpThroughPoint[i].isOver = true;
+	//for (int i = 0; i < maxJumpThroughPointIndex; i++) {
+	//	jumpThroughPoint[i].yPos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), uint32_t(20 - (blockSpace * (i + 1)))).y;
 
-		} else {
-			jumpThroughPoint[i].isOver = false;
+	//	if (worldTransform_.translation_.y > jumpThroughPoint[i].yPos_) {
+	//		jumpThroughPoint[i].isOver = true;
+
+	//	} else {
+	//		jumpThroughPoint[i].isOver = false;
+	//	}
+
+	//	jumpThroughPoint[i].isPreOver = jumpThroughPoint[i].isOver;
+	//}
+
+	int jumpThroughPointIndex = 0;
+
+	//ブロックを感知するとジャンプポイントを接地
+	for (int i = 0; i < int(mapChipField_->GetNumBlockVertical()); i++) {
+
+		if (mapChipField_->GetMapChipTypeByIndex(uint32_t(0), uint32_t(i)) == MapChipType::kBlock) {
+
+			jumpThroughPoint[jumpThroughPointIndex].yPos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), uint32_t(i)).y;
+
+			if (worldTransform_.translation_.y > jumpThroughPoint[jumpThroughPointIndex].yPos_) {
+				jumpThroughPoint[jumpThroughPointIndex].isOver = true;
+
+			} else {
+				jumpThroughPoint[jumpThroughPointIndex].isOver = false;
+			}
+
+			jumpThroughPoint[jumpThroughPointIndex].isPreOver = jumpThroughPoint[jumpThroughPointIndex].isOver;
+
+			jumpThroughPointIndex++;
 		}
 
-		jumpThroughPoint[i].isPreOver = jumpThroughPoint[i].isOver;
 	}
-
-	jumpThroughPoint_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), uint32_t(16)).y;
-
-	isPreOverJumpThroughPoint = isOverJumpThroughPoint;
 
 }
 
@@ -384,7 +405,7 @@ void Player::JumpThroughUpdate() {
 	for (int i = 0; i < maxJumpThroughPointIndex; i++) {
 
 		//通過ポイントより上か下かの処理
-		if (worldTransform_.translation_.y > jumpThroughPoint[i].pos_) {
+		if (worldTransform_.translation_.y > jumpThroughPoint[i].yPos_) {
 			jumpThroughPoint[i].isOver = true;
 		} else {
 			jumpThroughPoint[i].isOver = false;

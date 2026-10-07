@@ -135,3 +135,12 @@ Rect MapChipField::RectByIndex(uint32_t xIndex, uint32_t yIndex) {
 	rect.top = center.y + kBlockHeight / 2.0f;
 	return rect;
 }
+
+int MapChipField::GetRowsBlock() {
+	int re = 0;
+	
+
+
+
+	return re; 
+}

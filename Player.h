@@ -20,7 +20,7 @@ struct CollisionMapInfo {
 
 struct JumpThroughPoint {
 
-	float pos_ ;
+	float yPos_ ;
 	bool isOver;
 	bool isPreOver;
 };
@@ -199,15 +199,14 @@ private:
 	//ジャンプでの通り抜け
 	bool isJumpThrough_ = false;
 
-	//通過ポイント
-	float jumpThroughPoint_ = 0.0f;
 
 	//通過ポイントより上か
 	bool isOverJumpThroughPoint = false;
 	bool isPreOverJumpThroughPoint = false;
 
 
-	static inline const int maxJumpThroughPointIndex = 2;
+	static inline const int maxJumpThroughPointIndex = 10;
+	//static inline const int maxJumpThroughPointIndex = MapChipField::;
 
 	JumpThroughPoint jumpThroughPoint[maxJumpThroughPointIndex];
 
