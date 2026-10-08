@@ -94,6 +94,12 @@
     <Filter Include="LRDirection">
       <UniqueIdentifier>{2ccde691-7f94-413e-a3cd-7ae1cb8638da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Bullet">
+      <UniqueIdentifier>{ff9880b6-eae9-45e4-a7d3-65399f0e6a02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Bullet\PlayerBullet">
+      <UniqueIdentifier>{e1305a9c-5c9b-4a8e-b2cb-ffb2d6b30948}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -165,6 +171,9 @@
     <ClCompile Include="Matrix4x4Util.cpp">
       <Filter>Utilities\Matrix4x4Util</Filter>
     </ClCompile>
+    <ClCompile Include="PlayerBullet.cpp">
+      <Filter>Bullet\PlayerBullet</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Player.h">
@@ -235,6 +244,9 @@
     </ClInclude>
     <ClInclude Include="LRDirection.h">
       <Filter>LRDirection</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerBullet.h">
+      <Filter>Bullet\PlayerBullet</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
