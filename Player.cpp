@@ -106,6 +106,10 @@ void Player::Update() {
 			BehaviorAttackInitialize();
 			break;
 
+		case Behavior::kCharge:
+			BehaviorChargeInitialize();
+			break;
+
 		case Behavior::kKnockback:
 			BehaviorKnockInitialize();
 			break;
@@ -130,6 +134,10 @@ void Player::Update() {
 
 	case Behavior::kAttack:
 		BehaviorAttackUpdate();
+		break;
+
+	case Behavior::kCharge:
+		BehaviorChargeUpdate();
 		break;
 
 	case Behavior::kKnockback:
@@ -188,7 +196,7 @@ void Player::Update() {
 		ImGui::Text("JumpThrough: OFF");
 	}
 
-	ImGui::Text("worldTransform_.translation_.y = %f , jumpThroughPoint_ = %f", worldTransform_.translation_.y, jumpThroughPoint[1].yPos_);
+	ImGui::Text("worldTransform_.translation_.y = %f , jumpThroughPoint_ = %f", worldTransform_.translation_.y, jumpThroughPoint_[1].yPos_);
 	ImGui::Text("velocity_.y = %f ", velocity_.y);
 	ImGui::Text("chargeKeyTime = %d ", chargeKeyTime);
 	ImGui::Text("LowerLimitBlockYIndex = %d ", int(mapChipField_->GetLowerLimitBlockYIndex() - uint32_t(1)));
@@ -294,7 +302,7 @@ void Player::BehaviorRootUpdate() {
 
 	// 攻撃状態へのリクエスト
 	if (GameInput::GetInstance()->IsTrigger(GameAction::kAttack)) {
-		behaviorRequest_ = Behavior::kAttack;
+		behaviorRequest_ = Behavior::kCharge;
 	}
 
 	//通過ポイント更新
@@ -305,23 +313,6 @@ void Player::BehaviorRootUpdate() {
 
 void Player::JumpThroughInitialize() {
 
-	//成功次第削除予定
-
-	//int blockSpace = 3;
-
-	//for (int i = 0; i < maxJumpThroughPointIndex; i++) {
-	//	jumpThroughPoint[i].yPos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), uint32_t(20 - (blockSpace * (i + 1)))).y;
-
-	//	if (worldTransform_.translation_.y > jumpThroughPoint[i].yPos_) {
-	//		jumpThroughPoint[i].isOver = true;
-
-	//	} else {
-	//		jumpThroughPoint[i].isOver = false;
-	//	}
-
-	//	jumpThroughPoint[i].isPreOver = jumpThroughPoint[i].isOver;
-	//}
-
 	int jumpThroughPointIndex = 0;
 
 	//ブロックを感知するとジャンプポイントを接地
@@ -329,18 +320,14 @@ void Player::JumpThroughInitialize() {
 
 		if (mapChipField_->GetMapChipTypeByIndex(uint32_t(0), uint32_t(i)) == MapChipType::kBlock) {
 
-			jumpThroughPoint[jumpThroughPointIndex].yPos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), uint32_t(i)).y;
-
-			if (worldTransform_.translation_.y > jumpThroughPoint[jumpThroughPointIndex].yPos_) {
-				jumpThroughPoint[jumpThroughPointIndex].isOver = true;
-
-			} else {
-				jumpThroughPoint[jumpThroughPointIndex].isOver = false;
-			}
-
-			jumpThroughPoint[jumpThroughPointIndex].isPreOver = jumpThroughPoint[jumpThroughPointIndex].isOver;
+			jumpThroughPoint_[jumpThroughPointIndex].yPos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), uint32_t(i)).y;
+			IsJumpThroughPointOver(&jumpThroughPoint_[jumpThroughPointIndex]);
 
 			jumpThroughPointIndex++;
+
+			
+			// トリガー用
+			jumpThroughPoint_[i].isPreOver = jumpThroughPoint_[i].isOver;
 		}
 
 	}
@@ -349,83 +336,52 @@ void Player::JumpThroughInitialize() {
 	jumpUpperLimitsPoint.yPos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), mapChipField_->GetUpperLimitBlockYIndex() - uint32_t(1)).y;
 	jumpLowerLimitsPoint.yPos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), mapChipField_->GetLowerLimitBlockYIndex() - uint32_t(1)).y;
 	
-	if (worldTransform_.translation_.y > jumpUpperLimitsPoint.yPos_) {
-		jumpUpperLimitsPoint.isOver = true;
+	IsJumpThroughPointOver(&jumpUpperLimitsPoint);
+	IsJumpThroughPointOver(&jumpLowerLimitsPoint);
 
-	} else {
-		jumpUpperLimitsPoint.isOver = false;
-	}
-
-	if (worldTransform_.translation_.y > jumpLowerLimitsPoint.yPos_) {
-		jumpLowerLimitsPoint.isOver = true;
-
-	} else {
-		jumpLowerLimitsPoint.isOver = false;
-	}
-
+	// トリガー用
 	jumpUpperLimitsPoint.isPreOver = jumpUpperLimitsPoint.isOver;
 	jumpLowerLimitsPoint.isPreOver = jumpLowerLimitsPoint.isOver;
-
-
-
 }
 
 void Player::JumpThroughUpdate() {
 
-	//デバック用通過切り替え、後々消す
-	if (Input::GetInstance()->TriggerKey(DIK_Y)) {
-		if (isJumpThrough_) {
-			isJumpThrough_ = false;
-		} else {
-			isJumpThrough_ = true;
-		}
-	}
-
-
 	for (int i = 0; i < maxJumpThroughPointIndex; i++) {
 
 		//通過ポイントより上か下かの処理
-		if (worldTransform_.translation_.y > jumpThroughPoint[i].yPos_) {
-			jumpThroughPoint[i].isOver = true;
-		} else {
-			jumpThroughPoint[i].isOver = false;
-		}
+		IsJumpThroughPointOver(&jumpThroughPoint_[i]);
 
 		//通過したなら他の場所を透過出来ないように
-		if (jumpThroughPoint[i].isOver != jumpThroughPoint[i].isPreOver) {
+		if (jumpThroughPoint_[i].isOver != jumpThroughPoint_[i].isPreOver) {
 			isJumpThrough_ = false;
 		}
 
 		// トリガー用
-		jumpThroughPoint[i].isPreOver = jumpThroughPoint[i].isOver;
+		jumpThroughPoint_[i].isPreOver = jumpThroughPoint_[i].isOver;
 	}
 
-
-	// 上限ポイントより上か下かの処理
-	if (worldTransform_.translation_.y > jumpUpperLimitsPoint.yPos_) {
-		jumpUpperLimitsPoint.isOver = true;
-	} else {
-		jumpUpperLimitsPoint.isOver = false;
-	}
-
-	// 下限ポイントより上か下かの処理
-	if (worldTransform_.translation_.y > jumpLowerLimitsPoint.yPos_) {
-		jumpLowerLimitsPoint.isOver = true;
-	} else {
-		jumpLowerLimitsPoint.isOver = false;
-	}
+	IsJumpThroughPointOver(&jumpUpperLimitsPoint);
+	IsJumpThroughPointOver(&jumpLowerLimitsPoint);
 
 	// 通過したなら他の場所を透過出来ないように
 	if (jumpUpperLimitsPoint.isOver != jumpUpperLimitsPoint.isPreOver) {
 		isJumpThrough_ = false;
 	}
 
-
-
 	// トリガー用
 	jumpUpperLimitsPoint.isPreOver = jumpUpperLimitsPoint.isOver;
 	jumpLowerLimitsPoint.isPreOver = jumpLowerLimitsPoint.isOver;
+}
 
+void Player::IsJumpThroughPointOver(JumpThroughPoint* jumpThroughPoint) {
+
+	// 通過ポイントより上か下かの処理
+	if (worldTransform_.translation_.y > jumpThroughPoint->yPos_) {
+		jumpThroughPoint->isOver = true;
+
+	} else {
+		jumpThroughPoint->isOver = false;
+	}
 
 }
 
@@ -483,6 +439,85 @@ void Player::BehaviorAttackUpdate() {
 
 		chargeKeyTime = 0;
 	}
+}
+
+void Player::BehaviorChargeInitialize() {
+
+
+
+}
+
+void Player::BehaviorChargeUpdate() {
+
+	// 移動入力
+	// 接地状態
+	if (isGround_) {
+
+		// 空中
+	} else {
+		
+		// 落下速度
+		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f);
+
+		// 落下速度制限
+		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+	}
+
+	// 方向変更処理
+	PlayerDirectionUpdate();
+
+	
+	if (GameInput::GetInstance()->IsPress(GameAction::kAttack)) {
+		chargeKeyTime++;
+	}
+
+	// 攻撃キーリリース時に弾生成
+	if (GameInput::GetInstance()->IsRelease(GameAction::kAttack)) {
+		// 弾生成
+		PlayerBullet* bullet = new PlayerBullet();
+
+		// 弾初期化
+		bullet->Initialize(modelArrow_, camera_, worldTransform_.translation_, PlayerDirectionToPlayerBulletDirection());
+
+		// 配列更新
+		bullets_.push_back(bullet);
+
+		// 通常状態へのリクエスト
+		behaviorRequest_ = Behavior::kRoot;
+
+		//どのくらいジャンプするか
+		float jumpPower = float(chargeKeyTime) / float(kJumpTime)  ;
+
+		//チャージMAXでブロックを超える
+		if (chargeKeyTime >= kJumpTime) {
+
+			jumpPower = 1.0f;
+
+			// ジャンプ
+			if (direction_ == Direction::kDown) {
+				isJumpThrough_ = true;
+			}
+
+			// 下降
+			if (direction_ == Direction::kUp) {
+				isJumpThrough_ = true;
+			}
+		}
+
+		// ジャンプ
+		if (direction_ == Direction::kDown) {
+			velocity_ += Vector3(0.0f, kJumpAcceleration * jumpPower, 0.0f);
+		}
+
+		chargeKeyTime = 0;
+	}
+
+	// 通過ポイント更新
+	JumpThroughUpdate();
+
+	ResolveMapChipCollision(velocity_);
+
+
 }
 
 void Player::BehaviorKnockInitialize() {

@@ -135,6 +135,7 @@ private:
 
 	enum class Behavior {
 		kRoot,         // 通常状態
+		kCharge,       // 溜める
 		kAttack,       // 攻撃中
 		kKnockback,    // ノックバック
 		kSqueezeDeath, // 挟まれ死亡演出
@@ -182,6 +183,9 @@ private:
 	// 通過ポイント更新
 	void JumpThroughUpdate();
 
+	//超えているかの共通処理
+	void IsJumpThroughPointOver(JumpThroughPoint *jumpThroughPoint);
+
 	// 歩行時の加速度
 	static inline float kAcceleration = 0.02f;
 
@@ -209,7 +213,6 @@ private:
 	// ジャンプでの通り抜け
 	bool isJumpThrough_ = false;
 
-
 	//通過ポイントより上か
 	bool isOverJumpThroughPoint = false;
 	bool isPreOverJumpThroughPoint = false;
@@ -218,7 +221,7 @@ private:
 	static inline const int maxJumpThroughPointIndex = 10;
 	//static inline const int maxJumpThroughPointIndex = MapChipField::;
 
-	JumpThroughPoint jumpThroughPoint[maxJumpThroughPointIndex];
+	JumpThroughPoint jumpThroughPoint_[maxJumpThroughPointIndex];
 	JumpThroughPoint jumpUpperLimitsPoint;
 	JumpThroughPoint jumpLowerLimitsPoint;
 
@@ -226,6 +229,16 @@ private:
 	//ジャンプパワー
 	int chargeKeyTime = 0;
 	static inline int kJumpTime = 90;
+
+	//============================================================
+	// 溜め状態
+	//============================================================
+
+	// 溜める行動の初期化
+	void BehaviorChargeInitialize();
+
+	// 溜める行動更新
+	void BehaviorChargeUpdate();
 
 	//============================================================
 	// ノックバック
