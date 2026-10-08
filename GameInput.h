@@ -34,19 +34,18 @@ public:
 
 
 
-	// コピーコンストラクタと代入演算子を削除してシングルトンパターンにする
-	GameInput(const GameInput&) = delete;
-	GameInput& operator=(const GameInput&) = delete;
 
 private:
 	// キーの状態を保持する配列
 	std::array<BYTE, 256> keys_{};
 	std::array<BYTE, 256> preKeys_{};
 
+	bool IsPressedRaw(std::array<BYTE, 256> keys, GameAction action);
+
 	// シングルトンパターンにするためのコンストラクタとデストラクタをprivateにする
 	GameInput() = default;
 	~GameInput() = default;
-
-
-	bool IsPressedRaw(std::array<BYTE, 256> keys, GameAction action);
+	// コピーコンストラクタと代入演算子を削除してシングルトンパターンにする
+	GameInput(const GameInput&) = delete;
+	GameInput& operator=(const GameInput&) = delete;
 };

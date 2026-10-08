@@ -101,11 +101,17 @@ void GameScene::Initialize(StageManager* stageManager) {
 	// 追従カメラをプレイヤーにセット
 	cameraController_->SetTarget(player_);
 	cameraController_->Reset();
+
+	// HUDの生成
+	gameHUD = std::make_unique<GameHUD>();
+	gameHUD->Initialize(player_, &camera_);
 }
 
 void GameScene::Update() {
 	// フェーズ切り替え
 	ChangePhase();
+
+	gameHUD->Update();
 
 	switch (phase_) {
 	case Phase::kFadeIn:
@@ -168,6 +174,8 @@ void GameScene::Draw() {
 
 	Model::PostDraw();
 
+	gameHUD->Draw();
+
 	player_->Draw();
 
 	for (BaseEnemy* enemy : enemies_) {
@@ -180,6 +188,7 @@ void GameScene::Draw() {
 	if (deathParticles_) {
 		deathParticles_->Draw();
 	}
+
 
 	if (fade_) {
 		fade_->Draw();

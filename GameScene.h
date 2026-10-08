@@ -4,12 +4,14 @@
 #include "BaseEnemy.h"
 #include "Skydome.h"
 #include<vector>
+#include <memory>
 #include "MapChipField.h"
 #include "CameraController.h"
 #include "DeathParticles.h"
 #include "Fade.h"
 #include <list>
 #include"BaseEffect.h"
+#include "GameHUD.h"
 
 // 前方宣言
 class HitEffect;
@@ -91,6 +93,9 @@ class GameScene {
 
 	// デバッグカメラの有効化フラグ
 	bool isDebugCameraActive_ = false;
+
+	// HUD
+	std::unique_ptr<GameHUD> gameHUD;
 
 	// ゲームのフェーズ
 	enum class Phase {

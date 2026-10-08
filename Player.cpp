@@ -315,7 +315,7 @@ void Player::BehaviorAttackUpdate() {
 		PlayerBullet* bullet = new PlayerBullet();
 
 		// 弾初期化
-		bullet->Initialize(modelArrow_, camera_, worldTransform_.translation_, PlayerDirectionToPlayerBulletDirection());
+		bullet->Initialize(modelArrow_, camera_, worldTransform_.translation_, static_cast<Direction>(direction_));
 
 		// 配列更新
 		bullets_.push_back(bullet);
@@ -325,7 +325,7 @@ void Player::BehaviorAttackUpdate() {
 
 		// ジャンプ
 		if (direction_ == Direction::kDown) {
-				velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
+			velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
 		}
 	}
 }
@@ -981,49 +981,40 @@ bool Player::ShouldDraw() const {
 }
 
 void Player::PlayerDirectionUpdate() {
-	// 方向の初期化
-	SetPlayerDirection(Direction::kRight);
+	// ゲームインプットのインスタンス取得
+	GameInput *input = GameInput::GetInstance();
 
-	// 入力に応じて方向を設定
-	if (GameInput::GetInstance()->IsPress(GameAction::kDirectionUp) && !GameInput::GetInstance()->IsPress(GameAction::kDirectionDown) &&
-	    !GameInput::GetInstance()->IsPress(GameAction::kDirectionRight)) {
-		SetPlayerDirection(Direction::kUp);
+	// 向いている方向ベクトル
+	int directionVectorX = 0;
+	int directionVectorY = 0;
 
-	} else if (
-	    GameInput::GetInstance()->IsPress(GameAction::kDirectionUp) && !GameInput::GetInstance()->IsPress(GameAction::kDirectionDown) &&
-	    GameInput::GetInstance()->IsPress(GameAction::kDirectionRight)) {
-		SetPlayerDirection(Direction::kRightUp);
-
-	} else if (
-	    !GameInput::GetInstance()->IsPress(GameAction::kDirectionUp) && GameInput::GetInstance()->IsPress(GameAction::kDirectionDown) &&
-	    GameInput::GetInstance()->IsPress(GameAction::kDirectionRight)) {
-		SetPlayerDirection(Direction::kRightDown);
-
-	} else if (
-	    !GameInput::GetInstance()->IsPress(GameAction::kDirectionUp) && GameInput::GetInstance()->IsPress(GameAction::kDirectionDown) &&
-	    !GameInput::GetInstance()->IsPress(GameAction::kDirectionRight)) {
-		SetPlayerDirection(Direction::kDown);
+	// 上入力
+	if (input->IsPress(GameAction::kDirectionUp)) {
+		directionVectorY += 1;
 	}
-}
 
-PlayerBullet::Direction Player::PlayerDirectionToPlayerBulletDirection() {
-	switch (direction_) {
-	case Direction::kUp:
-		return PlayerBullet::Direction::kUp;
+	// 下入力
+	if (input->IsPress(GameAction::kDirectionDown)) {
+		directionVectorY -= 1;
+	}
 
-	case Direction::kRightUp:
-		return PlayerBullet::Direction::kRightUp;
+	// 右入力
+	if (input->IsPress(GameAction::kDirectionRight)) {
+		directionVectorX += 1;
+	}
 
-	case Direction::kRight:
-		return PlayerBullet::Direction::kRight;
+	//// 左入力
+	//// (現状未実装のためコメントアウト)
+	//if (input->IsPress(GameAction::kDirectionLeft)) {
+	//	directionVectorX -= 1;
+	//}
 
-	case Direction::kRightDown:
-		return PlayerBullet::Direction::kRightDown;
+	// 方向ベクトルをDirectionに変換
+	// xは10の位、yは1の位を扱うため桁変換を行う
+	direction_ = kCenter + (directionVectorX * 10 + directionVectorY);
 
-	case Direction::kDown:
-		return PlayerBullet::Direction::kDown;
-
-	default:
-		return PlayerBullet::Direction::kRight;
+	// 未入力なら右向き
+	if (direction_ == kCenter) {
+		direction_ = kRight;
 	}
 }
