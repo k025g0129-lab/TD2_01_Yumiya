@@ -72,6 +72,8 @@ public:
 
 	LRDirection GetLRDirection() const { return lrDirection_; }
 
+	Direction GetDirection() const { return static_cast<Direction>(direction_); }
+
 private:
 	// ワールド変換データ
 	KamataEngine::WorldTransform worldTransform_;

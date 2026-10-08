@@ -18,3 +18,7 @@ enum Direction {
 	kRightDown = 64,	// 右下
 	kDown = 54,			// 下
 };
+
+// 方向の種類
+// ゲーム内で実際に使用する種類に限る
+const int kCountOfDirection = 5;
