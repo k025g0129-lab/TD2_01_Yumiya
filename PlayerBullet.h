@@ -1,16 +1,10 @@
 #pragma once
+#include"PlayerDirection.h"
 
 #include <KamataEngine.h>
 
 class PlayerBullet {
-public:
-	/// ===============================================
-	/// 列挙型・構造体
-	/// ===============================================
-
-	// 方向
-	enum class Direction { kUp = 0, kRightUp = 1, kRight = 2, kRightDown = 3, kDown = 4 };
-
+  public:
 	/// ===============================================
 	/// ゲッター
 	/// ===============================================
