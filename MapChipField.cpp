@@ -64,6 +64,19 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 			// 先頭文字でマップチップのタイプを判別
 			mapChipData_.data[i][j].type = MapChipTypeTable[word[kChipType]];
 
+			//ブロックの上限下限を設定
+			if (mapChipData_.data[i][j].type == MapChipType::kBlock) {
+
+				if (upperLimitBlockIndex > i) {
+					upperLimitBlockIndex = i;
+				}
+
+				if (lowerLimitBlockIndex < i) {
+					lowerLimitBlockIndex = i;
+				}
+
+			}
+
 			// サブIDを含まない場合はスキップ
 			if (word.size() <= kChipSubID) {
 				continue;
@@ -134,13 +147,4 @@ Rect MapChipField::RectByIndex(uint32_t xIndex, uint32_t yIndex) {
 	rect.bottom = center.y - kBlockHeight / 2.0f;
 	rect.top = center.y + kBlockHeight / 2.0f;
 	return rect;
-}
-
-int MapChipField::GetRowsBlock() {
-	int re = 0;
-	
-
-
-
-	return re; 
 }

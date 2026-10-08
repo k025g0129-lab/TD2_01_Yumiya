@@ -65,6 +65,7 @@ void Player::Initialize(Model* model, Model* modelAttack, KamataEngine::Model* m
 	//通過ポイント初期化
 	JumpThroughInitialize();
 
+	chargeKeyTime = 0;
 }
 
 void Player::Update() {
@@ -189,6 +190,9 @@ void Player::Update() {
 
 	ImGui::Text("worldTransform_.translation_.y = %f , jumpThroughPoint_ = %f", worldTransform_.translation_.y, jumpThroughPoint[1].yPos_);
 	ImGui::Text("velocity_.y = %f ", velocity_.y);
+	ImGui::Text("chargeKeyTime = %d ", chargeKeyTime);
+	ImGui::Text("LowerLimitBlockYIndex = %d ", int(mapChipField_->GetLowerLimitBlockYIndex() - uint32_t(1)));
+	ImGui::Text("PlayerYIndex = %d ", int(mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_).yIndex));
 
 
 	ImGui::End();
@@ -341,6 +345,29 @@ void Player::JumpThroughInitialize() {
 
 	}
 
+	//上限下限位置設定
+	jumpUpperLimitsPoint.yPos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), mapChipField_->GetUpperLimitBlockYIndex() - uint32_t(1)).y;
+	jumpLowerLimitsPoint.yPos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), mapChipField_->GetLowerLimitBlockYIndex() - uint32_t(1)).y;
+	
+	if (worldTransform_.translation_.y > jumpUpperLimitsPoint.yPos_) {
+		jumpUpperLimitsPoint.isOver = true;
+
+	} else {
+		jumpUpperLimitsPoint.isOver = false;
+	}
+
+	if (worldTransform_.translation_.y > jumpLowerLimitsPoint.yPos_) {
+		jumpLowerLimitsPoint.isOver = true;
+
+	} else {
+		jumpLowerLimitsPoint.isOver = false;
+	}
+
+	jumpUpperLimitsPoint.isPreOver = jumpUpperLimitsPoint.isOver;
+	jumpLowerLimitsPoint.isPreOver = jumpLowerLimitsPoint.isOver;
+
+
+
 }
 
 void Player::JumpThroughUpdate() {
@@ -373,6 +400,33 @@ void Player::JumpThroughUpdate() {
 		jumpThroughPoint[i].isPreOver = jumpThroughPoint[i].isOver;
 	}
 
+
+	// 上限ポイントより上か下かの処理
+	if (worldTransform_.translation_.y > jumpUpperLimitsPoint.yPos_) {
+		jumpUpperLimitsPoint.isOver = true;
+	} else {
+		jumpUpperLimitsPoint.isOver = false;
+	}
+
+	// 下限ポイントより上か下かの処理
+	if (worldTransform_.translation_.y > jumpLowerLimitsPoint.yPos_) {
+		jumpLowerLimitsPoint.isOver = true;
+	} else {
+		jumpLowerLimitsPoint.isOver = false;
+	}
+
+	// 通過したなら他の場所を透過出来ないように
+	if (jumpUpperLimitsPoint.isOver != jumpUpperLimitsPoint.isPreOver) {
+		isJumpThrough_ = false;
+	}
+
+
+
+	// トリガー用
+	jumpUpperLimitsPoint.isPreOver = jumpUpperLimitsPoint.isOver;
+	jumpLowerLimitsPoint.isPreOver = jumpLowerLimitsPoint.isOver;
+
+
 }
 
 void Player::BehaviorAttackInitialize() {
@@ -390,6 +444,12 @@ void Player::BehaviorAttackUpdate() {
 	// 方向変更処理
 	PlayerDirectionUpdate();
 
+
+	if (GameInput::GetInstance()->IsPress(GameAction::kAttack)) {
+		chargeKeyTime++;
+
+	}
+
 	// 攻撃キーリリース時に弾生成
 	if (GameInput::GetInstance()->IsRelease(GameAction::kAttack)) {
 		// 弾生成
@@ -404,10 +464,24 @@ void Player::BehaviorAttackUpdate() {
 		// 通常状態へのリクエスト
 		behaviorRequest_ = Behavior::kRoot;
 
-		// ジャンプ
-		if (direction_ == Direction::kDown) {
+		if (chargeKeyTime >= kJumpTime) {
+
+			// ジャンプ
+			if (direction_ == Direction::kDown) {
 				velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
+				isJumpThrough_ = true;
+
+			}
+
+			//下降
+			if (direction_ == Direction::kUp) {
+				isJumpThrough_ = true;
+			}
+
+			
 		}
+
+		chargeKeyTime = 0;
 	}
 }
 
@@ -577,7 +651,11 @@ void Player::MapChipCollisionBottom(CollisionMapInfo& info) {
 
 	// 通り抜ける
 	if (isJumpThrough_) {
-		return;
+		if (jumpLowerLimitsPoint.isOver == true) {
+
+			return;
+		}
+
 	}
 
 	// 移動後の4つの角の座標

@@ -54,8 +54,11 @@ class MapChipField {
 	IndexSet GetMapChipIndexSetByPosition(const KamataEngine::Vector3& position);
 	Rect RectByIndex(uint32_t xIndex, uint32_t yIndex);
 
-	int GetRowsBlock();
+	uint32_t GetUpperLimitBlockYIndex() { return upperLimitBlockIndex; };
+	uint32_t GetLowerLimitBlockYIndex() { return lowerLimitBlockIndex; };
 
   private:
 	MapChipData mapChipData_;
+	uint32_t upperLimitBlockIndex = 6;
+	uint32_t lowerLimitBlockIndex = 5;
 };

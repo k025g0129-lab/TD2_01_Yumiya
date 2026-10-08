@@ -222,7 +222,7 @@ void GameScene::GenerateFieldObjects() {
 
 					player_ = new Player();
 					player_->SetMapChipField(mapChipField_);
-					player_->Initialize(mPlayerModel_, modelAttack_, &camera_, mapPosition);
+				    player_->Initialize(mPlayerModel_, modelAttack_, modelArrow_, & camera_, mapPosition);
 					break;
 				}
 

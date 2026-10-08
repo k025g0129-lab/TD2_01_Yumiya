@@ -74,7 +74,7 @@ void TitleScene::Update() {
 		break;
 
 	case Phase::kMain:
-		if (Input::GetInstance()->PushKey(DIK_SPACE)) {
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 			phase_ = Phase::kFadeOut;
 			fade_->Start(Fade::Status::kFadeOut, 1.0f);
 		}

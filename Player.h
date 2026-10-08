@@ -214,12 +214,18 @@ private:
 	bool isOverJumpThroughPoint = false;
 	bool isPreOverJumpThroughPoint = false;
 
-
+	//ジャンプポイント数(後々変更するか消す可能性あり)
 	static inline const int maxJumpThroughPointIndex = 10;
 	//static inline const int maxJumpThroughPointIndex = MapChipField::;
 
 	JumpThroughPoint jumpThroughPoint[maxJumpThroughPointIndex];
+	JumpThroughPoint jumpUpperLimitsPoint;
+	JumpThroughPoint jumpLowerLimitsPoint;
 
+
+	//ジャンプパワー
+	int chargeKeyTime = 0;
+	static inline int kJumpTime = 90;
 
 	//============================================================
 	// ノックバック
