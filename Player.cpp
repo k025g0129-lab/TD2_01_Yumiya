@@ -61,6 +61,11 @@ void Player::Initialize(Model* model, Model* modelAttack, KamataEngine::Model* m
 
 	// ジャンプ通り抜けるフラグ初期化
 	isJumpThrough_ = false;
+
+	//通過ポイント初期化
+	JumpThroughInitialize();
+
+	chargeKeyTime = 0;
 }
 
 void Player::Update() {
@@ -101,6 +106,10 @@ void Player::Update() {
 			BehaviorAttackInitialize();
 			break;
 
+		case Behavior::kCharge:
+			BehaviorChargeInitialize();
+			break;
+
 		case Behavior::kKnockback:
 			BehaviorKnockInitialize();
 			break;
@@ -112,6 +121,8 @@ void Player::Update() {
 
 		// 振る舞いリクエストの初期化
 		behaviorRequest_ = Behavior::kUnknown;
+
+
 	}
 
 	switch (behavior_) {
@@ -123,6 +134,10 @@ void Player::Update() {
 
 	case Behavior::kAttack:
 		BehaviorAttackUpdate();
+		break;
+
+	case Behavior::kCharge:
+		BehaviorChargeUpdate();
 		break;
 
 	case Behavior::kKnockback:
@@ -181,6 +196,13 @@ void Player::Update() {
 		ImGui::Text("JumpThrough: OFF");
 	}
 
+	ImGui::Text("worldTransform_.translation_.y = %f , jumpThroughPoint_ = %f", worldTransform_.translation_.y, jumpThroughPoint_[1].yPos_);
+	ImGui::Text("velocity_.y = %f ", velocity_.y);
+	ImGui::Text("chargeKeyTime = %d ", chargeKeyTime);
+	ImGui::Text("LowerLimitBlockYIndex = %d ", int(mapChipField_->GetLowerLimitBlockYIndex() - uint32_t(1)));
+	ImGui::Text("PlayerYIndex = %d ", int(mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_).yIndex));
+
+
 	ImGui::End();
 
 #endif // _DEBUG
@@ -224,49 +246,49 @@ void Player::BehaviorRootUpdate() {
 
 		// 空中
 	} else {
-		// 左右を同時に入力されている場合、入力無しと扱う
-		if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft) ^ GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
-			// 空中での左右加速
-			Vector3 acceleration{};
+		//// 左右を同時に入力されている場合、入力無しと扱う
+		//if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft) ^ GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
+		//	// 空中での左右加速
+		//	Vector3 acceleration{};
 
-			// 右入力
-			if (GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
-				// 向きの更新
-				if (lrDirection_ != LRDirection::kRight) {
-					lrDirection_ = LRDirection::kRight;
+		//	// 右入力
+		//	if (GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
+		//		// 向きの更新
+		//		if (lrDirection_ != LRDirection::kRight) {
+		//			lrDirection_ = LRDirection::kRight;
 
-					// 旋回開始時の角度を記録する
-					turnFirstRotationY_ = worldTransform_.rotation_.y;
+		//			// 旋回開始時の角度を記録する
+		//			turnFirstRotationY_ = worldTransform_.rotation_.y;
 
-					// 旋回タイマーに時間を設定する
-					turnTimer_ = kTurnTime;
-				}
+		//			// 旋回タイマーに時間を設定する
+		//			turnTimer_ = kTurnTime;
+		//		}
 
-				acceleration.x += kAcceleration * kAirAccelerationRate;
-			}
+		//		acceleration.x += kAcceleration * kAirAccelerationRate;
+		//	}
 
-			// 左入力
-			if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft)) {
-				// 向きの更新
-				if (lrDirection_ != LRDirection::kLeft) {
-					lrDirection_ = LRDirection::kLeft;
+		//	// 左入力
+		//	if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft)) {
+		//		// 向きの更新
+		//		if (lrDirection_ != LRDirection::kLeft) {
+		//			lrDirection_ = LRDirection::kLeft;
 
-					// 旋回開始時の角度を記録する
-					turnFirstRotationY_ = worldTransform_.rotation_.y;
+		//			// 旋回開始時の角度を記録する
+		//			turnFirstRotationY_ = worldTransform_.rotation_.y;
 
-					// 旋回タイマーに時間を設定する
-					turnTimer_ = kTurnTime;
-				}
+		//			// 旋回タイマーに時間を設定する
+		//			turnTimer_ = kTurnTime;
+		//		}
 
-				acceleration.x -= kAcceleration * kAirAccelerationRate;
-			}
+		//		acceleration.x -= kAcceleration * kAirAccelerationRate;
+		//	}
 
-			// 加速を反映
-			velocity_ += acceleration;
+		//	// 加速を反映
+		//	velocity_ += acceleration;
 
-			// 速度制限
-			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
-		}
+		//	// 速度制限
+		//	velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
+		//}
 
 		// 落下速度
 		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f);
@@ -280,18 +302,87 @@ void Player::BehaviorRootUpdate() {
 
 	// 攻撃状態へのリクエスト
 	if (GameInput::GetInstance()->IsTrigger(GameAction::kAttack)) {
-		behaviorRequest_ = Behavior::kAttack;
+		behaviorRequest_ = Behavior::kCharge;
 	}
 
-	if (Input::GetInstance()->TriggerKey(DIK_Y)) {
-		if (isJumpThrough_) {
-			isJumpThrough_ = false;
-		} else {
-			isJumpThrough_ = true;
-		}
-	}
+	//通過ポイント更新
+	JumpThroughUpdate();
 
 	ResolveMapChipCollision(velocity_);
+}
+
+void Player::JumpThroughInitialize() {
+
+	int jumpThroughPointIndex = 0;
+
+	//ブロックを感知するとジャンプポイントを接地
+	for (int i = 0; i < int(mapChipField_->GetNumBlockVertical()); i++) {
+
+		if (mapChipField_->GetMapChipTypeByIndex(uint32_t(0), uint32_t(i)) == MapChipType::kBlock) {
+
+			jumpThroughPoint_[jumpThroughPointIndex].yPos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), uint32_t(i)).y;
+			IsJumpThroughPointOver(&jumpThroughPoint_[jumpThroughPointIndex]);
+
+			jumpThroughPointIndex++;
+
+			
+			// トリガー用
+			jumpThroughPoint_[i].isPreOver = jumpThroughPoint_[i].isOver;
+		}
+
+	}
+
+	//上限下限位置設定
+	jumpUpperLimitsPoint.yPos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), mapChipField_->GetUpperLimitBlockYIndex() - uint32_t(1)).y;
+	jumpLowerLimitsPoint.yPos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), mapChipField_->GetLowerLimitBlockYIndex() - uint32_t(1)).y;
+	
+	IsJumpThroughPointOver(&jumpUpperLimitsPoint);
+	IsJumpThroughPointOver(&jumpLowerLimitsPoint);
+
+	// トリガー用
+	jumpUpperLimitsPoint.isPreOver = jumpUpperLimitsPoint.isOver;
+	jumpLowerLimitsPoint.isPreOver = jumpLowerLimitsPoint.isOver;
+}
+
+void Player::JumpThroughUpdate() {
+
+	for (int i = 0; i < maxJumpThroughPointIndex; i++) {
+
+		//通過ポイントより上か下かの処理
+		IsJumpThroughPointOver(&jumpThroughPoint_[i]);
+
+		//通過したなら他の場所を透過出来ないように
+		if (jumpThroughPoint_[i].isOver != jumpThroughPoint_[i].isPreOver) {
+			isJumpThrough_ = false;
+		}
+
+		// トリガー用
+		jumpThroughPoint_[i].isPreOver = jumpThroughPoint_[i].isOver;
+	}
+
+	IsJumpThroughPointOver(&jumpUpperLimitsPoint);
+	IsJumpThroughPointOver(&jumpLowerLimitsPoint);
+
+	// 通過したなら他の場所を透過出来ないように
+	if (jumpUpperLimitsPoint.isOver != jumpUpperLimitsPoint.isPreOver) {
+		isJumpThrough_ = false;
+	}
+
+	// トリガー用
+	jumpUpperLimitsPoint.isPreOver = jumpUpperLimitsPoint.isOver;
+	jumpLowerLimitsPoint.isPreOver = jumpLowerLimitsPoint.isOver;
+}
+
+void Player::IsJumpThroughPointOver(JumpThroughPoint* jumpThroughPoint) {
+
+	// 通過ポイントより上か下かの処理
+	if (worldTransform_.translation_.y > jumpThroughPoint->yPos_) {
+		jumpThroughPoint->isOver = true;
+
+	} else {
+		jumpThroughPoint->isOver = false;
+	}
+
 }
 
 void Player::BehaviorAttackInitialize() {
@@ -309,6 +400,12 @@ void Player::BehaviorAttackUpdate() {
 	// 方向変更処理
 	PlayerDirectionUpdate();
 
+
+	if (GameInput::GetInstance()->IsPress(GameAction::kAttack)) {
+		chargeKeyTime++;
+
+	}
+
 	// 攻撃キーリリース時に弾生成
 	if (GameInput::GetInstance()->IsRelease(GameAction::kAttack)) {
 		// 弾生成
@@ -323,11 +420,105 @@ void Player::BehaviorAttackUpdate() {
 		// 通常状態へのリクエスト
 		behaviorRequest_ = Behavior::kRoot;
 
+		if (chargeKeyTime >= kJumpTime) {
+
+			// ジャンプ
+			if (direction_ == Direction::kDown) {
+				velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
+				isJumpThrough_ = true;
+
+			}
+
+			//下降
+			if (direction_ == Direction::kUp) {
+				isJumpThrough_ = true;
+			}
+
+			
+		}
+
+		chargeKeyTime = 0;
+	}
+}
+
+void Player::BehaviorChargeInitialize() {
+
+
+
+}
+
+void Player::BehaviorChargeUpdate() {
+
+	// 移動入力
+	// 接地状態
+	if (isGround_) {
+
+		// 空中
+	} else {
+		
+		// 落下速度
+		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f);
+
+		// 落下速度制限
+		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+	}
+
+	// 方向変更処理
+	PlayerDirectionUpdate();
+
+	
+	if (GameInput::GetInstance()->IsPress(GameAction::kAttack)) {
+		chargeKeyTime++;
+	}
+
+	// 攻撃キーリリース時に弾生成
+	if (GameInput::GetInstance()->IsRelease(GameAction::kAttack)) {
+		// 弾生成
+		PlayerBullet* bullet = new PlayerBullet();
+
+		// 弾初期化
+		bullet->Initialize(modelArrow_, camera_, worldTransform_.translation_, static_cast<Direction>(direction_));
+
+
+		// 配列更新
+		bullets_.push_back(bullet);
+
+		// 通常状態へのリクエスト
+		behaviorRequest_ = Behavior::kRoot;
+
+		//どのくらいジャンプするか
+		float jumpPower = float(chargeKeyTime) / float(kJumpTime)  ;
+
+		//チャージMAXでブロックを超える
+		if (chargeKeyTime >= kJumpTime) {
+
+			jumpPower = 1.0f;
+				
+			// ジャンプ
+			if (direction_ == Direction::kDown) {
+				isJumpThrough_ = true;
+			}
+
+			// 下降
+			if (direction_ == Direction::kUp) {
+				isJumpThrough_ = true;
+			}
+		}
+
 		// ジャンプ
 		if (direction_ == Direction::kDown) {
-			velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
+			velocity_ += Vector3(0.0f, kJumpAcceleration * jumpPower, 0.0f);
 		}
+
+		chargeKeyTime = 0;
 	}
+
+	// 通過ポイント更新
+	JumpThroughUpdate();
+
+	ResolveMapChipCollision(velocity_);
+
+
 }
 
 void Player::BehaviorKnockInitialize() {
@@ -414,7 +605,7 @@ void Player::ResolveMapChipCollision(const Vector3& moveDistance) {
 }
 
 void Player::MapChipCollision(CollisionMapInfo& info) {
-	MapChipCollisionTop(info);
+	//MapChipCollisionTop(info);
 	MapChipCollisionBottom(info);
 	MapChipCollisionLeft(info);
 	MapChipCollisionRight(info);
@@ -448,6 +639,10 @@ void Player::MapChipCollisionTop(CollisionMapInfo& info) {
 
 	// 左上点の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop]);
+	
+	//判定するx場所を固定
+	indexSet.xIndex = 0;
+	
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
 
@@ -458,6 +653,10 @@ void Player::MapChipCollisionTop(CollisionMapInfo& info) {
 
 	// 右上点の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop]);
+
+	// 判定するx場所を固定
+	indexSet.xIndex = 0;
+
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
 
@@ -488,7 +687,11 @@ void Player::MapChipCollisionBottom(CollisionMapInfo& info) {
 
 	// 通り抜ける
 	if (isJumpThrough_) {
-		return;
+		if (jumpLowerLimitsPoint.isOver == true) {
+
+			return;
+		}
+
 	}
 
 	// 移動後の4つの角の座標
@@ -508,6 +711,10 @@ void Player::MapChipCollisionBottom(CollisionMapInfo& info) {
 
 	// 左下点の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom]);
+
+	// 判定するx場所を固定
+	indexSet.xIndex = 0;
+
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
 
@@ -518,6 +725,10 @@ void Player::MapChipCollisionBottom(CollisionMapInfo& info) {
 
 	// 右下点の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
+
+	// 判定するx場所を固定
+	indexSet.xIndex = 0;
+
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
 
