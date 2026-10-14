@@ -4,6 +4,7 @@
 #include "LRDirection.h"
 #include "MapChipField.h"
 #include "PlayerBullet.h"
+#include "PlayerDirection.h"
 
 #include <vector>
 
@@ -58,9 +59,6 @@ public:
 	// 調整項目を適用
 	static void ApplyGlobalVariables();
 
-	// 自機の方向
-	enum class Direction { kUp = 0, kRightUp = 1, kRight = 2, kRightDown = 3, kDown = 4 };
-
 	//============================================================
 	// ゲッター・セッター
 	//============================================================
@@ -85,10 +83,7 @@ public:
 
 	LRDirection GetLRDirection() const { return lrDirection_; }
 
-	/// <summary>
-	/// 自機の方向の設定
-	/// </summary>
-	void SetPlayerDirection(const Direction direction) { direction_ = direction; }
+	Direction GetDirection() const { return static_cast<Direction>(direction_); }
 
 private:
 	// ワールド変換データ
@@ -416,7 +411,7 @@ private:
 	/// =============================
 
 	// 向いている方向
-	Direction direction_ = Direction::kRight;
+	int direction_ = Direction::kRight;
 
 	/// <summary>
 	/// 入力による方向の更新
@@ -432,9 +427,4 @@ private:
 
 	// 3Dモデル
 	KamataEngine::Model* modelArrow_ = nullptr;
-
-	/// <summary>
-	/// 自機の方向を弾の方向に変換する
-	/// </summary>
-	PlayerBullet::Direction PlayerDirectionToPlayerBulletDirection();
 };
