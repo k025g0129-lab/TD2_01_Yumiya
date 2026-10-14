@@ -477,7 +477,7 @@ void Player::BehaviorChargeUpdate() {
 		PlayerBullet* bullet = new PlayerBullet();
 
 		// 弾初期化
-		bullet->Initialize(modelArrow_, camera_, worldTransform_.translation_, PlayerDirectionToPlayerBulletDirection());
+		bullet->Initialize(modelArrow_, camera_, worldTransform_.translation_, static_cast<Direction>(direction_));
 
 
 		// 配列更新
