@@ -479,6 +479,7 @@ void Player::BehaviorChargeUpdate() {
 		// 弾初期化
 		bullet->Initialize(modelArrow_, camera_, worldTransform_.translation_, PlayerDirectionToPlayerBulletDirection());
 
+
 		// 配列更新
 		bullets_.push_back(bullet);
 
@@ -492,7 +493,7 @@ void Player::BehaviorChargeUpdate() {
 		if (chargeKeyTime >= kJumpTime) {
 
 			jumpPower = 1.0f;
-
+				
 			// ジャンプ
 			if (direction_ == Direction::kDown) {
 				isJumpThrough_ = true;
@@ -604,7 +605,7 @@ void Player::ResolveMapChipCollision(const Vector3& moveDistance) {
 }
 
 void Player::MapChipCollision(CollisionMapInfo& info) {
-	MapChipCollisionTop(info);
+	//MapChipCollisionTop(info);
 	MapChipCollisionBottom(info);
 	MapChipCollisionLeft(info);
 	MapChipCollisionRight(info);
