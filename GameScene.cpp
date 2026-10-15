@@ -265,10 +265,10 @@ void GameScene::GenerateEnemy(Vector3& position, uint8_t type) {
 		// 回転敵の生成
 	case EnemySpawnType::kRotate: {
 
-		RotateEnemy* newRotateEnemy = new RotateEnemy();
-		newRotateEnemy->Initialize(mRotateEnemyModel_, &camera_, position);
+		auto newRotateEnemy = std::make_unique < RotateEnemy>();
+		newRotateEnemy->Initialize(mRotateEnemyModel_, camera_.get(), position);
 		newRotateEnemy->SetGameScene(this);
-		enemies_.push_back(newRotateEnemy);
+		enemies_.push_back(std::move(newRotateEnemy));
 
 		break;
 	}
