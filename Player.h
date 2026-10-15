@@ -223,7 +223,7 @@ private:
 
 	//ジャンプパワー
 	int chargeKeyTime = 0;
-	static inline int kJumpTime = 90;
+	static inline int kJumpTime = 30;
 
 	//============================================================
 	// 溜め状態

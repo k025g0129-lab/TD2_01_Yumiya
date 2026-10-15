@@ -34,6 +34,9 @@ class BaseEnemy {
 	// 移動
 	void Move(const KamataEngine::Vector3& velocity);
 
+	// 座標設定
+	void SetTranslation(KamataEngine::Vector3 translation) { worldTransform_.translation_ = translation; }
+
 	// 座標取得
 	const KamataEngine::Vector3& GetTranslation() const { return worldTransform_.translation_; }
 

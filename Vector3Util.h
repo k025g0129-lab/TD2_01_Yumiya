@@ -1,7 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
 #include <numbers>
-
+#include <cassert> 
 namespace KamataEngine {
 
 // ベクトルの加算

@@ -199,6 +199,7 @@ xcopy "$(ProjectDir)..\External\KamataEngine\shaders" "$(ProjectDir)Resources\En
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerBullet.cpp" />
     <ClCompile Include="Rect.cpp" />
+    <ClCompile Include="RotateEnemy.cpp" />
     <ClCompile Include="ShieldEnemy.cpp" />
     <ClCompile Include="Skydome.cpp" />
     <ClCompile Include="StageManager.cpp" />
@@ -228,6 +229,7 @@ xcopy "$(ProjectDir)..\External\KamataEngine\shaders" "$(ProjectDir)Resources\En
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerBullet.h" />
     <ClInclude Include="Rect.h" />
+    <ClInclude Include="RotateEnemy.h" />
     <ClInclude Include="ShieldEnemy.h" />
     <ClInclude Include="Skydome.h" />
     <ClInclude Include="StageManager.h" />
