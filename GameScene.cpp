@@ -57,11 +57,6 @@ void GameScene::Initialize() {
 	fade_->Initialize();
 	fade_->Start(Fade::Status::kFadeIn, 1.0f);
 
-	// 敵
-	mEnemyModel_ = Model::CreateFromOBJ("enemy", true);
-	mShieldEnemyModel_ = Model::CreateFromOBJ("shieldEnemy", true);
-	mRotateEnemyModel_ = Model::CreateFromOBJ("RotateEnemy", true);
-
 	// デバッグカメラの生成
 	debugCamera_ = std::make_unique<DebugCamera>(kMaxWindowWidth, kMaxWindowHeight);
 	debugCamera_->SetFarZ(camera_->farZ);
@@ -244,7 +239,7 @@ void GameScene::GenerateEnemy(Vector3& position, uint8_t type) {
 		// 歩行敵の生成
 	case EnemySpawnType::kNormal: {
 		auto newEnemy = std::make_unique<Enemy>();
-		newEnemy->Initialize(mEnemyModel_, camera_.get(), position);
+		newEnemy->Initialize(camera_.get(), position);
 		newEnemy->SetGameScene(this);
 		enemies_.push_back(std::move(newEnemy));
 		break;
@@ -266,7 +261,7 @@ void GameScene::GenerateEnemy(Vector3& position, uint8_t type) {
 	case EnemySpawnType::kRotate: {
 
 		auto newRotateEnemy = std::make_unique < RotateEnemy>();
-		newRotateEnemy->Initialize(mRotateEnemyModel_, camera_.get(), position);
+		newRotateEnemy->Initialize(camera_.get(), position);
 		newRotateEnemy->SetGameScene(this);
 		enemies_.push_back(std::move(newRotateEnemy));
 
@@ -279,10 +274,6 @@ void GameScene::GenerateEnemy(Vector3& position, uint8_t type) {
 GameScene::GameScene() {}
 
 GameScene::~GameScene() {
-
-	delete mEnemyModel_;
-	delete mShieldEnemyModel_;
-
 	effects_.clear();
 	worldTransformBlocks_.clear();
 }
