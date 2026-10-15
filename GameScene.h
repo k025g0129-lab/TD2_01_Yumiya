@@ -85,7 +85,7 @@ class GameScene : public IScene {
 	Phase phase_ = Phase::kFadeIn;
 
 	// フェード
-	Fade* fade_ = nullptr;
+	std::unique_ptr<Fade> fade_;
 
 	// 全てのあたり判定を行う
 	void CheckAllCollisions();
@@ -113,8 +113,7 @@ class GameScene : public IScene {
 
 	std::vector<std::vector<std::unique_ptr<KamataEngine::WorldTransform>>> worldTransformBlocks_;
 
-	uint32_t mBlockTextureHandle_ = 0;
-	KamataEngine::Model* mBlockModel_ = nullptr;
+	KamataEngine::Model* modelBlock_ = nullptr;
 
 	// 画面サイズ
 	const int kMaxWindowWidth = 1280;

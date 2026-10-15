@@ -51,7 +51,7 @@ void GameScene::Initialize() {
 	mapChipField_->LoadMapChipCsv(stageFileName);
 
 	// フェード
-	fade_ = new Fade();
+	fade_ = std::make_unique<Fade>();
 	fade_->Initialize();
 	fade_->Start(Fade::Status::kFadeIn, 1.0f);
 
@@ -64,8 +64,7 @@ void GameScene::Initialize() {
 	debugCamera_->SetFarZ(camera_->farZ);
 
 	// ブロック
-	mBlockModel_ = Model::CreateFromOBJ("block", true);
-	mBlockTextureHandle_ = TextureManager::Load("block/block.png");
+	modelBlock_ = modelManager->Load("block", true);
 
 	HitEffect::SetModel(modelManager->Load("particle", true));
 	HitEffect::SetCamera(camera_.get());
@@ -154,7 +153,7 @@ void GameScene::Draw() {
 				continue;
 			}
 
-			mBlockModel_->Draw(*worldTransformBlock, *camera_);
+			modelBlock_->Draw(*worldTransformBlock, *camera_);
 		}
 	}
 
@@ -267,13 +266,8 @@ GameScene::~GameScene() {
 
 	delete mEnemyModel_;
 	delete mShieldEnemyModel_;
-	delete mBlockModel_;
 
 	effects_.clear();
-
-	delete fade_;
-	fade_ = nullptr;
-
 	worldTransformBlocks_.clear();
 }
 
