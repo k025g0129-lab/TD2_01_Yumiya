@@ -13,10 +13,11 @@ void TitleScene::Initialize() {
 	animationTimer_ = 0.0f;
 
 	// カメラ初期化
-	camera_.Initialize();
-	camera_.translation_ = {0.0f, 1.0f, -10.0f};
-	camera_.rotation_ = {0.0f, 0.0f, 0.0f};
-	camera_.UpdateMatrix();
+	camera_ = std::make_unique<Camera>();
+	camera_->Initialize();
+	camera_->translation_ = {0.0f, 1.0f, -10.0f};
+	camera_->rotation_ = {0.0f, 0.0f, 0.0f};
+	camera_->UpdateMatrix();
 
 	ModelManager* modelManager = ModelManager::GetInstance();
 
@@ -35,7 +36,7 @@ void TitleScene::Initialize() {
 	worldTransformPlayer_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
 
 	// フェード
-	fade_ = new Fade();
+	fade_ = std::make_unique<Fade>();
 	fade_->Initialize();
 	fade_->Start(Fade::Status::kFadeIn, 1.0f);
 }
@@ -60,7 +61,7 @@ void TitleScene::Update() {
 	WorldTransformUpdate(worldTransformPlayer_);
 
 	// カメラ行列更新
-	camera_.UpdateMatrix();
+	camera_->UpdateMatrix();
 
 	switch (phase_) {
 	case Phase::kFadeIn:
@@ -93,11 +94,11 @@ void TitleScene::Draw() {
 	Model::PreDraw();
 
 	if (modelTitle_) {
-		modelTitle_->Draw(worldTransformTitle_, camera_);
+		modelTitle_->Draw(worldTransformTitle_, *camera_);
 	}
 
 	if (modelPlayer_) {
-		modelPlayer_->Draw(worldTransformPlayer_, camera_);
+		modelPlayer_->Draw(worldTransformPlayer_, *camera_);
 	}
 
 	Model::PostDraw();
@@ -108,6 +109,4 @@ void TitleScene::Draw() {
 }
 
 TitleScene::~TitleScene() {
-	delete fade_;
-	fade_ = nullptr;
 }

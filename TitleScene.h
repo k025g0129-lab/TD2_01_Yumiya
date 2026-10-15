@@ -29,13 +29,13 @@ class TitleScene : public IScene {
 	Phase phase_ = Phase::kFadeIn;
 
 	// カメラ
-	KamataEngine::Camera camera_;
+	std::unique_ptr<KamataEngine::Camera> camera_;
 
 	// タイトル用モデル
-	KamataEngine::Model* modelTitle_ = nullptr;
+	KamataEngine::Model* modelTitle_;
 
 	// プレイヤー見た目用モデル
-	KamataEngine::Model* modelPlayer_ = nullptr;
+	KamataEngine::Model* modelPlayer_;
 
 	// タイトル用ワールド変換
 	KamataEngine::WorldTransform worldTransformTitle_;
@@ -47,5 +47,5 @@ class TitleScene : public IScene {
 	float animationTimer_ = 0.0f;
 
 	// フェード
-	Fade* fade_ = nullptr;
+	std::unique_ptr<Fade> fade_;
 };
