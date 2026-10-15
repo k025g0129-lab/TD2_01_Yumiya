@@ -32,7 +32,7 @@ void Enemy::ChangeBehavior() {
 		case EnemyBehavior::kUnknown:
 		default:
 			enumBehavior_ = EnemyBehavior::kWalk;
-
+			[[fallthrough]];
 		case EnemyBehavior::kWalk:
 			behavior_ = std::make_unique<EnemyWalk>(this);
 			break;

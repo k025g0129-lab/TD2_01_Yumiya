@@ -5,6 +5,7 @@
 #include "MapChipField.h"
 #include "Matrix4x4Util.h"
 #include "ShieldEnemy.h"
+#include "RotateEnemy.h"
 #include "StageManager.h"
 #include "ModelManager.h"
 
@@ -15,6 +16,7 @@ namespace {
 enum class EnemySpawnType : uint8_t {
 	kNormal = 0,
 	kShield = 1,
+	kRotate = 2,
 };
 
 } // namespace
@@ -58,6 +60,7 @@ void GameScene::Initialize() {
 	// 敵
 	mEnemyModel_ = Model::CreateFromOBJ("enemy", true);
 	mShieldEnemyModel_ = Model::CreateFromOBJ("shieldEnemy", true);
+	mRotateEnemyModel_ = Model::CreateFromOBJ("RotateEnemy", true);
 
 	// デバッグカメラの生成
 	debugCamera_ = std::make_unique<DebugCamera>(kMaxWindowWidth, kMaxWindowHeight);
@@ -257,6 +260,19 @@ void GameScene::GenerateEnemy(Vector3& position, uint8_t type) {
 
 		break;
 	}
+
+
+		// 回転敵の生成
+	case EnemySpawnType::kRotate: {
+
+		RotateEnemy* newRotateEnemy = new RotateEnemy();
+		newRotateEnemy->Initialize(mRotateEnemyModel_, &camera_, position);
+		newRotateEnemy->SetGameScene(this);
+		enemies_.push_back(newRotateEnemy);
+
+		break;
+	}
+
 	}
 }
 
