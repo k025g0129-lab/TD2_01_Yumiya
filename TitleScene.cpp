@@ -4,11 +4,11 @@
 #include <cassert>
 #include <cmath>
 #include <numbers>
+#include "ModelManager.h"
 
 using namespace KamataEngine;
 
 void TitleScene::Initialize() {
-	finished_ = false;
 	phase_ = Phase::kFadeIn;
 	animationTimer_ = 0.0f;
 
@@ -18,12 +18,11 @@ void TitleScene::Initialize() {
 	camera_.rotation_ = {0.0f, 0.0f, 0.0f};
 	camera_.UpdateMatrix();
 
-	// モデル読み込み
-	// タイトル文字モデルがある場合
-	modelTitle_ = Model::CreateFromOBJ("titleFont", true);
+	ModelManager* modelManager = ModelManager::GetInstance();
 
-	// プレイヤーモデル
-	modelPlayer_ = Model::CreateFromOBJ("player", true);
+	// モデル読み込み
+	modelTitle_ = modelManager->Load("titleFont", true);
+	modelPlayer_ = modelManager->Load("player", true);
 
 	// タイトル文字のワールド変換
 	worldTransformTitle_.Initialize();
@@ -84,7 +83,7 @@ void TitleScene::Update() {
 		fade_->Update();
 
 		if (fade_->IsFinished()) {
-			finished_ = true;
+			nextScene_ = SCENE::kGame;
 		}
 		break;
 	}
@@ -109,12 +108,6 @@ void TitleScene::Draw() {
 }
 
 TitleScene::~TitleScene() {
-	delete modelTitle_;
-	modelTitle_ = nullptr;
-
-	delete modelPlayer_;
-	modelPlayer_ = nullptr;
-
 	delete fade_;
 	fade_ = nullptr;
 }

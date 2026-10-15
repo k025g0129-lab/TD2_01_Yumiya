@@ -14,6 +14,8 @@ struct StageData {
 /// </summary>
 class StageManager {
   public:
+	static StageManager* GetInstance();
+
 	/// <summary>
 	/// ステージデータファイルの読み込み
 	/// </summary>
@@ -65,4 +67,10 @@ class StageManager {
 
 	// 現在のステージ番号
 	int32_t currentStageIndex_ = 0;
+
+	// シングルトンパターンにする
+	StageManager() = default;
+	~StageManager() = default;
+	StageManager(const StageManager&) = delete;
+	StageManager& operator=(const StageManager&) = delete;
 };

@@ -6,6 +6,7 @@
 #include "Matrix4x4Util.h"
 #include "ShieldEnemy.h"
 #include "StageManager.h"
+#include "ModelManager.h"
 
 using namespace KamataEngine;
 
@@ -18,49 +19,36 @@ enum class EnemySpawnType : uint8_t {
 
 } // namespace
 
-void GameScene::Initialize(StageManager* stageManager) {
-	// 引数をメンバ変数に記録する
-	stageManager_ = stageManager;
-	assert(stageManager_);
-
+void GameScene::Initialize() {
 	// フェーズ初期化
-	isFinished_ = false;
 	phase_ = Phase::kFadeIn;
 
 	// カメラの初期化
-	camera_.farZ = 1100.0f;
-	camera_.Initialize();
+	camera_ = std::make_unique<Camera>();
+	camera_->farZ = 1100.0f;
+	camera_->Initialize();
 
-	cameraController_ = new CameraController();
-	cameraController_->Initialize(&camera_);
+	cameraController_ = std::make_unique<CameraController>();
+	cameraController_->Initialize(camera_.get());
 	cameraController_->SetMode(CameraMode::kFollow);
 
+	ModelManager* modelManager = ModelManager::GetInstance();
+
 	// 天球の生成
-	skydome_ = new Skydome();
-	modelSkydome_ = Model::CreateFromOBJ("SkyDome", true);
-	skydome_->Initialize(modelSkydome_, &camera_);
+	skydome_ = std::make_unique<Skydome>();
+	skydome_->Initialize(modelManager->Load("SkyDome", true), camera_.get());
 
 	// マップチップフィールドの生成
-	mapChipField_ = new MapChipField();
+	mapChipField_ = std::make_unique<MapChipField>();
 
 	// 現在のステージデータを取得する
-	const StageData& stageData = stageManager_->GetCurrentStageData();
+	const StageData& stageData = StageManager::GetInstance()->GetCurrentStageData();
 
 	// ステージファイルパスの生成
 	std::string stageFileName = "fieldsData/" + stageData.name + ".csv";
 
 	// ステージファイルの読み込み
 	mapChipField_->LoadMapChipCsv(stageFileName);
-
-	// プレイヤー
-	mPlayerModel_ = Model::CreateFromOBJ("player", true);
-	modelAttack_ = KamataEngine::Model::CreateFromOBJ("hit_effect", true);
-
-	// 矢
-	modelArrow_ = Model::CreateFromOBJ("Arrow", true);
-
-	// デスパーティクル
-	modelDeathParticles_ = Model::CreateFromOBJ("deathParticle", true);
 
 	// フェード
 	fade_ = new Fade();
@@ -72,20 +60,18 @@ void GameScene::Initialize(StageManager* stageManager) {
 	mShieldEnemyModel_ = Model::CreateFromOBJ("shieldEnemy", true);
 
 	// デバッグカメラの生成
-	debugCamera_ = new DebugCamera(kMaxWindowWidth, kMaxWindowHeight);
-	debugCamera_->SetFarZ(camera_.farZ);
+	debugCamera_ = std::make_unique<DebugCamera>(kMaxWindowWidth, kMaxWindowHeight);
+	debugCamera_->SetFarZ(camera_->farZ);
 
 	// ブロック
 	mBlockModel_ = Model::CreateFromOBJ("block", true);
 	mBlockTextureHandle_ = TextureManager::Load("block/block.png");
 
-	modelHitEffect_ = Model::CreateFromOBJ("particle", true);
-	HitEffect::SetModel(modelHitEffect_);
-	HitEffect::SetCamera(&camera_);
+	HitEffect::SetModel(modelManager->Load("particle", true));
+	HitEffect::SetCamera(camera_.get());
 
-	modelGuardEffect_ = Model::CreateFromOBJ("ring", true);
-	GuardEffect::SetModel(modelGuardEffect_);
-	GuardEffect::SetCamera(&camera_);
+	GuardEffect::SetModel(modelManager->Load("ring", true));
+	GuardEffect::SetCamera(camera_.get());
 
 	// 調整項目の登録
 	Player::RegisterGlobalVariables();
@@ -99,12 +85,12 @@ void GameScene::Initialize(StageManager* stageManager) {
 	assert(player_ != nullptr && "プレイヤーがCSV内に配置されていません");
 
 	// 追従カメラをプレイヤーにセット
-	cameraController_->SetTarget(player_);
+	cameraController_->SetTarget(player_.get());
 	cameraController_->Reset();
 
 	// HUDの生成
 	gameHUD = std::make_unique<GameHUD>();
-	gameHUD->Initialize(player_, &camera_);
+	gameHUD->Initialize(player_.get(), camera_.get());
 }
 
 void GameScene::Update() {
@@ -139,7 +125,7 @@ void GameScene::Update() {
 
 	// リロードボタン
 	if (ImGui::Button("Reload")) {
-		reloadRequested_ = true;
+		nextScene_ = SCENE::kGame;
 	}
 
 	// 追従カメラ起動ボタン
@@ -162,13 +148,13 @@ void GameScene::Draw() {
 
 	Model::PreDraw();
 
-	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
+	for (const auto& worldTransformBlockLine : worldTransformBlocks_) {
+		for (const auto& worldTransformBlock : worldTransformBlockLine) {
 			if (!worldTransformBlock) {
 				continue;
 			}
 
-			mBlockModel_->Draw(*worldTransformBlock, camera_);
+			mBlockModel_->Draw(*worldTransformBlock, *camera_);
 		}
 	}
 
@@ -178,7 +164,7 @@ void GameScene::Draw() {
 
 	player_->Draw();
 
-	for (BaseEnemy* enemy : enemies_) {
+	for (const auto& enemy : enemies_) {
 		enemy->Draw();
 	}
 
@@ -216,39 +202,37 @@ void GameScene::GenerateFieldObjects() {
 
 			switch (mapChipField_->GetMapChipTypeByIndex(j, i)) {
 				// ブロック
-				case MapChipType::kBlock: {
-					WorldTransform* worldTransform = new WorldTransform();
-					worldTransform->Initialize();
-					worldTransformBlocks_[i][j] = worldTransform;
-					worldTransformBlocks_[i][j]->translation_ = mapPosition;
-					break;
-				}
+			case MapChipType::kBlock: {
+				worldTransformBlocks_[i][j] = std::make_unique<WorldTransform>();
+
+				worldTransformBlocks_[i][j]->Initialize();
+				worldTransformBlocks_[i][j]->translation_ = mapPosition;
+				break;
+			}
 
 				// プレイヤー
-				case MapChipType::kPlayer: {
-					// 既にプレイヤーが生成されているなら停止
-					assert(player_ == nullptr && "自キャラを二重に配置しようとしています");
+			case MapChipType::kPlayer: {
+				// 既にプレイヤーが生成されているなら停止
+				assert(player_ == nullptr && "自キャラを二重に配置しようとしています");
 
-					player_ = new Player();
-					player_->SetMapChipField(mapChipField_);
-				    player_->Initialize(mPlayerModel_, modelAttack_, modelArrow_, & camera_, mapPosition);
-					break;
-				}
+				player_ = std::make_unique<Player>();
+				player_->SetMapChipField(mapChipField_.get());
+				player_->Initialize(camera_.get(), mapPosition);
+
+				break;
+			}
 
 				case MapChipType::kEnemy: {
 					GenerateEnemy(mapPosition, mapChipField_->GetMapChipSubIDByIndex(j, i));
 				}
 			}
 
-			//ブロックを横に伸ばす
+			// ブロックを横に伸ばす
 			if (mapChipField_->GetMapChipTypeByIndex(0, i) == MapChipType::kBlock) {
-				WorldTransform* worldTransform = new WorldTransform();
-				worldTransform->Initialize();
-				worldTransformBlocks_[i][j] = worldTransform;
+				worldTransformBlocks_[i][j] = std::make_unique<WorldTransform>();
+				worldTransformBlocks_[i][j]->Initialize();
 				worldTransformBlocks_[i][j]->translation_ = mapPosition;
 			}
-
-			
 		}
 	}
 }
@@ -257,12 +241,10 @@ void GameScene::GenerateEnemy(Vector3& position, uint8_t type) {
 	switch (static_cast<EnemySpawnType>(type)) {
 		// 歩行敵の生成
 	case EnemySpawnType::kNormal: {
-
-		Enemy* newEnemy = new Enemy();
-		newEnemy->Initialize(mEnemyModel_, &camera_, position);
+		auto newEnemy = std::make_unique<Enemy>();
+		newEnemy->Initialize(mEnemyModel_, camera_.get(), position);
 		newEnemy->SetGameScene(this);
-		enemies_.push_back(newEnemy);
-
+		enemies_.push_back(std::move(newEnemy));
 		break;
 	}
 
@@ -282,42 +264,15 @@ void GameScene::GenerateEnemy(Vector3& position, uint8_t type) {
 GameScene::GameScene() {}
 
 GameScene::~GameScene() {
-	delete player_;
-	delete mPlayerModel_;
-	delete modelAttack_;
-	modelAttack_ = nullptr;
-	delete deathParticles_;
-	delete modelDeathParticles_;
-
-	for (BaseEnemy* enemy : enemies_) {
-		delete enemy;
-	}
 
 	delete mEnemyModel_;
 	delete mShieldEnemyModel_;
-	delete modelGuardEffect_;
 	delete mBlockModel_;
-	delete skydome_;
-	delete modelSkydome_;
-
-	for (BaseEffect* effect : effects_) {
-		delete effect;
-	}
 
 	effects_.clear();
 
-	delete modelHitEffect_;
-	delete debugCamera_;
-	delete mapChipField_;
-	delete cameraController_;
 	delete fade_;
 	fade_ = nullptr;
-
-	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
-			delete worldTransformBlock;
-		}
-	}
 
 	worldTransformBlocks_.clear();
 }
@@ -327,7 +282,7 @@ void GameScene::CheckAllCollisions() {
 	AABB playerAABB = player_->GetAABB();
 
 	// 敵とプレイヤーのあたり判定
-	for (BaseEnemy* enemy : enemies_) {
+	for (const auto& enemy : enemies_) {
 
 		// あたり判定無効の敵との処理はスキップ
 		if (enemy->IsCollisionDisabled()) {
@@ -335,8 +290,8 @@ void GameScene::CheckAllCollisions() {
 		}
 
 		if (IsCollision(playerAABB, enemy->GetAABB())) {
-			player_->OnCollision(enemy);
-			enemy->OnCollision(player_);
+			player_->OnCollision(enemy.get());
+			enemy->OnCollision(player_.get());
 		}
 	}
 }
@@ -347,18 +302,15 @@ void GameScene::UpdatePlayPhase() {
 
 	player_->Update();
 
-	for (BaseEnemy* enemy : enemies_) {
+	for (const auto& enemy : enemies_) {
 		enemy->Update();
 	}
 
 	// 死んだ敵を削除
-	enemies_.remove_if([](BaseEnemy* enemy) {
-		if (enemy->IsDead()) {
-			delete enemy;
-			return true;
+	enemies_.remove_if([](const std::unique_ptr<BaseEnemy>& enemy) {
+		return enemy->IsDead();
 		}
-		return false;
-	});
+	);
 
 	skydome_->Update();
 
@@ -376,11 +328,11 @@ void GameScene::UpdatePlayPhase() {
 		debugCamera_->Update();
 
 		// デバッグカメラが有効ならデバッグカメラのビュー行列とプロジェクション行列をカメラにコピーする
-		camera_.matView = debugCamera_->GetCamera().matView;
-		camera_.matProjection = debugCamera_->GetCamera().matProjection;
+		camera_->matView = debugCamera_->GetCamera().matView;
+		camera_->matProjection = debugCamera_->GetCamera().matProjection;
 
 		// ビュープロジェクション行列の転送
-		camera_.TransferMatrix();
+		camera_->TransferMatrix();
 
 	} else {
 		// ビュープロジェクション行列の更新と転送
@@ -388,8 +340,8 @@ void GameScene::UpdatePlayPhase() {
 	}
 
 	// ブロックの更新
-	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
+	for (const auto& worldTransformBlockLine : worldTransformBlocks_) {
+		for (const auto& worldTransformBlock : worldTransformBlockLine) {
 			if (!worldTransformBlock) {
 				continue;
 			}
@@ -407,7 +359,8 @@ void GameScene::UpdatePlayPhase() {
 
 void GameScene::UpdateDeathPhase() {
 	player_->Update();
-	for (BaseEnemy* enemy : enemies_) {
+
+	for (const auto& enemy : enemies_) {
 		enemy->Update();
 	}
 
@@ -417,8 +370,8 @@ void GameScene::UpdateDeathPhase() {
 		deathParticles_->Update();
 	}
 
-	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
+	for (const auto& worldTransformBlockLine : worldTransformBlocks_) {
+		for (const auto& worldTransformBlock : worldTransformBlockLine) {
 			if (!worldTransformBlock) {
 				continue;
 			}
@@ -449,8 +402,8 @@ void GameScene::ChangePhase() {
 			Vector3 deathParticlesPosition = player_->GetWorldPosition();
 
 			// 自キャラの座標にデスパーティクルを発生
-			deathParticles_ = new DeathParticles();
-			deathParticles_->Initialize(modelDeathParticles_, &camera_, deathParticlesPosition);
+			deathParticles_ = std::make_unique<DeathParticles>();
+			deathParticles_->Initialize(camera_.get(), deathParticlesPosition);
 		}
 		break;
 
@@ -463,39 +416,33 @@ void GameScene::ChangePhase() {
 
 	case Phase::kFadeOut:
 		if (fade_->IsFinished()) {
-			isFinished_ = true;
+			nextScene_ = SCENE::kTitle;
 		}
 		break;
 	}
 }
 
 void GameScene::CreateHitEffect(const Vector3& position) {
-	HitEffect* newHitEffect = HitEffect::Create(position);
-	effects_.push_back(newHitEffect);
+	effects_.push_back(std::unique_ptr<BaseEffect>(HitEffect::Create(position)));
 }
 
 void GameScene::CreateGuardEffect(const Vector3& position) {
-	GuardEffect* newHitEffect = GuardEffect::Create(position);
-	effects_.push_back(newHitEffect);
+	effects_.push_back(std::unique_ptr<BaseEffect>(GuardEffect::Create(position)));
 }
 
 void GameScene::UpdateHitEffects() {
-	for (BaseEffect* effect : effects_) {
+	for (const auto& effect : effects_) {
 		effect->Update();
 	}
 
-	effects_.remove_if([](BaseEffect* effect) {
-		if (effect->IsDead()) {
-			delete effect;
-			return true;
+	effects_.remove_if([](const std::unique_ptr<BaseEffect>& effect) {
+		return effect->IsDead();
 		}
-
-		return false;
-	});
+	);
 }
 
 void GameScene::DrawHitEffects() {
-	for (BaseEffect* effect : effects_) {
+	for (const auto& effect : effects_) {
 		effect->Draw();
 	}
 }

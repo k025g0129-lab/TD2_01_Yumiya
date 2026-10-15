@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <numbers>
+#include "ModelManager.h"
 
 using namespace KamataEngine;
 
@@ -18,17 +19,20 @@ Player::~Player() {
 	}
 }
 
-void Player::Initialize(Model* model, Model* modelAttack, KamataEngine::Model* modelArrow, Camera* camera, Vector3 position) {
+void Player::Initialize(Camera* camera, Vector3 position) {
 
-	assert(model);
+	ModelManager* modelManager = ModelManager::GetInstance();
+
+	// モデルマネージャーからモデルを取得
+	model_ = modelManager->Load("player", true);
+	modelAttack_ = modelManager->Load("hit_effect", true);
+	modelArrow_ = modelManager->Load("Arrow", true);
+
+	assert(model_);
 	assert(camera);
-	assert(modelAttack);
-	assert(modelArrow);
+	assert(modelAttack_);
+	assert(modelArrow_);
 
-	// 引数で渡されたモデルをメンバ変数に保存
-	model_ = model;
-	modelAttack_ = modelAttack;
-	modelArrow_ = modelArrow;
 
 	// 死亡フラグを初期化
 	isDead_ = false;

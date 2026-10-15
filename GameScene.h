@@ -12,30 +12,25 @@
 #include <list>
 #include"BaseEffect.h"
 #include "GameHUD.h"
+#include "IScene.h"
 
 // 前方宣言
 class HitEffect;
 class StageManager;
 
 // ゲームシーン
-class GameScene {
- public:
+class GameScene : public IScene {
+  public:
 	// 初期化処理
-	void Initialize(StageManager* stageManager);
+	void Initialize() override;
 
 	// 更新処理
-	void Update();
+	void Update() override;
 
 	// 描画処理
-	void Draw();
+	void Draw() override;
 
 	void GenerateFieldObjects();
-
-	// 終了したか
-	bool IsFinished() const { return isFinished_; }
-
-	// リロードするか
-	bool GetReloadRequest() const { return reloadRequested_; }
 
 	GameScene();
 	~GameScene();
@@ -49,47 +44,28 @@ class GameScene {
   private:
 
 	// プレイヤー
-	Player* player_ = nullptr;
-	KamataEngine::Model* mPlayerModel_ = nullptr;
-
-	// プレイヤー攻撃エフェクト用モデル
-	KamataEngine::Model* modelAttack_ = nullptr;
-
-	//プレイヤー弾用モデル
-	KamataEngine::Model* modelArrow_ = nullptr;
-
-	// ヒットエフェクト用モデル
-	KamataEngine::Model* modelHitEffect_ = nullptr;
-
-	// ガードエフェクト用モデル
-	KamataEngine::Model* modelGuardEffect_ = nullptr;
+	std::unique_ptr<Player> player_;
 
 	// 敵
-	std::list<BaseEnemy*> enemies_;
+	std::list<std::unique_ptr<BaseEnemy>> enemies_;
 	KamataEngine::Model* mEnemyModel_ = nullptr;
 	KamataEngine::Model* mShieldEnemyModel_ = nullptr;
 
 	// 天球
-	Skydome* skydome_ = nullptr;
-	KamataEngine::Model* modelSkydome_ = nullptr;
+	std::unique_ptr<Skydome> skydome_;
 
 	// デスパーティクル
-	DeathParticles* deathParticles_ = nullptr;
-	KamataEngine::Model* modelDeathParticles_ = nullptr;
+	std::unique_ptr<DeathParticles> deathParticles_;
 
 	// マップチップフィールド
-	MapChipField *mapChipField_ = nullptr;
-
-	// ステージマネージャ参照用ポインタ
-	StageManager *stageManager_ = nullptr;
+	std::unique_ptr<MapChipField> mapChipField_;
 
 	// カメラ
-	KamataEngine::Camera camera_;
-
-	CameraController* cameraController_ = nullptr;
+	std::unique_ptr<KamataEngine::Camera> camera_;
+	std::unique_ptr<CameraController> cameraController_;
 
 	// デバッグカメラ
-	KamataEngine::DebugCamera *debugCamera_ = nullptr;
+	std::unique_ptr<KamataEngine::DebugCamera> debugCamera_;
 
 	// デバッグカメラの有効化フラグ
 	bool isDebugCameraActive_ = false;
@@ -108,12 +84,6 @@ class GameScene {
 	// 現在のフェーズ
 	Phase phase_ = Phase::kFadeIn;
 
-	// 終了フラグ
-	bool isFinished_ = false;
-
-	// リロード要求フラグ
-	bool reloadRequested_ = false;
-
 	// フェード
 	Fade* fade_ = nullptr;
 
@@ -130,7 +100,7 @@ class GameScene {
 	void ChangePhase();
 
 	// ヒットエフェクト
-	std::list<BaseEffect*> effects_;
+	std::list<std::unique_ptr<BaseEffect>> effects_;
 
 	// ヒットエフェクトの更新
 	void UpdateHitEffects();
@@ -141,7 +111,7 @@ class GameScene {
 	// 敵を生成
 	void GenerateEnemy(KamataEngine::Vector3 &position,uint8_t type);
 
-	std::vector<std::vector<KamataEngine::WorldTransform*>> worldTransformBlocks_;
+	std::vector<std::vector<std::unique_ptr<KamataEngine::WorldTransform>>> worldTransformBlocks_;
 
 	uint32_t mBlockTextureHandle_ = 0;
 	KamataEngine::Model* mBlockModel_ = nullptr;
