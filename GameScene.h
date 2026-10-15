@@ -44,29 +44,28 @@ class GameScene : public IScene {
   private:
 
 	// プレイヤー
-	Player* player_ = nullptr;
+	std::unique_ptr<Player> player_;
 
 	// 敵
-	std::list<BaseEnemy*> enemies_;
+	std::list<std::unique_ptr<BaseEnemy>> enemies_;
 	KamataEngine::Model* mEnemyModel_ = nullptr;
 	KamataEngine::Model* mShieldEnemyModel_ = nullptr;
 
 	// 天球
-	Skydome* skydome_ = nullptr;
+	std::unique_ptr<Skydome> skydome_;
 
 	// デスパーティクル
-	DeathParticles* deathParticles_ = nullptr;
+	std::unique_ptr<DeathParticles> deathParticles_;
 
 	// マップチップフィールド
-	MapChipField *mapChipField_ = nullptr;
+	std::unique_ptr<MapChipField> mapChipField_;
 
 	// カメラ
-	KamataEngine::Camera camera_;
-
-	CameraController* cameraController_ = nullptr;
+	std::unique_ptr<KamataEngine::Camera> camera_;
+	std::unique_ptr<CameraController> cameraController_;
 
 	// デバッグカメラ
-	KamataEngine::DebugCamera *debugCamera_ = nullptr;
+	std::unique_ptr<KamataEngine::DebugCamera> debugCamera_;
 
 	// デバッグカメラの有効化フラグ
 	bool isDebugCameraActive_ = false;
@@ -101,7 +100,7 @@ class GameScene : public IScene {
 	void ChangePhase();
 
 	// ヒットエフェクト
-	std::list<BaseEffect*> effects_;
+	std::list<std::unique_ptr<BaseEffect>> effects_;
 
 	// ヒットエフェクトの更新
 	void UpdateHitEffects();
@@ -112,7 +111,7 @@ class GameScene : public IScene {
 	// 敵を生成
 	void GenerateEnemy(KamataEngine::Vector3 &position,uint8_t type);
 
-	std::vector<std::vector<KamataEngine::WorldTransform*>> worldTransformBlocks_;
+	std::vector<std::vector<std::unique_ptr<KamataEngine::WorldTransform>>> worldTransformBlocks_;
 
 	uint32_t mBlockTextureHandle_ = 0;
 	KamataEngine::Model* mBlockModel_ = nullptr;
