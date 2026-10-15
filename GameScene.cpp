@@ -6,6 +6,7 @@
 #include "Matrix4x4Util.h"
 #include "ShieldEnemy.h"
 #include "StageManager.h"
+#include "ModelManager.h"
 
 using namespace KamataEngine;
 
@@ -30,10 +31,11 @@ void GameScene::Initialize() {
 	cameraController_->Initialize(&camera_);
 	cameraController_->SetMode(CameraMode::kFollow);
 
+	ModelManager* modelManager = ModelManager::GetInstance();
+
 	// 天球の生成
 	skydome_ = new Skydome();
-	modelSkydome_ = Model::CreateFromOBJ("SkyDome", true);
-	skydome_->Initialize(modelSkydome_, &camera_);
+	skydome_->Initialize(modelManager->Load("SkyDome", true), &camera_);
 
 	// マップチップフィールドの生成
 	mapChipField_ = new MapChipField();
@@ -46,9 +48,6 @@ void GameScene::Initialize() {
 
 	// ステージファイルの読み込み
 	mapChipField_->LoadMapChipCsv(stageFileName);
-
-	// デスパーティクル
-	modelDeathParticles_ = Model::CreateFromOBJ("deathParticle", true);
 
 	// フェード
 	fade_ = new Fade();
@@ -67,12 +66,10 @@ void GameScene::Initialize() {
 	mBlockModel_ = Model::CreateFromOBJ("block", true);
 	mBlockTextureHandle_ = TextureManager::Load("block/block.png");
 
-	modelHitEffect_ = Model::CreateFromOBJ("particle", true);
-	HitEffect::SetModel(modelHitEffect_);
+	HitEffect::SetModel(modelManager->Load("particle", true));
 	HitEffect::SetCamera(&camera_);
 
-	modelGuardEffect_ = Model::CreateFromOBJ("ring", true);
-	GuardEffect::SetModel(modelGuardEffect_);
+	GuardEffect::SetModel(modelManager->Load("ring", true));
 	GuardEffect::SetCamera(&camera_);
 
 	// 調整項目の登録
@@ -272,7 +269,6 @@ GameScene::GameScene() {}
 GameScene::~GameScene() {
 	delete player_;
 	delete deathParticles_;
-	delete modelDeathParticles_;
 
 	for (BaseEnemy* enemy : enemies_) {
 		delete enemy;
@@ -280,10 +276,8 @@ GameScene::~GameScene() {
 
 	delete mEnemyModel_;
 	delete mShieldEnemyModel_;
-	delete modelGuardEffect_;
 	delete mBlockModel_;
 	delete skydome_;
-	delete modelSkydome_;
 
 	for (BaseEffect* effect : effects_) {
 		delete effect;
@@ -291,7 +285,6 @@ GameScene::~GameScene() {
 
 	effects_.clear();
 
-	delete modelHitEffect_;
 	delete debugCamera_;
 	delete mapChipField_;
 	delete cameraController_;
@@ -435,7 +428,7 @@ void GameScene::ChangePhase() {
 
 			// 自キャラの座標にデスパーティクルを発生
 			deathParticles_ = new DeathParticles();
-			deathParticles_->Initialize(modelDeathParticles_, &camera_, deathParticlesPosition);
+			deathParticles_->Initialize(&camera_, deathParticlesPosition);
 		}
 		break;
 

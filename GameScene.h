@@ -46,12 +46,6 @@ class GameScene : public IScene {
 	// プレイヤー
 	Player* player_ = nullptr;
 
-	// ヒットエフェクト用モデル
-	KamataEngine::Model* modelHitEffect_ = nullptr;
-
-	// ガードエフェクト用モデル
-	KamataEngine::Model* modelGuardEffect_ = nullptr;
-
 	// 敵
 	std::list<BaseEnemy*> enemies_;
 	KamataEngine::Model* mEnemyModel_ = nullptr;
@@ -59,11 +53,9 @@ class GameScene : public IScene {
 
 	// 天球
 	Skydome* skydome_ = nullptr;
-	KamataEngine::Model* modelSkydome_ = nullptr;
 
 	// デスパーティクル
 	DeathParticles* deathParticles_ = nullptr;
-	KamataEngine::Model* modelDeathParticles_ = nullptr;
 
 	// マップチップフィールド
 	MapChipField *mapChipField_ = nullptr;
