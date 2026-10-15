@@ -8,12 +8,37 @@ void BaseEnemy::Initialize(Model* model, Camera* camera, Vector3 position) {
 	InitializeInternal();
 }
 
+void BaseEnemy::Update() {
+	// 振る舞いの変更処理
+	ChangeBehavior();
+
+	// 振る舞いに応じた更新
+	behavior_->Update();
+
+	// 振る舞いに応じたモーションの更新
+	behavior_->UpdateMotion();
+
+	// ワールド変換の更新
+	WorldTransformUpdate(worldTransform_);
+}
+
 void BaseEnemy::Draw() {
 	Model::PreDraw();
 
 	model_->Draw(worldTransform_, *camera_);
 
 	Model::PostDraw();
+}
+
+void BaseEnemy::Move(const Vector3& velocity) { worldTransform_.translation_ += velocity; }
+
+AABB BaseEnemy::GetAABB() const {
+	Vector3 worldPos = GetWorldPosition();
+	AABB aabb{};
+	aabb.min = {worldPos.x - kWidth / 2.0f, worldPos.y - kHeight / 2.0f, worldPos.z - kWidth / 2.0f};
+	aabb.max = {worldPos.x + kWidth / 2.0f, worldPos.y + kHeight / 2.0f, worldPos.z + kWidth / 2.0f};
+
+	return aabb;
 }
 
 Vector3 BaseEnemy::GetWorldPosition() const {

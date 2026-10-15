@@ -25,51 +25,51 @@ void ShieldEnemy::InitializeInternal () {
 	behaviorRequest_ = Behavior::kUnknown;
 }
 
-void ShieldEnemy::Update () {
-	// 振る舞い変更のリクエストが来ていた場合、振る舞いを変更する
-	if (behaviorRequest_ != Behavior::kUnknown) {
-		// 振る舞い変更の反映
-		behavior_ = behaviorRequest_;
-
-		// 振る舞いごとの初期化
-		switch (behavior_) {
-			// kRootとdefaultは同じ処理
-		case Behavior::kWalk:
-		default:
-			BehaviorWalkInitialize();
-			break;
-
-		case Behavior::kDeathDirection:
-			BehaviorDeathDirectionInitialize();
-			break;
-
-		case Behavior::kGuard:
-			BehaviorGuardInitialize();
-			break;
-		}
-
-		// 振る舞いリクエストの初期化
-		behaviorRequest_ = Behavior::kUnknown;
-	}
-
-	switch (behavior_) {
-	case Behavior::kWalk:
-	default:
-		BehaviorWalkUpdate();
-		break;
-
-	case Behavior::kDeathDirection:
-		BehaviorDeathDirectionUpdate();
-		break;
-
-	case Behavior::kGuard:
-		BehaviorGuardUpdate();
-		break;
-	}
-
-	// ワールド変換の更新
-	WorldTransformUpdate(worldTransform_);
-}
+//void ShieldEnemy::Update () {
+//	// 振る舞い変更のリクエストが来ていた場合、振る舞いを変更する
+//	if (behaviorRequest_ != Behavior::kUnknown) {
+//		// 振る舞い変更の反映
+//		behavior_ = behaviorRequest_;
+//
+//		// 振る舞いごとの初期化
+//		switch (behavior_) {
+//			// kRootとdefaultは同じ処理
+//		case Behavior::kWalk:
+//		default:
+//			BehaviorWalkInitialize();
+//			break;
+//
+//		case Behavior::kDeathDirection:
+//			BehaviorDeathDirectionInitialize();
+//			break;
+//
+//		case Behavior::kGuard:
+//			BehaviorGuardInitialize();
+//			break;
+//		}
+//
+//		// 振る舞いリクエストの初期化
+//		behaviorRequest_ = Behavior::kUnknown;
+//	}
+//
+//	switch (behavior_) {
+//	case Behavior::kWalk:
+//	default:
+//		BehaviorWalkUpdate();
+//		break;
+//
+//	case Behavior::kDeathDirection:
+//		BehaviorDeathDirectionUpdate();
+//		break;
+//
+//	case Behavior::kGuard:
+//		BehaviorGuardUpdate();
+//		break;
+//	}
+//
+//	// ワールド変換の更新
+//	WorldTransformUpdate(worldTransform_);
+//}
 
 void ShieldEnemy::OnCollision(Player* player) {
 	// 死んでいるなら何もしない
@@ -107,15 +107,6 @@ void ShieldEnemy::OnCollision(Player* player) {
 			gameScene_->CreateHitEffect(effectPosition);
 		}
 	}
-}
-
-AABB ShieldEnemy::GetAABB () {
-	Vector3 worldPos = GetWorldPosition();
-	AABB aabb{};
-	aabb.min = {worldPos.x - kWidth / 2.0f, worldPos.y - kHeight / 2.0f, worldPos.z - kWidth / 2.0f};
-	aabb.max = {worldPos.x + kWidth / 2.0f, worldPos.y + kHeight / 2.0f, worldPos.z + kWidth / 2.0f};
-
-	return aabb;
 }
 
 void ShieldEnemy::BehaviorWalkInitialize() {

@@ -269,10 +269,10 @@ void GameScene::GenerateEnemy(Vector3& position, uint8_t type) {
 		// 盾敵の生成
 	case EnemySpawnType::kShield: {
 
-		ShieldEnemy* newShieldEnemy = new ShieldEnemy();
-		newShieldEnemy->Initialize(mShieldEnemyModel_, &camera_, position);
-		newShieldEnemy->SetGameScene(this);
-		enemies_.push_back(newShieldEnemy);
+		//ShieldEnemy* newShieldEnemy = new ShieldEnemy();
+		//newShieldEnemy->Initialize(mShieldEnemyModel_, &camera_, position);
+		//newShieldEnemy->SetGameScene(this);
+		//enemies_.push_back(newShieldEnemy);
 
 		break;
 	}

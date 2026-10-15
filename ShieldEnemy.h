@@ -9,12 +9,7 @@ class GameScene;
 
 class ShieldEnemy : public BaseEnemy {
   public:
-	// 更新処理
-	void Update() override;
-
 	void OnCollision(Player* player) override;
-
-	AABB GetAABB() override;
 
 
   private:
@@ -32,16 +27,8 @@ class ShieldEnemy : public BaseEnemy {
 	Behavior behavior_ = Behavior::kWalk;
 	Behavior behaviorRequest_ = Behavior::kUnknown;
 
-	// 速度
-	KamataEngine::Vector3 velocity_ = {};
-
 	// 向き
 	LRDirection lrDirection_ = LRDirection::kLeft;
-
-
-	// キャラクターの当たり判定サイズ
-	static inline const float kWidth = 0.8f;
-	static inline const float kHeight = 0.8f;
 
 	// モデルの向きに合わせたY軸の回転量(270度)
 	static inline const float kDefaultAngle = 3.0f * (kPi / 2.0f);
