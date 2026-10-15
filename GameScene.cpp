@@ -18,13 +18,8 @@ enum class EnemySpawnType : uint8_t {
 
 } // namespace
 
-void GameScene::Initialize(StageManager* stageManager) {
-	// 引数をメンバ変数に記録する
-	stageManager_ = stageManager;
-	assert(stageManager_);
-
+void GameScene::Initialize() {
 	// フェーズ初期化
-	isFinished_ = false;
 	phase_ = Phase::kFadeIn;
 
 	// カメラの初期化
@@ -44,20 +39,13 @@ void GameScene::Initialize(StageManager* stageManager) {
 	mapChipField_ = new MapChipField();
 
 	// 現在のステージデータを取得する
-	const StageData& stageData = stageManager_->GetCurrentStageData();
+	const StageData& stageData = StageManager::GetInstance()->GetCurrentStageData();
 
 	// ステージファイルパスの生成
 	std::string stageFileName = "fieldsData/" + stageData.name + ".csv";
 
 	// ステージファイルの読み込み
 	mapChipField_->LoadMapChipCsv(stageFileName);
-
-	// プレイヤー
-	mPlayerModel_ = Model::CreateFromOBJ("player", true);
-	modelAttack_ = KamataEngine::Model::CreateFromOBJ("hit_effect", true);
-
-	// 矢
-	modelArrow_ = Model::CreateFromOBJ("Arrow", true);
 
 	// デスパーティクル
 	modelDeathParticles_ = Model::CreateFromOBJ("deathParticle", true);
@@ -139,7 +127,7 @@ void GameScene::Update() {
 
 	// リロードボタン
 	if (ImGui::Button("Reload")) {
-		reloadRequested_ = true;
+		nextScene_ = SCENE::kGame;
 	}
 
 	// 追従カメラ起動ボタン
@@ -231,7 +219,7 @@ void GameScene::GenerateFieldObjects() {
 
 					player_ = new Player();
 					player_->SetMapChipField(mapChipField_);
-				    player_->Initialize(mPlayerModel_, modelAttack_, modelArrow_, & camera_, mapPosition);
+				    player_->Initialize(&camera_, mapPosition);
 					break;
 				}
 
@@ -283,9 +271,6 @@ GameScene::GameScene() {}
 
 GameScene::~GameScene() {
 	delete player_;
-	delete mPlayerModel_;
-	delete modelAttack_;
-	modelAttack_ = nullptr;
 	delete deathParticles_;
 	delete modelDeathParticles_;
 
@@ -463,7 +448,7 @@ void GameScene::ChangePhase() {
 
 	case Phase::kFadeOut:
 		if (fade_->IsFinished()) {
-			isFinished_ = true;
+			nextScene_ = SCENE::kTitle;
 		}
 		break;
 	}

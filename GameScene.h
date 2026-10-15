@@ -12,30 +12,25 @@
 #include <list>
 #include"BaseEffect.h"
 #include "GameHUD.h"
+#include "IScene.h"
 
 // 前方宣言
 class HitEffect;
 class StageManager;
 
 // ゲームシーン
-class GameScene {
- public:
+class GameScene : public IScene {
+  public:
 	// 初期化処理
-	void Initialize(StageManager* stageManager);
+	void Initialize() override;
 
 	// 更新処理
-	void Update();
+	void Update() override;
 
 	// 描画処理
-	void Draw();
+	void Draw() override;
 
 	void GenerateFieldObjects();
-
-	// 終了したか
-	bool IsFinished() const { return isFinished_; }
-
-	// リロードするか
-	bool GetReloadRequest() const { return reloadRequested_; }
 
 	GameScene();
 	~GameScene();
@@ -50,13 +45,6 @@ class GameScene {
 
 	// プレイヤー
 	Player* player_ = nullptr;
-	KamataEngine::Model* mPlayerModel_ = nullptr;
-
-	// プレイヤー攻撃エフェクト用モデル
-	KamataEngine::Model* modelAttack_ = nullptr;
-
-	//プレイヤー弾用モデル
-	KamataEngine::Model* modelArrow_ = nullptr;
 
 	// ヒットエフェクト用モデル
 	KamataEngine::Model* modelHitEffect_ = nullptr;
@@ -79,9 +67,6 @@ class GameScene {
 
 	// マップチップフィールド
 	MapChipField *mapChipField_ = nullptr;
-
-	// ステージマネージャ参照用ポインタ
-	StageManager *stageManager_ = nullptr;
 
 	// カメラ
 	KamataEngine::Camera camera_;
@@ -107,12 +92,6 @@ class GameScene {
 
 	// 現在のフェーズ
 	Phase phase_ = Phase::kFadeIn;
-
-	// 終了フラグ
-	bool isFinished_ = false;
-
-	// リロード要求フラグ
-	bool reloadRequested_ = false;
 
 	// フェード
 	Fade* fade_ = nullptr;
