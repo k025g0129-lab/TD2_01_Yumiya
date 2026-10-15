@@ -4,6 +4,7 @@
 #include "Vector3Util.h"
 
 // 前方宣言
+class BaseEnemy;
 class Enemy;
 class RotateEnemy;
 
@@ -25,13 +26,13 @@ enum class EnemyBehavior {
 
 class EnemyWalk : public IEnemiesBehavior{
   public:
-	explicit EnemyWalk(Enemy* enemy);
+	explicit EnemyWalk(BaseEnemy* enemy);
 	void Initialize() override;
 	void Update() override;
 	void UpdateMotion() override;
 
   private:
-	Enemy* enemy_;
+	BaseEnemy* enemy_;
 
 	KamataEngine::Vector3 velocty_{};
 	float walkTimer_ = 0.0f;
@@ -52,13 +53,13 @@ class EnemyWalk : public IEnemiesBehavior{
 
 class EnemyDeath : public IEnemiesBehavior {
 public:
-	explicit EnemyDeath(Enemy* enemy);
+	explicit EnemyDeath(BaseEnemy* enemy);
 	void Initialize() override;
 	void Update() override;
 	void UpdateMotion() override;
 
 private:
-	Enemy* enemy_;
+	BaseEnemy* enemy_;
 
 	// 死亡演出タイマー
 	float deathTimer_ = 0.0f;

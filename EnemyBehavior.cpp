@@ -7,7 +7,7 @@
 
 using namespace KamataEngine;
 
-EnemyWalk::EnemyWalk(Enemy* enemy) { enemy_ = enemy; }
+EnemyWalk::EnemyWalk(BaseEnemy* enemy) { enemy_ = enemy; }
 
 void EnemyWalk::Initialize() {
 	velocty_ = {-kWalkSpeed, 0.0f, 0.0f};
@@ -40,7 +40,7 @@ void EnemyWalk::UpdateMotion() {
 	enemy_->SetRotationX(angle);
 }
 
-EnemyDeath::EnemyDeath(Enemy* enemy) { enemy_ = enemy; }
+EnemyDeath::EnemyDeath(BaseEnemy* enemy) { enemy_ = enemy; }
 
 void EnemyDeath::Initialize() {
 	deathTimer_ = 0.0f;
