@@ -180,6 +180,8 @@ xcopy "$(ProjectDir)..\External\KamataEngine\shaders" "$(ProjectDir)Resources\En
   <ItemGroup>
     <ClCompile Include="BaseEffect.cpp" />
     <ClCompile Include="BaseEnemy.cpp" />
+    <ClCompile Include="BoomerangEnemy.cpp" />
+    <ClCompile Include="BoomerangEnemyBehavior.cpp" />
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="DeathParticles.cpp" />
@@ -202,6 +204,7 @@ xcopy "$(ProjectDir)..\External\KamataEngine\shaders" "$(ProjectDir)Resources\En
     <ClCompile Include="PlayerBullet.cpp" />
     <ClCompile Include="Rect.cpp" />
     <ClCompile Include="RotateEnemy.cpp" />
+    <ClCompile Include="RotateEnemyBehavior.cpp" />
     <ClCompile Include="ShieldEnemy.cpp" />
     <ClCompile Include="Skydome.cpp" />
     <ClCompile Include="StageManager.cpp" />
@@ -211,6 +214,8 @@ xcopy "$(ProjectDir)..\External\KamataEngine\shaders" "$(ProjectDir)Resources\En
   <ItemGroup>
     <ClInclude Include="BaseEffect.h" />
     <ClInclude Include="BaseEnemy.h" />
+    <ClInclude Include="BoomerangEnemy.h" />
+    <ClInclude Include="BoomerangEnemyBehavior.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="DeathParticles.h" />
@@ -235,6 +240,7 @@ xcopy "$(ProjectDir)..\External\KamataEngine\shaders" "$(ProjectDir)Resources\En
     <ClInclude Include="PlayerBullet.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="RotateEnemy.h" />
+    <ClInclude Include="RotateEnemyBehavior.h" />
     <ClInclude Include="ShieldEnemy.h" />
     <ClInclude Include="Skydome.h" />
     <ClInclude Include="StageManager.h" />

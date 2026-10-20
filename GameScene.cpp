@@ -6,6 +6,7 @@
 #include "Matrix4x4Util.h"
 #include "ShieldEnemy.h"
 #include "RotateEnemy.h"
+#include "BoomerangEnemy.h"
 #include "StageManager.h"
 #include "ModelManager.h"
 
@@ -13,11 +14,11 @@ using namespace KamataEngine;
 
 namespace {
 
-enum class EnemySpawnType : uint8_t {
+enum class EnemySpawnType : uint8_t { 
 	kNormal = 0,
 	kShield = 1,
 	kRotate = 2,
-};
+	kBoomerang = 3, };
 
 } // namespace
 
@@ -264,6 +265,17 @@ void GameScene::GenerateEnemy(Vector3& position, uint8_t type) {
 		newRotateEnemy->Initialize(camera_.get(), position);
 		newRotateEnemy->SetGameScene(this);
 		enemies_.push_back(std::move(newRotateEnemy));
+
+		break;
+	}
+
+	// ブーメラン敵の生成
+	case EnemySpawnType::kBoomerang: {
+
+		auto newBoomerangEnemy = std::make_unique<BoomerangEnemy>();
+		newBoomerangEnemy->Initialize(camera_.get(), position);
+		newBoomerangEnemy->SetGameScene(this);
+		enemies_.push_back(std::move(newBoomerangEnemy));
 
 		break;
 	}

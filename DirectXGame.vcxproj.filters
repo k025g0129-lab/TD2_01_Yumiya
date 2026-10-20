@@ -100,6 +100,12 @@
     <Filter Include="Bullet\PlayerBullet">
       <UniqueIdentifier>{e1305a9c-5c9b-4a8e-b2cb-ffb2d6b30948}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Enemy\BoomerangEnemy">
+      <UniqueIdentifier>{4487320e-7bf6-42df-a8fc-f2c9d75e61ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Enemy\RotateEnemy">
+      <UniqueIdentifier>{9946aafd-6ac5-43a7-994d-010eaddb2d26}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -177,8 +183,26 @@
     <ClCompile Include="GameHUD.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="EnemyBehavior.cpp">
+    <ClCompile Include="GameManager.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyBehavior.cpp">
+      <Filter>Enemy\NormalEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="RotateEnemy.cpp">
+      <Filter>Enemy\RotateEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="RotateEnemyBehavior.cpp">
+      <Filter>Enemy\RotateEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="BoomerangEnemy.cpp">
+      <Filter>Enemy\BoomerangEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="BoomerangEnemyBehavior.cpp">
+      <Filter>Enemy\BoomerangEnemy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -265,6 +289,27 @@
     </ClInclude>
     <ClInclude Include="EnemyBehavior.h">
       <Filter>Enemy\NormalEnemy</Filter>
+    </ClInclude>
+    <ClInclude Include="GameManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="IScene.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="RotateEnemy.h">
+      <Filter>Enemy\RotateEnemy</Filter>
+    </ClInclude>
+    <ClInclude Include="RotateEnemyBehavior.h">
+      <Filter>Enemy\RotateEnemy</Filter>
+    </ClInclude>
+    <ClInclude Include="BoomerangEnemy.h">
+      <Filter>Enemy\BoomerangEnemy</Filter>
+    </ClInclude>
+    <ClInclude Include="BoomerangEnemyBehavior.h">
+      <Filter>Enemy\BoomerangEnemy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

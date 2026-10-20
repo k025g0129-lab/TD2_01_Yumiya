@@ -2,7 +2,8 @@
 #include<KamataEngine.h>
 #include "BaseEnemy.h"
 #include"Collision.h"
-#include "EnemyBehavior.h"
+#include "RotateEnemyBehavior.h"
+
 
 // 前方宣言
 class MapChipField;
@@ -14,8 +15,8 @@ public:
 	void OnCollision(Player* player) override;
 
 	//振る舞いをリクエストする
-	void BehaviorRequestWalk() { behaviorRequest_ = EnemyBehavior::kRotateWalk; };
-	void BehaviorRequestFlyRing() { behaviorRequest_ = EnemyBehavior::kRotateFlyRing; };
+	void BehaviorRequestWalk() { behaviorRequest_ = EnemyRotateBehavior::kWalk; };
+	void BehaviorRequestFlyRing() { behaviorRequest_ = EnemyRotateBehavior::kFlyRing; };
 
 private:
 
@@ -27,8 +28,8 @@ private:
 
 
 
-	EnemyBehavior enumBehavior_ = EnemyBehavior::kRotateWalk;
-	EnemyBehavior behaviorRequest_ = EnemyBehavior::kUnknown;
+	EnemyRotateBehavior enumBehavior_ = EnemyRotateBehavior::kWalk;
+	EnemyRotateBehavior behaviorRequest_ = EnemyRotateBehavior::kUnknown;
 
 	// モデルの向きに合わせたY軸の回転量(270度)
 	static inline const float kDefaultAngle = 3.0f * (kPi / 2.0f);
