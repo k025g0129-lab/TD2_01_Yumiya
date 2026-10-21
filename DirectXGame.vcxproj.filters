@@ -94,10 +94,7 @@
     <Filter Include="LRDirection">
       <UniqueIdentifier>{2ccde691-7f94-413e-a3cd-7ae1cb8638da}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Bullet">
-      <UniqueIdentifier>{ff9880b6-eae9-45e4-a7d3-65399f0e6a02}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Bullet\PlayerBullet">
+    <Filter Include="Player\PlayerBullet">
       <UniqueIdentifier>{e1305a9c-5c9b-4a8e-b2cb-ffb2d6b30948}</UniqueIdentifier>
     </Filter>
     <Filter Include="Enemy\BoomerangEnemy">
@@ -105,6 +102,18 @@
     </Filter>
     <Filter Include="Enemy\RotateEnemy">
       <UniqueIdentifier>{9946aafd-6ac5-43a7-994d-010eaddb2d26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Enemy\RotateEnemy">
+      <UniqueIdentifier>{18be3b20-34b3-414b-b2f0-77752291b192}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameManager">
+      <UniqueIdentifier>{ba45dda1-e60d-40d4-8bfb-6745c963de7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ModelManager">
+      <UniqueIdentifier>{0afc904c-4842-44e5-bad4-e2e5d064a6a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameHUD">
+      <UniqueIdentifier>{9994fbde-039e-49ef-80cb-2cf0c8178bfd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -178,7 +187,19 @@
       <Filter>Utilities\Matrix4x4Util</Filter>
     </ClCompile>
     <ClCompile Include="PlayerBullet.cpp">
-      <Filter>Bullet\PlayerBullet</Filter>
+      <Filter>Player\PlayerBullet</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyBehavior.cpp">
+      <Filter>Enemy\NormalEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="RotateEnemy.cpp">
+      <Filter>Enemy\RotateEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="GameManager.cpp">
+      <Filter>GameManager</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelManager.cpp">
+      <Filter>ModelManager</Filter>
     </ClCompile>
     <ClCompile Include="GameHUD.cpp">
       <Filter>ソース ファイル</Filter>
@@ -276,13 +297,7 @@
       <Filter>LRDirection</Filter>
     </ClInclude>
     <ClInclude Include="PlayerBullet.h">
-      <Filter>Bullet\PlayerBullet</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerDirection.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameHUD.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Player\PlayerBullet</Filter>
     </ClInclude>
     <ClInclude Include="IEnemyBehavior.h">
       <Filter>Enemy\BaseEnemy</Filter>
