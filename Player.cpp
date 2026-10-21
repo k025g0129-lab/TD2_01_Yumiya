@@ -25,12 +25,10 @@ void Player::Initialize(Camera* camera, Vector3 position) {
 
 	// モデルマネージャーからモデルを取得
 	model_ = modelManager->Load("player", true);
-	modelAttack_ = modelManager->Load("hit_effect", true);
 	modelArrow_ = modelManager->Load("Arrow", true);
 
 	assert(model_);
 	assert(camera);
-	assert(modelAttack_);
 	assert(modelArrow_);
 
 
@@ -48,9 +46,6 @@ void Player::Initialize(Camera* camera, Vector3 position) {
 	// モデルの向きに合わせてY軸回りに90度回転させる
 	worldTransform_.rotation_.y = kPi / 2.0f;
 
-	worldTransformAttack_.Initialize();
-	worldTransformAttack_.translation_ = position;
-
 	// 引数で渡されたカメラをメンバ変数に保存
 	camera_ = camera;
 
@@ -59,9 +54,6 @@ void Player::Initialize(Camera* camera, Vector3 position) {
 	behaviorRequest_ = Behavior::kUnknown;
 
 	BehaviorRootInitialize();
-
-	attackParameter_ = 0.0f;
-	attackPhase_ = AttackPhase::kBefore;
 
 	// ジャンプ通り抜けるフラグ初期化
 	isJumpThrough_ = false;
@@ -106,10 +98,6 @@ void Player::Update() {
 			BehaviorRootInitialize();
 			break;
 
-		case Behavior::kAttack:
-			BehaviorAttackInitialize();
-			break;
-
 		case Behavior::kCharge:
 			BehaviorChargeInitialize();
 			break;
@@ -125,8 +113,6 @@ void Player::Update() {
 
 		// 振る舞いリクエストの初期化
 		behaviorRequest_ = Behavior::kUnknown;
-
-
 	}
 
 	switch (behavior_) {
@@ -134,10 +120,6 @@ void Player::Update() {
 	case Behavior::kRoot:
 	default:
 		BehaviorRootUpdate();
-		break;
-
-	case Behavior::kAttack:
-		BehaviorAttackUpdate();
 		break;
 
 	case Behavior::kCharge:
@@ -213,11 +195,6 @@ void Player::Update() {
 
 	// ワールド変換の更新
 	WorldTransformUpdate(worldTransform_);
-
-	// 攻撃エフェクト用ワールド変換の更新
-	worldTransformAttack_.translation_ = worldTransform_.translation_;
-	worldTransformAttack_.rotation_ = worldTransform_.rotation_;
-	WorldTransformUpdate(worldTransformAttack_);
 }
 
 void Player::Draw() {
@@ -244,56 +221,8 @@ void Player::Draw() {
 void Player::BehaviorRootInitialize() {}
 
 void Player::BehaviorRootUpdate() {
-	// 移動入力
-	// 接地状態
-	if (isGround_) {
-
-		// 空中
-	} else {
-		//// 左右を同時に入力されている場合、入力無しと扱う
-		//if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft) ^ GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
-		//	// 空中での左右加速
-		//	Vector3 acceleration{};
-
-		//	// 右入力
-		//	if (GameInput::GetInstance()->IsPress(GameAction::kMoveRight)) {
-		//		// 向きの更新
-		//		if (lrDirection_ != LRDirection::kRight) {
-		//			lrDirection_ = LRDirection::kRight;
-
-		//			// 旋回開始時の角度を記録する
-		//			turnFirstRotationY_ = worldTransform_.rotation_.y;
-
-		//			// 旋回タイマーに時間を設定する
-		//			turnTimer_ = kTurnTime;
-		//		}
-
-		//		acceleration.x += kAcceleration * kAirAccelerationRate;
-		//	}
-
-		//	// 左入力
-		//	if (GameInput::GetInstance()->IsPress(GameAction::kMoveLeft)) {
-		//		// 向きの更新
-		//		if (lrDirection_ != LRDirection::kLeft) {
-		//			lrDirection_ = LRDirection::kLeft;
-
-		//			// 旋回開始時の角度を記録する
-		//			turnFirstRotationY_ = worldTransform_.rotation_.y;
-
-		//			// 旋回タイマーに時間を設定する
-		//			turnTimer_ = kTurnTime;
-		//		}
-
-		//		acceleration.x -= kAcceleration * kAirAccelerationRate;
-		//	}
-
-		//	// 加速を反映
-		//	velocity_ += acceleration;
-
-		//	// 速度制限
-		//	velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
-		//}
-
+	// 空中での落下処理
+	if (!isGround_) {
 		// 落下速度
 		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f);
 
@@ -320,20 +249,22 @@ void Player::JumpThroughInitialize() {
 	int jumpThroughPointIndex = 0;
 
 	//ブロックを感知するとジャンプポイントを接地
-	for (int i = 0; i < int(mapChipField_->GetNumBlockVertical()); i++) {
+	for (int i = 0; i < static_cast<int>(mapChipField_->GetNumBlockVertical()); i++) {
+		if (mapChipField_->GetMapChipTypeByIndex(0, i) == MapChipType::kBlock) {
 
-		if (mapChipField_->GetMapChipTypeByIndex(uint32_t(0), uint32_t(i)) == MapChipType::kBlock) {
+			if (jumpThroughPointIndex >= maxJumpThroughPointIndex) {
+				break;
+			}
 
-			jumpThroughPoint_[jumpThroughPointIndex].yPos_ = mapChipField_->GetMapChipPositionByIndex(uint32_t(0), uint32_t(i)).y;
+			jumpThroughPoint_[jumpThroughPointIndex].yPos_ = mapChipField_->GetMapChipPositionByIndex(0, i).y;
+
 			IsJumpThroughPointOver(&jumpThroughPoint_[jumpThroughPointIndex]);
 
+			// iではなくjumpThroughPointIndexを使用
+			jumpThroughPoint_[jumpThroughPointIndex].isPreOver = jumpThroughPoint_[jumpThroughPointIndex].isOver;
+
 			jumpThroughPointIndex++;
-
-			
-			// トリガー用
-			jumpThroughPoint_[i].isPreOver = jumpThroughPoint_[i].isOver;
 		}
-
 	}
 
 	//上限下限位置設定
@@ -389,77 +320,13 @@ void Player::IsJumpThroughPointOver(JumpThroughPoint* jumpThroughPoint) {
 
 }
 
-void Player::BehaviorAttackInitialize() {
-	// 攻撃の時間を初期化
-	attackParameter_ = 0.0f;
-
-	// 攻撃のフェーズを初期化
-	attackPhase_ = AttackPhase::kBefore;
-
-	// 攻撃開始時に速度をリセット
-	velocity_ = {0.0f, 0.0f, 0.0f};
-}
-
-void Player::BehaviorAttackUpdate() {
-	// 方向変更処理
-	PlayerDirectionUpdate();
-
-
-	if (GameInput::GetInstance()->IsPress(GameAction::kAttack)) {
-		chargeKeyTime++;
-
-	}
-
-	// 攻撃キーリリース時に弾生成
-	if (GameInput::GetInstance()->IsRelease(GameAction::kAttack)) {
-		// 弾生成
-		PlayerBullet* bullet = new PlayerBullet();
-
-		// 弾初期化
-		bullet->Initialize(modelArrow_, camera_, worldTransform_.translation_, static_cast<Direction>(direction_));
-
-		// 配列更新
-		bullets_.push_back(bullet);
-
-		// 通常状態へのリクエスト
-		behaviorRequest_ = Behavior::kRoot;
-
-		if (chargeKeyTime >= kJumpTime) {
-
-			// ジャンプ
-			if (direction_ == Direction::kDown) {
-				velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
-				isJumpThrough_ = true;
-
-			}
-
-			//下降
-			if (direction_ == Direction::kUp) {
-				isJumpThrough_ = true;
-			}
-
-			
-		}
-
-		chargeKeyTime = 0;
-	}
-}
-
 void Player::BehaviorChargeInitialize() {
-
-
-
 }
 
 void Player::BehaviorChargeUpdate() {
 
-	// 移動入力
-	// 接地状態
-	if (isGround_) {
-
-		// 空中
-	} else {
-		
+	// 空中での落下処理
+	if (!isGround_) {
 		// 落下速度
 		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f);
 
@@ -470,10 +337,7 @@ void Player::BehaviorChargeUpdate() {
 	// 方向変更処理
 	PlayerDirectionUpdate();
 
-	
-	if (GameInput::GetInstance()->IsPress(GameAction::kAttack)) {
-		chargeKeyTime++;
-	}
+	chargeKeyTime++;
 
 	// 攻撃キーリリース時に弾生成
 	if (GameInput::GetInstance()->IsRelease(GameAction::kAttack)) {
@@ -521,17 +385,11 @@ void Player::BehaviorChargeUpdate() {
 	JumpThroughUpdate();
 
 	ResolveMapChipCollision(velocity_);
-
-
 }
 
 void Player::BehaviorKnockInitialize() {
 	// 攻撃中の変形を戻す
 	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
-
-	// 攻撃状態を初期化
-	attackParameter_ = 0.0f;
-	attackPhase_ = AttackPhase::kBefore;
 
 	// ノックバック状態を初期化
 	knockbackPhase_ = KnockbackPhase::kKnockback;
@@ -1012,9 +870,6 @@ void Player::RegisterGlobalVariables() {
 
 	globalVariables->CreateGroup(groupName);
 
-	globalVariables->AddItem(groupName, "Acceleration", kAcceleration);
-	globalVariables->AddItem(groupName, "AirAccelerationRate", kAirAccelerationRate);
-	globalVariables->AddItem(groupName, "Attenuation", kAttenuation);
 	globalVariables->AddItem(groupName, "LimitRunSpeed", kLimitRunSpeed);
 	globalVariables->AddItem(groupName, "AttenuationLanding", kAttenuationLanding);
 	globalVariables->AddItem(groupName, "AttenuationWall", kAttenuationWall);
@@ -1025,20 +880,12 @@ void Player::RegisterGlobalVariables() {
 	globalVariables->AddItem(groupName, "KnockbackAfterTime", kKnockbackAfterTime);
 	globalVariables->AddItem(groupName, "KnockbackSpeed", kKnockbackSpeed);
 	globalVariables->AddItem(groupName, "KnockbackAttenuation", kKnockbackAttenuation);
-
-	globalVariables->AddItem(groupName, "AttackBeforeTime", kAttackBeforeTime);
-	globalVariables->AddItem(groupName, "AttackTime", kAttackTime);
-	globalVariables->AddItem(groupName, "AttackAfterTime", kAttackAfterTime);
-	globalVariables->AddItem(groupName, "AttackMoveSpeed", kAttackMoveSpeed);
 }
 
 void Player::ApplyGlobalVariables() {
 	GlobalVariables* globalVariables = GlobalVariables::GetInstance();
 	const char* groupName = "Player";
 
-	kAcceleration = globalVariables->GetFloatValue(groupName, "Acceleration");
-	kAirAccelerationRate = globalVariables->GetFloatValue(groupName, "AirAccelerationRate");
-	kAttenuation = globalVariables->GetFloatValue(groupName, "Attenuation");
 	kLimitRunSpeed = globalVariables->GetFloatValue(groupName, "LimitRunSpeed");
 	kAttenuationLanding = globalVariables->GetFloatValue(groupName, "AttenuationLanding");
 	kAttenuationWall = globalVariables->GetFloatValue(groupName, "AttenuationWall");
@@ -1049,11 +896,6 @@ void Player::ApplyGlobalVariables() {
 	kKnockbackAfterTime = globalVariables->GetFloatValue(groupName, "KnockbackAfterTime");
 	kKnockbackSpeed = globalVariables->GetFloatValue(groupName, "KnockbackSpeed");
 	kKnockbackAttenuation = globalVariables->GetFloatValue(groupName, "KnockbackAttenuation");
-
-	kAttackBeforeTime = globalVariables->GetFloatValue(groupName, "AttackBeforeTime");
-	kAttackTime = globalVariables->GetFloatValue(groupName, "AttackTime");
-	kAttackAfterTime = globalVariables->GetFloatValue(groupName, "AttackAfterTime");
-	kAttackMoveSpeed = globalVariables->GetFloatValue(groupName, "AttackMoveSpeed");
 }
 
 void Player::CorrectPositionInScreen() {

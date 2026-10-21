@@ -10,10 +10,10 @@ void CameraController::Initialize(Camera* camera) {
 	camera_ = camera;
 	camera_->Initialize();
 
-	movableArea_.left = 11.0f;
-	movableArea_.right = 100.0f;
-	movableArea_.bottom = 6.0f;
-	movableArea_.top = 100.0f;
+	movableArea_.left = kBaseLeft;
+	movableArea_.right = kBaseRight;
+	movableArea_.bottom = kBaseBottom;
+	movableArea_.top = kBaseTop;
 }
 
 
