@@ -48,9 +48,6 @@ class GameScene : public IScene {
 
 	// 敵
 	std::list<std::unique_ptr<BaseEnemy>> enemies_;
-	KamataEngine::Model* mEnemyModel_ = nullptr;
-	KamataEngine::Model* mShieldEnemyModel_ = nullptr;
-	KamataEngine::Model* mRotateEnemyModel_ = nullptr;
 
 	// 天球
 	std::unique_ptr<Skydome> skydome_;

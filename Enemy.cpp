@@ -8,10 +8,13 @@
 #include <algorithm>
 #include "Ease.h"
 #include"GameScene.h"
+#include "ModelManager.h"
 
 using namespace KamataEngine;
 
 void Enemy::InitializeInternal() {
+	model_ = ModelManager::GetInstance()->Load("enemy", true);
+
 	// モデルの向きに合わせてY軸回りに270度回転させる
 	worldTransform_.rotation_.y = kDefaultAngle;
 
