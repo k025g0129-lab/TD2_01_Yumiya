@@ -6,6 +6,7 @@
 // 前方宣言
 class Player;
 class GameScene;
+class PlayerBullet;
 enum class EnemyBehavior;
 
 class BaseEnemy {
@@ -17,6 +18,7 @@ class BaseEnemy {
 	void Update();
 	virtual void Draw();
 	virtual void OnCollision(Player* player) = 0;
+	virtual void OnCollisionBullet() = 0;
 
 	AABB GetAABB() const;
 	KamataEngine::Vector3 GetWorldPosition() const;

@@ -11,6 +11,7 @@ class Player;
 class Enemy final : public BaseEnemy {
 public:
 	void OnCollision(Player *player) override;
+	void OnCollisionBullet() override;
 
 private:
 	// 初期化の個別処理

@@ -13,6 +13,7 @@ class RotateEnemy final : public BaseEnemy {
 public:
 
 	void OnCollision(Player* player) override;
+	void OnCollisionBullet() override;
 
 	//振る舞いをリクエストする
 	void BehaviorRequestWalk() { behaviorRequest_ = EnemyRotateBehavior::kWalk; };

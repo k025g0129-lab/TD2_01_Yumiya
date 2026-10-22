@@ -25,11 +25,9 @@ void Player::Initialize(Camera* camera, Vector3 position) {
 
 	// モデルマネージャーからモデルを取得
 	model_ = modelManager->Load("player", true);
-	modelArrow_ = modelManager->Load("Arrow", true);
 
 	assert(model_);
 	assert(camera);
-	assert(modelArrow_);
 
 
 	// 死亡フラグを初期化
@@ -67,10 +65,14 @@ void Player::Initialize(Camera* camera, Vector3 position) {
 void Player::Update() {
 	// 弾の更新
 	for (int i = static_cast<int>(bullets_.size()) - 1; i >= 0; --i) {
-		bullets_[i]->Update();
 
-		// 弾がカメラ外に出た場合解放
-		if (!bullets_[i]->GetisInCamera()) {
+		// 命中済みの弾は更新しない
+		if (!bullets_[i]->IsHit()) {
+			bullets_[i]->Update();
+		}
+
+		// 命中した弾、またはカメラ外の弾を削除
+		if (bullets_[i]->IsHit() || !bullets_[i]->GetisInCamera()) {
 			delete bullets_[i];
 			bullets_.erase(bullets_.begin() + i);
 		}
@@ -208,7 +210,9 @@ void Player::Draw() {
 
 	// 弾の描画
 	for (PlayerBullet* bullet : bullets_) {
-		bullet->Draw();
+		if (!bullet->IsHit()) {
+			bullet->Draw();
+		}
 	}
 
 	// 自機の描画
@@ -345,7 +349,7 @@ void Player::BehaviorChargeUpdate() {
 		PlayerBullet* bullet = new PlayerBullet();
 
 		// 弾初期化
-		bullet->Initialize(modelArrow_, camera_, worldTransform_.translation_, static_cast<Direction>(direction_));
+		bullet->Initialize(camera_, worldTransform_.translation_, static_cast<Direction>(direction_));
 
 
 		// 配列更新
@@ -819,7 +823,7 @@ Vector3 Player::GetWorldPosition() const {
 	return worldPosition;
 }
 
-AABB Player::GetAABB() {
+AABB Player::GetAABB() const {
 	Vector3 worldPos = GetWorldPosition();
 	AABB aabb{};
 	aabb.min = {worldPos.x - kWidth / 2.0f, worldPos.y - kHeight / 2.0f, worldPos.z - kWidth / 2.0f};

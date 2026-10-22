@@ -294,6 +294,9 @@ void GameScene::CheckAllCollisions() {
 	// プレイヤーのあたり判定
 	AABB playerAABB = player_->GetAABB();
 
+	// プレイヤーの矢を取得
+	const std::vector<PlayerBullet*>& bullets = player_->GetBullets();
+
 	// 敵とプレイヤーのあたり判定
 	for (const auto& enemy : enemies_) {
 
@@ -305,6 +308,25 @@ void GameScene::CheckAllCollisions() {
 		if (IsCollision(playerAABB, enemy->GetAABB())) {
 			player_->OnCollision(enemy.get());
 			enemy->OnCollision(player_.get());
+		}
+
+		// 矢と敵のあたり判定
+		// 全ての矢を確認
+		for (PlayerBullet* bullet : bullets) {
+
+			// 命中済みの弾は判定しない
+			if (bullet->IsHit()) {
+				continue;
+			}
+
+			// 弾のOBBを取得
+			OBB bulletOBB = bullet->GetOBB();
+
+			// 弾と敵の接触判定
+			if (IsCollision(enemy->GetAABB(), bulletOBB)) {
+				bullet->OnCollision();
+				enemy->OnCollisionBullet();
+			}
 		}
 	}
 }

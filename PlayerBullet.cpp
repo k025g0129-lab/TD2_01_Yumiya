@@ -1,6 +1,7 @@
 #include "PlayerBullet.h"
 
 #include "Matrix4x4Util.h"
+#include "ModelManager.h"
 
 #include <assert.h>
 #include <cmath>
@@ -8,22 +9,32 @@
 
 using namespace KamataEngine;
 
+OBB PlayerBullet::GetOBB() const {
+	OBB result{};
+
+	result.center = GetPosition();
+	result.size = {kWidth / 2.0f, kHeight / 2.0f, 0.01f};
+
+	result.UpdateOBBOrientations(worldTransform_.rotation_);
+
+	return result;
+}
+
 PlayerBullet::PlayerBullet() {}
 
 PlayerBullet::~PlayerBullet() {}
 
-void PlayerBullet::Initialize(Model* model, Camera* camera, Vector3 position, Direction direction) {
+void PlayerBullet::Initialize(Camera* camera, Vector3 position, Direction direction) {
 	// ポインタの引き渡しとエラー処理
-	if (model == nullptr) {
-		assert(false && "Playerの3DモデルのポインタがNULLです");
-	} else {
-		model_ = model;
-	}
 	if (camera == nullptr) {
 		assert(false && "PlayerBulletのCameraのポインタがNULLです");
 	} else {
 		camera_ = camera;
 	}
+
+	model_ = ModelManager::GetInstance()->Load("Arrow", true);
+
+	assert(model_);
 
 	// ワールド変換データの初期化
 	worldTransform_.Initialize();

@@ -73,7 +73,7 @@ public:
 	const KamataEngine::Vector3& GetVelocity() const { return velocity_; }
 
 	// 敵とのあたり判定
-	AABB GetAABB();
+	AABB GetAABB() const;
 
 	// 死亡しているか
 	bool IsDead() const { return isDead_; }
@@ -84,6 +84,9 @@ public:
 	LRDirection GetLRDirection() const { return lrDirection_; }
 
 	Direction GetDirection() const { return static_cast<Direction>(direction_); }
+
+	// 弾の一覧を取得
+	const std::vector<PlayerBullet*>& GetBullets() const { return bullets_; }
 
 private:
 	// ワールド変換データ
@@ -374,7 +377,4 @@ private:
 	
 	// 配列
 	std::vector<PlayerBullet*> bullets_;
-
-	// 3Dモデル
-	KamataEngine::Model* modelArrow_ = nullptr;
 };
