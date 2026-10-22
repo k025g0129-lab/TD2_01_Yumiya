@@ -69,8 +69,14 @@ void GameHUD::Update() {
 		// 向いている方向の矢印だけ大きくする
 		if (directions[i] == playerDirection) {
 			arrowSprite_[i]->SetSize({kFocusArrowSize, kFocusArrowSize});
+
+			// 向いてない矢印は薄くする
+			arrowSprite_[i]->SetColor({1.0f, 1.0f, 1.0f, 1.0f});
 		} else {
 			arrowSprite_[i]->SetSize({kBaseArrowSize, kBaseArrowSize});
+
+			// 向いてない矢印は薄くする
+			arrowSprite_[i]->SetColor({1.0f, 1.0f, 1.0f, 0.75f});
 		}
 
 		// Spriteに座標を反映
@@ -80,8 +86,11 @@ void GameHUD::Update() {
 void GameHUD::Draw() {
 	Sprite::PreDraw();
 
-	for (std::unique_ptr<Sprite>& arrowSprite : arrowSprite_) {
-		arrowSprite->Draw();
+	// 矢印は生きてる間だけ表示
+	if (!player_->IsDead()) {
+		for (std::unique_ptr<Sprite>& arrowSprite : arrowSprite_) {
+			arrowSprite->Draw();
+		}
 	}
 
 	Sprite::PostDraw();

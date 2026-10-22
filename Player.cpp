@@ -184,6 +184,13 @@ void Player::Update() {
 		ImGui::Text("JumpThrough: OFF");
 	}
 
+	// 接地判定
+	if (isGround_) {
+		ImGui::Text("isGround: ON");
+	} else {
+		ImGui::Text("isGround: OFF");
+	}
+
 	ImGui::Text("worldTransform_.translation_.y = %f , jumpThroughPoint_ = %f", worldTransform_.translation_.y, jumpThroughPoint_[1].yPos_);
 	ImGui::Text("velocity_.y = %f ", velocity_.y);
 	ImGui::Text("chargeKeyTime = %d ", chargeTime_);
@@ -367,14 +374,10 @@ void Player::BehaviorChargeUpdate() {
 			// チャージ段階に合わせたジャンプ力に設定
 			jumpPower = kStepOneJumpPower;
 
-			// ジャンプ
-			if (direction_ == Direction::kDown) {
-				isJumpThrough_ = true;
-			}
-
 			// 下降
 			if (direction_ == Direction::kUp) {
 				isJumpThrough_ = true;
+				isGround_ = false;
 			}
 		} else if (chargeStep >= 2) {
 			// チャージ段階に合わせたジャンプ力に設定
@@ -383,20 +386,19 @@ void Player::BehaviorChargeUpdate() {
 			// 2階分上昇する処理
 			// 仮置きで1段階の処理をコピペ
 
-			// ジャンプ
-			if (direction_ == Direction::kDown) {
-				isJumpThrough_ = true;
-			}
-
 			// 下降
 			if (direction_ == Direction::kUp) {
 				isJumpThrough_ = true;
+				isGround_ = false;
 			}
 		}
 
 		// ジャンプ
 		if (direction_ == Direction::kDown) {
-			velocity_ += Vector3(0.0f, jumpPower, 0.0f);
+			if (isGround_) {
+				velocity_ += Vector3(0.0f, jumpPower, 0.0f);
+				isGround_ = false;
+			}
 		}
 
 		chargeTime_ = 0;
@@ -816,6 +818,10 @@ void Player::ChangeGroundState(const CollisionMapInfo& info) {
 		leftBottom += Vector3(0.0f, -kGroundCheckOffset, 0.0f);
 
 		IndexSet indexSet = mapChipField_->GetMapChipIndexSetByPosition(leftBottom);
+
+		// 横一列に床が存在する仕様のため、Xインデックスを0に固定
+		indexSet.xIndex = 0;
+
 		mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 
 		if (mapChipType == MapChipType::kBlock) {

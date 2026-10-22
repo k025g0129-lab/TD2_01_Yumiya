@@ -22,14 +22,10 @@ struct CollisionMapInfo {
 };
 
 struct JumpThroughPoint {
-
 	float yPos_ ;
 	bool isOver;
 	bool isPreOver;
 };
-
-// 自機の方向
-enum class PlayerDirection { kUp = 0, kRightUp = 1, kRight = 2, kRightDown = 3, kDown = 4 };
 
 class Player {
 public:
