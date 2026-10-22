@@ -27,6 +27,12 @@ public:
 	void SetTarget(Player* target) { target_ = target; }
 	void SetMode(CameraMode mode) { mode_ = mode; }
 	void SetMovableArea(Rect area) { movableArea_ = area; }
+	void SetMovableArea(float right = kBaseRight, float left = kBaseLeft, float bottom = kBaseBottom, float top = kBaseTop) {
+		movableArea_.left = left;
+		movableArea_.right = right;
+		movableArea_.bottom = bottom;
+		movableArea_.top = top;
+	}
 
 private:
 	// カメラ
@@ -66,4 +72,13 @@ private:
 
 	// 強制スクロール速度
 	static inline const float kForcedScrollSpeed = 0.05f;
+
+	//============================================================
+	// 移動範囲の基礎値
+	//============================================================
+
+	static inline const float kBaseLeft = 11.0f;
+	static inline const float kBaseRight = 100.0f;
+	static inline const float kBaseBottom = 6.0f;
+	static inline const float kBaseTop = 100.0f;
 };

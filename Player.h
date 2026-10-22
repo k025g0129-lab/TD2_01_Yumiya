@@ -73,7 +73,7 @@ public:
 	const KamataEngine::Vector3& GetVelocity() const { return velocity_; }
 
 	// 敵とのあたり判定
-	AABB GetAABB();
+	AABB GetAABB() const;
 
 	// 死亡しているか
 	bool IsDead() const { return isDead_; }
@@ -84,6 +84,9 @@ public:
 	LRDirection GetLRDirection() const { return lrDirection_; }
 
 	Direction GetDirection() const { return static_cast<Direction>(direction_); }
+
+	// 弾の一覧を取得
+	const std::vector<PlayerBullet*>& GetBullets() const { return bullets_; }
 
 private:
 	// ワールド変換データ
@@ -181,15 +184,6 @@ private:
 	//超えているかの共通処理
 	void IsJumpThroughPointOver(JumpThroughPoint *jumpThroughPoint);
 
-	// 歩行時の加速度
-	static inline float kAcceleration = 0.02f;
-
-	// 空中での左右加速度倍率
-	static inline float kAirAccelerationRate = 0.7f;
-
-	// 歩行の方向転換時の急ブレーキでのx速度減衰量
-	static inline float kAttenuation = 0.1f;
-
 	// 歩行の最高速
 	static inline float kLimitRunSpeed = 0.3f;
 
@@ -274,47 +268,6 @@ private:
 
 	// ノックバック後の減速率
 	static inline float kKnockbackAttenuation = 0.15f;
-
-	//============================================================
-	// 攻撃行動
-	//============================================================
-
-	// 攻撃のフェーズ
-	enum class AttackPhase {
-		kBefore, // 前隙
-		kAttack, // 攻撃
-		kAfter   // 後隙
-	};
-
-	// 攻撃のフェーズ
-	AttackPhase attackPhase_ = AttackPhase::kBefore;
-
-	// 攻撃行動の初期化
-	void BehaviorAttackInitialize();
-
-	// 攻撃行動更新
-	void BehaviorAttackUpdate();
-
-	// 攻撃の時間
-	float attackParameter_ = 0.0f;
-
-	// 攻撃エフェクト用モデル
-	KamataEngine::Model* modelAttack_ = nullptr;
-
-	// 攻撃エフェクト用ワールド変換データ
-	KamataEngine::WorldTransform worldTransformAttack_;
-
-	// 前隙
-	static inline float kAttackBeforeTime = 0.2f;
-
-	// 攻撃の時間
-	static inline float kAttackTime = 0.2f;
-
-	// 後隙
-	static inline float kAttackAfterTime = 0.2f;
-
-	// 攻撃時の突進速度
-	static inline float kAttackMoveSpeed = 0.5f;
 
 	//============================================================
 	// マップチップ回り
@@ -424,7 +377,4 @@ private:
 	
 	// 配列
 	std::vector<PlayerBullet*> bullets_;
-
-	// 3Dモデル
-	KamataEngine::Model* modelArrow_ = nullptr;
 };

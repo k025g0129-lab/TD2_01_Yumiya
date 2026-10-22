@@ -13,6 +13,7 @@ class BoomerangEnemy final : public BaseEnemy {
 public:
 
 	void OnCollision(Player* player) override;
+	void OnCollisionBullet() override;
 
 	//振る舞いをリクエストする
 	void BehaviorRequestWalk() { behaviorRequest_ = EnemyBoomerangBehavior::kWalk; };
@@ -20,7 +21,7 @@ public:
 
 private:
 
-		// 初期化の個別処理
+	// 初期化の個別処理
 	void InitializeInternal() override;
 
 	// 振る舞いの切り替え

@@ -75,3 +75,16 @@ void RotateEnemy::OnCollision(Player* player) {
 		}
 	}
 }
+
+void RotateEnemy::OnCollisionBullet() {
+	// 振る舞いをデス演出に変更
+	behaviorRequest_ = EnemyRotateBehavior::kDeathDirection;
+
+	// あたり判定無効フラグを立てる
+	isCollisionDisabled_ = true;
+
+	// エフェクトを生成
+	if (gameScene_) {
+		gameScene_->CreateHitEffect(GetWorldPosition());
+	}
+}

@@ -1,5 +1,6 @@
 #pragma once
 #include"PlayerDirection.h"
+#include "Collision.h"
 
 #include <KamataEngine.h>
 
@@ -18,6 +19,15 @@ class PlayerBullet {
 	/// カメラ内にいるかの取得
 	/// </summary>
 	bool GetisInCamera() const { return isInCamera_; }
+
+	// あたり判定の取得
+	OBB GetOBB() const;
+
+	// 命中しているか
+	bool IsHit() const { return isHit_; }
+
+	// 命中時の処理
+	void OnCollision() { isHit_ = true; }
 
 	/// ===============================================
 	/// セッター
@@ -45,7 +55,7 @@ class PlayerBullet {
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, KamataEngine::Vector3 position, Direction direction);
+	void Initialize(KamataEngine::Camera* camera, KamataEngine::Vector3 position, Direction direction);
 
 	/// <summary>
 	/// 更新
@@ -82,6 +92,13 @@ private:
 
 	// カメラ内にいるか
 	bool isInCamera_ = true;
+
+	// 当たり判定サイズ
+	static inline const float kWidth = 0.8f;
+	static inline const float kHeight = 0.8f;
+
+	// 命中フラグ
+	bool isHit_ = false;
 
 	/// ===============================================
 	/// private関数

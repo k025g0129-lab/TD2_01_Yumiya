@@ -35,6 +35,7 @@ void BoomerangEnemy::ChangeBehavior() {
 		default:
 			enumBehavior_ = EnemyBoomerangBehavior::kWalk;
 
+			[[fallthrough]];
 		case EnemyBoomerangBehavior::kWalk:
 			behavior_ = std::make_unique<EnemyBoomerangWalk>(this);
 			break;
@@ -73,5 +74,18 @@ void BoomerangEnemy::OnCollision(Player* player) {
 		if (gameScene_) {
 			gameScene_->CreateHitEffect(effectPosition);
 		}
+	}
+}
+
+void BoomerangEnemy::OnCollisionBullet() {
+	// 振る舞いをデス演出に変更
+	behaviorRequest_ = EnemyBoomerangBehavior::kDeathDirection;
+
+	// あたり判定無効フラグを立てる
+	isCollisionDisabled_ = true;
+
+	// エフェクトを生成
+	if (gameScene_) {
+		gameScene_->CreateHitEffect(GetWorldPosition());
 	}
 }
