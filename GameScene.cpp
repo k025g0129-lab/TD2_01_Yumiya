@@ -7,6 +7,7 @@
 #include "ShieldEnemy.h"
 #include "RotateEnemy.h"
 #include "BoomerangEnemy.h"
+#include "JumpEnemy.h"
 #include "StageManager.h"
 #include "ModelManager.h"
 
@@ -18,7 +19,9 @@ enum class EnemySpawnType : uint8_t {
 	kNormal = 0,
 	kShield = 1,
 	kRotate = 2,
-	kBoomerang = 3, };
+	kBoomerang = 3, 
+	kJump = 4, 
+};
 
 } // namespace
 
@@ -279,6 +282,16 @@ void GameScene::GenerateEnemy(Vector3& position, uint8_t type) {
 
 		break;
 	}
+
+	case EnemySpawnType::kJump:
+			
+		auto newJumpEnemy = std::make_unique<JumpEnemy>();
+		newJumpEnemy->SetMapChipField(mapChipField_.get());
+		newJumpEnemy->Initialize(camera_.get(), position);
+		newJumpEnemy->SetGameScene(this);
+		enemies_.push_back(std::move(newJumpEnemy));
+
+		break;
 
 	}
 }

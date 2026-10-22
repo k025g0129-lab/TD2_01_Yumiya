@@ -35,6 +35,8 @@ class GameScene : public IScene {
 	GameScene();
 	~GameScene();
 
+
+
 	// ヒットエフェクトを生成
 	void CreateHitEffect(const KamataEngine::Vector3& position);
 
