@@ -26,8 +26,7 @@ class PlayerBullet {
 	// 命中しているか
 	bool IsHit() const { return isHit_; }
 
-	// 命中時の処理
-	void OnCollision() { isHit_ = true; }
+	int GetAttack() const { return attack_; }
 
 	/// ===============================================
 	/// セッター
@@ -37,6 +36,9 @@ class PlayerBullet {
 	/// 方向の設定
 	/// </summary>
 	void SetDirection(Direction direction) { direction_ = direction; }
+
+	// 命中時の処理
+	void OnCollision() { isHit_ = true; }
 
 	/// ===============================================
 	/// public関数
@@ -55,7 +57,7 @@ class PlayerBullet {
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(KamataEngine::Camera* camera, KamataEngine::Vector3 position, Direction direction);
+	void Initialize(KamataEngine::Camera* camera, KamataEngine::Vector3 position, Direction direction, int chargeStep);
 
 	/// <summary>
 	/// 更新
@@ -99,6 +101,14 @@ private:
 
 	// 命中フラグ
 	bool isHit_ = false;
+
+	// この矢の攻撃力
+	int attack_ = 0;
+
+	// チャージ段階に対応した攻撃力
+	static inline const int kStepZeroAttack = 1;
+	static inline const int kStepOneAttack = 3;
+	static inline const int kStepTwoAttack = 5;
 
 	/// ===============================================
 	/// private関数

@@ -24,7 +24,7 @@ PlayerBullet::PlayerBullet() {}
 
 PlayerBullet::~PlayerBullet() {}
 
-void PlayerBullet::Initialize(Camera* camera, Vector3 position, Direction direction) {
+void PlayerBullet::Initialize(Camera* camera, Vector3 position, Direction direction, int chargeStep) {
 	// ポインタの引き渡しとエラー処理
 	if (camera == nullptr) {
 		assert(false && "PlayerBulletのCameraのポインタがNULLです");
@@ -50,6 +50,15 @@ void PlayerBullet::Initialize(Camera* camera, Vector3 position, Direction direct
 
 	// 加速度の設定
 	DirectionToAcceleration();
+
+	// 攻撃力の設定
+	attack_ = kStepZeroAttack;
+
+	if (chargeStep == 1) {
+		attack_ = kStepOneAttack;
+	} else if (chargeStep >= 2) {
+		attack_ = kStepTwoAttack;
+	}
 }
 
 void PlayerBullet::Update() {
@@ -67,6 +76,8 @@ void PlayerBullet::Update() {
 }
 
 void PlayerBullet::Draw() {
+	// この辺にチャージ段階に応じて異なるパーティクル出す処理とか書く
+
 	// カメラ内にいる場合描画
 	if (isInCamera_) {
 		model_->Draw(worldTransform_, *camera_);

@@ -320,7 +320,7 @@ void GameScene::CheckAllCollisions() {
 
 		if (IsCollision(playerAABB, enemy->GetAABB())) {
 			player_->OnCollision(enemy.get());
-			enemy->OnCollision(player_.get());
+			enemy->OnCollision();
 		}
 
 		// 矢と敵のあたり判定
@@ -338,7 +338,7 @@ void GameScene::CheckAllCollisions() {
 			// 弾と敵の接触判定
 			if (IsCollision(enemy->GetAABB(), bulletOBB)) {
 				bullet->OnCollision();
-				enemy->OnCollisionBullet();
+				enemy->OnCollisionBullet(bullet->GetAttack());
 			}
 		}
 	}
