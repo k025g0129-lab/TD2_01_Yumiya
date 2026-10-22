@@ -17,8 +17,8 @@ class BaseEnemy {
 	void Initialize(KamataEngine::Camera* camera, KamataEngine::Vector3 position);
 	void Update();
 	virtual void Draw();
-	virtual void OnCollision(Player* player) = 0;
-	virtual void OnCollisionBullet() = 0;
+	virtual void OnCollision() = 0;
+	virtual void OnCollisionBullet(int bulletAttack) = 0;
 
 	AABB GetAABB() const;
 	KamataEngine::Vector3 GetWorldPosition() const;
@@ -100,6 +100,9 @@ class BaseEnemy {
 
 	// デスフラグ
 	bool isDead_ = false;
+
+	// 敵のHP。敵に応じて初期化でそれぞれ変える
+	int HP_ = 3;
 
   private:
 	void InitializeCommon(KamataEngine::Camera* camera, KamataEngine::Vector3 position);

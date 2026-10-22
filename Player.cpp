@@ -59,7 +59,7 @@ void Player::Initialize(Camera* camera, Vector3 position) {
 	//通過ポイント初期化
 	JumpThroughInitialize();
 
-	chargeKeyTime = 0;
+	chargeTime_ = 0;
 }
 
 void Player::Update() {
@@ -186,7 +186,7 @@ void Player::Update() {
 
 	ImGui::Text("worldTransform_.translation_.y = %f , jumpThroughPoint_ = %f", worldTransform_.translation_.y, jumpThroughPoint_[1].yPos_);
 	ImGui::Text("velocity_.y = %f ", velocity_.y);
-	ImGui::Text("chargeKeyTime = %d ", chargeKeyTime);
+	ImGui::Text("chargeKeyTime = %d ", chargeTime_);
 	ImGui::Text("LowerLimitBlockYIndex = %d ", int(mapChipField_->GetLowerLimitBlockYIndex() - uint32_t(1)));
 	ImGui::Text("PlayerYIndex = %d ", int(mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_).yIndex));
 
@@ -341,16 +341,18 @@ void Player::BehaviorChargeUpdate() {
 	// 方向変更処理
 	PlayerDirectionUpdate();
 
-	chargeKeyTime++;
+	chargeTime_++;
 
 	// 攻撃キーリリース時に弾生成
 	if (GameInput::GetInstance()->IsRelease(GameAction::kAttack)) {
+		// チャージ段階
+		int chargeStep = GetChargeStep();
+
 		// 弾生成
 		PlayerBullet* bullet = new PlayerBullet();
 
 		// 弾初期化
-		bullet->Initialize(camera_, worldTransform_.translation_, static_cast<Direction>(direction_));
-
+		bullet->Initialize(camera_, worldTransform_.translation_, static_cast<Direction>(direction_), chargeStep);
 
 		// 配列更新
 		bullets_.push_back(bullet);
@@ -358,14 +360,29 @@ void Player::BehaviorChargeUpdate() {
 		// 通常状態へのリクエスト
 		behaviorRequest_ = Behavior::kRoot;
 
-		//どのくらいジャンプするか
-		float jumpPower = float(chargeKeyTime) / float(kJumpTime)  ;
+		// どのくらいジャンプするか
+		float jumpPower = kStepZeroJumpPower;
 
-		//チャージMAXでブロックを超える
-		if (chargeKeyTime >= kJumpTime) {
+		if (chargeStep == 1) {
+			// チャージ段階に合わせたジャンプ力に設定
+			jumpPower = kStepOneJumpPower;
 
-			jumpPower = 1.0f;
-				
+			// ジャンプ
+			if (direction_ == Direction::kDown) {
+				isJumpThrough_ = true;
+			}
+
+			// 下降
+			if (direction_ == Direction::kUp) {
+				isJumpThrough_ = true;
+			}
+		} else if (chargeStep >= 2) {
+			// チャージ段階に合わせたジャンプ力に設定
+			jumpPower = kStepTwoJumpPower;
+
+			// 2階分上昇する処理
+			// 仮置きで1段階の処理をコピペ
+
 			// ジャンプ
 			if (direction_ == Direction::kDown) {
 				isJumpThrough_ = true;
@@ -379,16 +396,30 @@ void Player::BehaviorChargeUpdate() {
 
 		// ジャンプ
 		if (direction_ == Direction::kDown) {
-			velocity_ += Vector3(0.0f, kJumpAcceleration * jumpPower, 0.0f);
+			velocity_ += Vector3(0.0f, jumpPower, 0.0f);
 		}
 
-		chargeKeyTime = 0;
+		chargeTime_ = 0;
 	}
 
 	// 通過ポイント更新
 	JumpThroughUpdate();
 
 	ResolveMapChipCollision(velocity_);
+}
+
+int Player::GetChargeStep() const {
+	int result = 0;
+
+	if (chargeTime_ >= kChargeStepOneTime) {
+		result = 1;
+	}
+
+	if (chargeTime_ >= kChargeStepTwoTime) {
+		result = 2;
+	}
+
+	return result;
 }
 
 void Player::BehaviorKnockInitialize() {
@@ -878,7 +909,6 @@ void Player::RegisterGlobalVariables() {
 	globalVariables->AddItem(groupName, "AttenuationLanding", kAttenuationLanding);
 	globalVariables->AddItem(groupName, "AttenuationWall", kAttenuationWall);
 	globalVariables->AddItem(groupName, "TurnTime", kTurnTime);
-	globalVariables->AddItem(groupName, "JumpAcceleration", kJumpAcceleration);
 
 	globalVariables->AddItem(groupName, "KnockbackTime", kKnockbackTime);
 	globalVariables->AddItem(groupName, "KnockbackAfterTime", kKnockbackAfterTime);
@@ -894,7 +924,6 @@ void Player::ApplyGlobalVariables() {
 	kAttenuationLanding = globalVariables->GetFloatValue(groupName, "AttenuationLanding");
 	kAttenuationWall = globalVariables->GetFloatValue(groupName, "AttenuationWall");
 	kTurnTime = globalVariables->GetFloatValue(groupName, "TurnTime");
-	kJumpAcceleration = globalVariables->GetFloatValue(groupName, "JumpAcceleration");
 
 	kKnockbackTime = globalVariables->GetFloatValue(groupName, "KnockbackTime");
 	kKnockbackAfterTime = globalVariables->GetFloatValue(groupName, "KnockbackAfterTime");

@@ -88,6 +88,15 @@ public:
 	// 弾の一覧を取得
 	const std::vector<PlayerBullet*>& GetBullets() const { return bullets_; }
 
+	int GetChargeTime() const { return chargeTime_; }
+
+	// パブリックメンバ変数
+	// チャージ1段階目に必要な時間
+	static inline const int kChargeStepOneTime = 30;
+
+	// チャージ2段階目に必要な時間
+	static inline const int kChargeStepTwoTime = kChargeStepOneTime + 30;
+
 private:
 	// ワールド変換データ
 	KamataEngine::WorldTransform worldTransform_;
@@ -196,9 +205,6 @@ private:
 	// 旋回にかかる時間<秒>
 	static inline float kTurnTime = 0.3f;
 
-	// ジャンプの初速
-	static inline float kJumpAcceleration = 0.8f;
-
 	// ジャンプでの通り抜け
 	bool isJumpThrough_ = false;
 
@@ -208,16 +214,23 @@ private:
 
 	//ジャンプポイント数(後々変更するか消す可能性あり)
 	static inline const int maxJumpThroughPointIndex = 10;
-	//static inline const int maxJumpThroughPointIndex = MapChipField::;
 
 	JumpThroughPoint jumpThroughPoint_[maxJumpThroughPointIndex];
 	JumpThroughPoint jumpUpperLimitsPoint;
 	JumpThroughPoint jumpLowerLimitsPoint;
 
 
-	//ジャンプパワー
-	int chargeKeyTime = 0;
-	static inline int kJumpTime = 30;
+	// 弓のチャージ時間
+	int chargeTime_ = 0;
+
+	// チャージ0段階目でのジャンプ力
+	static inline const float kStepZeroJumpPower = 0.6f;
+
+	// チャージ1段階目でのジャンプ力
+	static inline const float kStepOneJumpPower = 1.0f;
+
+	// チャージ2段階目でのジャンプ力
+	static inline const float kStepTwoJumpPower = 1.2f;
 
 	//============================================================
 	// 溜め状態
@@ -228,6 +241,9 @@ private:
 
 	// 溜める行動更新
 	void BehaviorChargeUpdate();
+
+	// チャージ段階
+	int GetChargeStep() const;
 
 	//============================================================
 	// ノックバック
