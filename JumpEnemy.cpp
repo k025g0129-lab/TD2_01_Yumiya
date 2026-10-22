@@ -172,3 +172,16 @@ void JumpEnemy::OnCollision(Player* player) {
 		}
 	}
 }
+
+void JumpEnemy::OnCollisionBullet() {
+	// 振る舞いをデス演出に変更
+	behaviorRequest_ = EnemyJumpBehavior::kDeathDirection;
+
+	// あたり判定無効フラグを立てる
+	isCollisionDisabled_ = true;
+
+	// エフェクトを生成
+	if (gameScene_) {
+		gameScene_->CreateHitEffect(GetWorldPosition());
+	}
+}

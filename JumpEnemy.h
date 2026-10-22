@@ -12,6 +12,7 @@ class Player;
 class JumpEnemy final : public BaseEnemy {
 public:
 	void OnCollision(Player* player) override;
+	void OnCollisionBullet() override;
 
 	// 振る舞いをリクエストする
 	void BehaviorRequestJumpWalk() { behaviorRequest_ = EnemyJumpBehavior::kJumpWalk; };
