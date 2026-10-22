@@ -10,7 +10,6 @@ class Enemy;
 // 振る舞い
 enum class EnemyBehavior {
 
-	//Normal
 	kWalk,           // 歩行
 	kDeathDirection, // 死亡演出
 
