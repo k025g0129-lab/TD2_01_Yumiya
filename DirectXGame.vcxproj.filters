@@ -201,9 +201,6 @@
     <ClCompile Include="ModelManager.cpp">
       <Filter>ModelManager</Filter>
     </ClCompile>
-    <ClCompile Include="GameHUD.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="GameManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -224,6 +221,15 @@
     </ClCompile>
     <ClCompile Include="BoomerangEnemyBehavior.cpp">
       <Filter>Enemy\BoomerangEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="JumpEnemy.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="JumpEnemyBehavior.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameHUD.cpp">
+      <Filter>GameHUD</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -305,15 +311,6 @@
     <ClInclude Include="EnemyBehavior.h">
       <Filter>Enemy\NormalEnemy</Filter>
     </ClInclude>
-    <ClInclude Include="GameManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="IScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="ModelManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="RotateEnemy.h">
       <Filter>Enemy\RotateEnemy</Filter>
     </ClInclude>
@@ -325,6 +322,27 @@
     </ClInclude>
     <ClInclude Include="BoomerangEnemyBehavior.h">
       <Filter>Enemy\BoomerangEnemy</Filter>
+    </ClInclude>
+    <ClInclude Include="JumpEnemy.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="JumpEnemyBehavior.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameHUD.h">
+      <Filter>GameHUD</Filter>
+    </ClInclude>
+    <ClInclude Include="GameManager.h">
+      <Filter>GameManager</Filter>
+    </ClInclude>
+    <ClInclude Include="IScene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelManager.h">
+      <Filter>ModelManager</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerDirection.h">
+      <Filter>Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
