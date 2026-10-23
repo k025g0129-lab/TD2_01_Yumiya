@@ -7,6 +7,7 @@
 #include "PlayerDirection.h"
 
 #include <vector>
+#include <array>
 
 // 前方宣言
 class MapChipField;
@@ -254,14 +255,8 @@ private:
 	// 弓のチャージ時間
 	int chargeTime_ = 0;
 
-	// チャージ0段階目でのジャンプ力
-	static inline const float kStepZeroJumpPower = 0.6f;
-
-	// チャージ1段階目でのジャンプ力
-	static inline const float kStepOneJumpPower = 1.0f;
-
-	// チャージ2段階目でのジャンプ力
-	static inline const float kStepTwoJumpPower = 1.2f;
+	// チャージ段階に応じたジャンプ力
+	static inline constexpr std::array<float, 3> kJumpPowerTable = {0.6f, 0.9f, 1.2f};
 
 	//============================================================
 	// 溜め状態
@@ -278,6 +273,43 @@ private:
 
 	// 向きに合わせてプレイヤーの角度を変更する
 	void ChangeRotationToDirection();
+
+	// 前フレームの照準方向
+	int previousAimDirection_ = Direction::kRight;
+
+	// 照準回転を開始したときのZ角度
+	float aimStartRotationZ_ = 0.0f;
+
+	// 照準回転の経過時間
+	float aimTurnTimer_ = 0.0f;
+
+	// 照準回転にかかる時間（秒）
+	static inline const float kAimTurnTime = 0.2f;
+
+	//============================================================
+	// チャージ中の振動
+	//============================================================
+
+	// 描画専用のワールド変換
+	KamataEngine::WorldTransform drawWorldTransform_;
+
+	// 振動用の経過時間
+	float chargeShakeTimer_ = 0.0f;
+
+	// チャージ1段階目の振動幅
+	static inline const float kChargeStepOneShakeAmplitude = 0.025f;
+
+	// チャージ2段階目の振動幅
+	static inline const float kChargeStepTwoShakeAmplitude = 0.05f;
+
+	// チャージ1段階目の振動速度
+	static inline const float kChargeStepOneShakeSpeed = 25.0f;
+
+	// チャージ2段階目の振動速度
+	static inline const float kChargeStepTwoShakeSpeed = 45.0f;
+
+	// チャージ振動の更新
+	void UpdateChargeShake();
 
 	//============================================================
 	// ノックバック
