@@ -115,12 +115,6 @@ private:
 	// 接地フラグ
 	bool isGround_ = true;
 
-	// 最大HP
-	static inline const int kMaxHP = 3;
-
-	// HP
-	int HP_ = kMaxHP;
-
 	// マップチップフィールド
 	MapChipField* mapChipField_ = nullptr;
 
@@ -134,6 +128,43 @@ private:
 
 	// 接地確認用の微小な下方向オフセット
 	static inline const float kGroundCheckOffset = 0.1f;
+
+	//============================================================
+	// HP・被ダメージ周り
+	//============================================================
+
+	// 最大HP
+	static inline const int kMaxHP = 3;
+
+	// HP
+	int HP_ = kMaxHP;
+
+	// 被弾後無敵の残り時間
+	float damageInvincibleTimer_ = 0.0f;
+
+	// 被弾後の無敵時間
+	static inline float kDamageInvincibleTime = 0.75f;
+
+	// 被弾後無敵を更新する
+	void UpdateDamageInvincibility();
+
+	// モデル色
+	KamataEngine::ObjectColor objectColor_;
+
+	// 現在のモデル色
+	KamataEngine::Vector4 objectColorValue_ = {1.0f, 1.0f, 1.0f, 1.0f};
+
+	// ヒットフラッシュの残り時間
+	float damageColorTimer_ = 0.0f;
+
+	// ヒットフラッシュの時間
+	static inline const float kDamageColorTime = 0.15f;
+
+	// 無敵時間中の点滅周期
+	static inline const float kDamageBlinkInterval = 0.10f;
+
+	// 被ダメージ表示更新
+	void UpdateDamageVisual();
 
 	//============================================================
 	// 振る舞い

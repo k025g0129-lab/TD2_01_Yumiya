@@ -64,6 +64,15 @@ void Player::Initialize(Camera* camera, Vector3 position) {
 
 	// HPの初期化
 	HP_ = kMaxHP;
+
+	// モデル色を初期化
+	objectColor_.Initialize();
+
+	objectColorValue_ = {1.0f, 1.0f, 1.0f, 1.0f};
+
+	objectColor_.SetColor(objectColorValue_);
+
+	damageColorTimer_ = 0.0f;
 }
 
 void Player::Update() {
@@ -176,6 +185,12 @@ void Player::Update() {
 		worldTransform_.rotation_.y = std::lerp(turnFirstRotationY_, destinationRotationY, easedT);
 	}
 
+	// 被弾後無敵を更新
+	UpdateDamageInvincibility();
+
+	// 被弾視覚効果を更新
+	UpdateDamageVisual();
+
 // 削除予定
 #ifdef _DEBUG
 
@@ -228,8 +243,22 @@ void Player::Draw() {
 		}
 	}
 
+	//============================================================
+	// 被弾無敵中の点滅
+	//============================================================
+
+	// 赤表示が終了した後だけ点滅
+	if (damageColorTimer_ <= 0.0f && damageInvincibleTimer_ > 0.0f) {
+		float blinkTime = std::fmod(damageInvincibleTimer_, kDamageBlinkInterval);
+
+		// 周期の半分は非表示
+		if (blinkTime < kDamageBlinkInterval / 2.0f) {
+			return;
+		}
+	}
+
 	// 自機の描画
-	model_->Draw(worldTransform_, *camera_);
+	model_->Draw(worldTransform_, *camera_, &objectColor_);
 
 	// 描画後処理
 	Model::PostDraw();
@@ -886,7 +915,19 @@ void Player::OnCollision() {
 		return;
 	}
 
+	// 被弾後無敵中
+	if (damageInvincibleTimer_ > 0.0f) {
+		return;
+	}
+
+	// HPを減らす
 	HP_ -= 1;
+
+	// 被弾後無敵を開始
+	damageInvincibleTimer_ = kDamageInvincibleTime;
+
+	// ヒットフラッシュ表示開始
+	damageColorTimer_ = kDamageColorTime;
 
 	// HPが残っているなら終了
 	if (HP_ > 0) {
@@ -1117,4 +1158,50 @@ void Player::PlayerDirectionUpdate() {
 	if (direction_ == kCenter) {
 		direction_ = kRight;
 	}
+}
+
+void Player::UpdateDamageInvincibility() {
+	const float deltaTime = 1.0f / 60.0f;
+
+	// 無敵時間が残っていなければ何もしない
+	if (damageInvincibleTimer_ <= 0.0f) {
+		damageInvincibleTimer_ = 0.0f;
+		return;
+	}
+
+	damageInvincibleTimer_ -= deltaTime;
+
+	if (damageInvincibleTimer_ < 0.0f) {
+		damageInvincibleTimer_ = 0.0f;
+	}
+}
+
+void Player::UpdateDamageVisual() {
+	const float deltaTime = 1.0f / 60.0f;
+
+	// 被弾直後の赤表示時間を更新
+	if (damageColorTimer_ > 0.0f) {
+		damageColorTimer_ -= deltaTime;
+
+		if (damageColorTimer_ < 0.0f) {
+			damageColorTimer_ = 0.0f;
+		}
+	}
+
+	//============================================================
+	// 被弾直後は赤
+	//============================================================
+
+	if (damageColorTimer_ > 0.0f) {
+		objectColorValue_ = {1.0f, 0.2f, 0.2f, 1.0f};
+
+		objectColor_.SetColor(objectColorValue_);
+
+		return;
+	}
+
+	// 通常色
+	objectColorValue_ = {1.0f, 1.0f, 1.0f, 1.0f};
+
+	objectColor_.SetColor(objectColorValue_);
 }
