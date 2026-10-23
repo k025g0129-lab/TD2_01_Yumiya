@@ -319,7 +319,7 @@ void GameScene::CheckAllCollisions() {
 		}
 
 		if (IsCollision(playerAABB, enemy->GetAABB())) {
-			player_->OnCollision(enemy.get());
+			player_->OnCollision();
 			enemy->OnCollision();
 		}
 

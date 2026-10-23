@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <numbers>
 #include "ModelManager.h"
+#include <cmath>
 
 using namespace KamataEngine;
 
@@ -44,6 +45,12 @@ void Player::Initialize(Camera* camera, Vector3 position) {
 	// モデルの向きに合わせてY軸回りに90度回転させる
 	worldTransform_.rotation_.y = kPi / 2.0f;
 
+	// 描画専用ワールド変換の初期化
+	drawWorldTransform_.Initialize();
+
+	// 振動時間の初期化
+	chargeShakeTimer_ = 0.0f;
+
 	// 引数で渡されたカメラをメンバ変数に保存
 	camera_ = camera;
 
@@ -59,7 +66,29 @@ void Player::Initialize(Camera* camera, Vector3 position) {
 	//通過ポイント初期化
 	JumpThroughInitialize();
 
+	// 矢のチャージ時間の初期化
 	chargeTime_ = 0;
+
+	// HPの初期化
+	HP_ = kMaxHP;
+
+	// モデル色を初期化
+	objectColor_.Initialize();
+
+	objectColorValue_ = {1.0f, 1.0f, 1.0f, 1.0f};
+
+	objectColor_.SetColor(objectColorValue_);
+
+	damageColorTimer_ = 0.0f;
+
+	// 照準方向の初期化
+	direction_ = Direction::kRight;
+	previousAimDirection_ = direction_;
+
+	// 照準回転の初期化
+	worldTransform_.rotation_.z = 0.0f;
+	aimStartRotationZ_ = 0.0f;
+	aimTurnTimer_ = kAimTurnTime;
 }
 
 void Player::Update() {
@@ -137,6 +166,11 @@ void Player::Update() {
 		break;
 	}
 
+	// プレイヤーの照準方向に合わせてモデルを回転
+	if (behavior_ == Behavior::kRoot || behavior_ == Behavior::kCharge) {
+		ChangeRotationToDirection();
+	}
+
 	// 強制スクロール中かつ生存中は画面端補正と挟まれ死亡判定を行う
 	if (!isDead_) {
 		if (isScreenSqueezeDeathEnabled_ && !isDead_) {
@@ -172,6 +206,12 @@ void Player::Update() {
 		worldTransform_.rotation_.y = std::lerp(turnFirstRotationY_, destinationRotationY, easedT);
 	}
 
+	// 被弾後無敵を更新
+	UpdateDamageInvincibility();
+
+	// 被弾視覚効果を更新
+	UpdateDamageVisual();
+
 // 削除予定
 #ifdef _DEBUG
 
@@ -191,6 +231,8 @@ void Player::Update() {
 		ImGui::Text("isGround: OFF");
 	}
 
+	ImGui::Text("HP = %d", HP_);
+
 	ImGui::Text("worldTransform_.translation_.y = %f , jumpThroughPoint_ = %f", worldTransform_.translation_.y, jumpThroughPoint_[1].yPos_);
 	ImGui::Text("velocity_.y = %f ", velocity_.y);
 	ImGui::Text("chargeKeyTime = %d ", chargeTime_);
@@ -204,6 +246,9 @@ void Player::Update() {
 
 	// ワールド変換の更新
 	WorldTransformUpdate(worldTransform_);
+
+	// チャージ振動の更新
+	UpdateChargeShake();
 }
 
 void Player::Draw() {
@@ -222,8 +267,22 @@ void Player::Draw() {
 		}
 	}
 
+	//============================================================
+	// 被弾無敵中の点滅
+	//============================================================
+
+	// 赤表示が終了した後だけ点滅
+	if (damageColorTimer_ <= 0.0f && damageInvincibleTimer_ > 0.0f) {
+		float blinkTime = std::fmod(damageInvincibleTimer_, kDamageBlinkInterval);
+
+		// 周期の半分は非表示
+		if (blinkTime < kDamageBlinkInterval / 2.0f) {
+			return;
+		}
+	}
+
 	// 自機の描画
-	model_->Draw(worldTransform_, *camera_);
+	model_->Draw(drawWorldTransform_, *camera_, &objectColor_);
 
 	// 描画後処理
 	Model::PostDraw();
@@ -367,12 +426,7 @@ void Player::BehaviorChargeUpdate() {
 		// 通常状態へのリクエスト
 		behaviorRequest_ = Behavior::kRoot;
 
-		// どのくらいジャンプするか
-		float jumpPower = kStepZeroJumpPower;
-
 		if (chargeStep == 1) {
-			// チャージ段階に合わせたジャンプ力に設定
-			jumpPower = kStepOneJumpPower;
 
 			// 下降
 			if (direction_ == Direction::kUp) {
@@ -380,9 +434,6 @@ void Player::BehaviorChargeUpdate() {
 				isGround_ = false;
 			}
 		} else if (chargeStep >= 2) {
-			// チャージ段階に合わせたジャンプ力に設定
-			jumpPower = kStepTwoJumpPower;
-
 			// 2階分上昇する処理
 			// 仮置きで1段階の処理をコピペ
 
@@ -396,7 +447,7 @@ void Player::BehaviorChargeUpdate() {
 		// ジャンプ
 		if (direction_ == Direction::kDown) {
 			if (isGround_) {
-				velocity_ += Vector3(0.0f, jumpPower, 0.0f);
+				velocity_ += Vector3(0.0f, kJumpPowerTable[static_cast<size_t>(chargeStep)], 0.0f);
 				isGround_ = false;
 			}
 		}
@@ -422,6 +473,114 @@ int Player::GetChargeStep() const {
 	}
 
 	return result;
+}
+
+void Player::ChangeRotationToDirection() {
+
+	// 方向に応じた目標回転角
+	float destinationRotationZ = 0.0f;
+
+	switch (static_cast<Direction>(direction_)) {
+	case Direction::kUp:
+		destinationRotationZ = kPi / 2.0f;
+		break;
+
+	case Direction::kRightUp:
+		destinationRotationZ = kPi / 4.0f;
+		break;
+
+	case Direction::kRight:
+		destinationRotationZ = 0.0f;
+		break;
+
+	case Direction::kRightDown:
+		destinationRotationZ = -kPi / 4.0f;
+		break;
+
+	case Direction::kDown:
+		destinationRotationZ = -kPi / 2.0f;
+		break;
+
+	default:
+		destinationRotationZ = 0.0f;
+		break;
+	}
+
+	// 照準方向が変化した場合
+	if (previousAimDirection_ != direction_) {
+
+		// 現在の角度を旋回開始角度として保存
+		aimStartRotationZ_ = worldTransform_.rotation_.z;
+
+		// 旋回時間を初期化
+		aimTurnTimer_ = 0.0f;
+
+		// 現在の方向を保存
+		previousAimDirection_ = direction_;
+	}
+
+	// 旋回時間を進める
+	if (aimTurnTimer_ < kAimTurnTime) {
+		aimTurnTimer_ += 1.0f / 60.0f;
+	}
+
+	// 補間割合を算出
+	float t = std::clamp(aimTurnTimer_ / kAimTurnTime, 0.0f, 1.0f);
+
+	// イージング
+	float easedT = Ease::EaseInOut(t);
+
+	// 目標角度まで補間
+	worldTransform_.rotation_.z = std::lerp(aimStartRotationZ_, destinationRotationZ, easedT);
+}
+
+void Player::UpdateChargeShake() {
+
+	// 描画用ワールド変換に通常の変換情報を反映
+	drawWorldTransform_.translation_ = worldTransform_.translation_;
+	drawWorldTransform_.rotation_ = worldTransform_.rotation_;
+	drawWorldTransform_.scale_ = worldTransform_.scale_;
+
+	// 振動幅と速度
+	float shakeAmplitude = 0.0f;
+	float shakeSpeed = 0.0f;
+
+	// チャージ中のみ振動
+	if (behavior_ == Behavior::kCharge) {
+
+		// チャージ段階を取得
+		int chargeStep = GetChargeStep();
+
+		if (chargeStep == 1) {
+			shakeAmplitude = kChargeStepOneShakeAmplitude;
+			shakeSpeed = kChargeStepOneShakeSpeed;
+
+		} else if (chargeStep >= 2) {
+			shakeAmplitude = kChargeStepTwoShakeAmplitude;
+			shakeSpeed = kChargeStepTwoShakeSpeed;
+		}
+	}
+
+	// 振動する場合
+	if (shakeAmplitude > 0.0f) {
+
+		// 振動時間を進める
+		chargeShakeTimer_ += 1.0f / 60.0f;
+
+		// X方向の振動
+		drawWorldTransform_.translation_.x += std::sin(chargeShakeTimer_ * shakeSpeed) * shakeAmplitude;
+
+		// Y方向の振動
+		drawWorldTransform_.translation_.y += std::sin(chargeShakeTimer_ * shakeSpeed * 1.7f) * shakeAmplitude;
+
+	} else {
+
+		// 振動していないときは時間をリセット
+		chargeShakeTimer_ = 0.0f;
+	}
+
+	// 描画用ワールド行列を更新
+	WorldTransformUpdate(drawWorldTransform_);
 }
 
 void Player::BehaviorKnockInitialize() {
@@ -869,23 +1028,33 @@ AABB Player::GetAABB() const {
 	return aabb;
 }
 
-void Player::OnCollision(const BaseEnemy* enemy) {
+void Player::OnCollision() {
 	// すでに死んでいたら早期リターン
 	if (isDead_) {
 		return;
 	}
 
-	// 現状は敵に当たった時、敵に対して行いたい処理がない
-	// そのため、警告を抑制する意味で無意味な処理を書く
-	(void)enemy;
-
-	// 攻撃中はダメージ無効
-	if (IsAttack()) {
+	// ノックバック初めの時間に無敵でないと、そのまま敵にめり込んで死ぬ場合があるので、吹っ飛ばされている間は無敵
+	if (IsKnockbackInvincible()) {
 		return;
 	}
 
-	// ノックバック初めの時間に無敵でないと、そのまま敵にめり込んで死ぬ場合があるので、吹っ飛ばされている間は無敵
-	if (IsKnockbackInvincible()) {
+	// 被弾後無敵中
+	if (damageInvincibleTimer_ > 0.0f) {
+		return;
+	}
+
+	// HPを減らす
+	HP_ -= 1;
+
+	// 被弾後無敵を開始
+	damageInvincibleTimer_ = kDamageInvincibleTime;
+
+	// ヒットフラッシュ表示開始
+	damageColorTimer_ = kDamageColorTime;
+
+	// HPが残っているなら終了
+	if (HP_ > 0) {
 		return;
 	}
 
@@ -1113,4 +1282,50 @@ void Player::PlayerDirectionUpdate() {
 	if (direction_ == kCenter) {
 		direction_ = kRight;
 	}
+}
+
+void Player::UpdateDamageInvincibility() {
+	const float deltaTime = 1.0f / 60.0f;
+
+	// 無敵時間が残っていなければ何もしない
+	if (damageInvincibleTimer_ <= 0.0f) {
+		damageInvincibleTimer_ = 0.0f;
+		return;
+	}
+
+	damageInvincibleTimer_ -= deltaTime;
+
+	if (damageInvincibleTimer_ < 0.0f) {
+		damageInvincibleTimer_ = 0.0f;
+	}
+}
+
+void Player::UpdateDamageVisual() {
+	const float deltaTime = 1.0f / 60.0f;
+
+	// 被弾直後の赤表示時間を更新
+	if (damageColorTimer_ > 0.0f) {
+		damageColorTimer_ -= deltaTime;
+
+		if (damageColorTimer_ < 0.0f) {
+			damageColorTimer_ = 0.0f;
+		}
+	}
+
+	//============================================================
+	// 被弾直後は赤
+	//============================================================
+
+	if (damageColorTimer_ > 0.0f) {
+		objectColorValue_ = {1.0f, 0.2f, 0.2f, 1.0f};
+
+		objectColor_.SetColor(objectColorValue_);
+
+		return;
+	}
+
+	// 通常色
+	objectColorValue_ = {1.0f, 1.0f, 1.0f, 1.0f};
+
+	objectColor_.SetColor(objectColorValue_);
 }
