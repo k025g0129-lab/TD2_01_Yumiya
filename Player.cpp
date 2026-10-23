@@ -459,6 +459,10 @@ int Player::GetChargeStep() const {
 	return result;
 }
 
+void Player::ChangeRotationToDirection() {
+
+}
+
 void Player::BehaviorKnockInitialize() {
 	// 攻撃中の変形を戻す
 	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};

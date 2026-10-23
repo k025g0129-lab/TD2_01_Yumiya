@@ -15,6 +15,62 @@ class GameHUD {
 	void Draw();
 
   private:
+	//========================================================
+	// HP表示
+	//========================================================
+	
+	// ハートの画像
+	std::vector<std::unique_ptr<KamataEngine::Sprite>> hpSprite_;
+	std::vector<std::unique_ptr<KamataEngine::Sprite>> hpShadowSprite_;
+
+	// ハート画像の大きさ
+	static inline const float kHpSpriteWidth = 64.0f;
+	static inline const float kHpSpriteHeight = 64.0f;
+
+	// 1つ目のハートの位置
+	static inline const float kHpSpritePosX = 10.0f;
+	static inline const float kHpSpritePosY = 10.0f;
+
+	// ハートとハートの距離
+	static inline const float kHpSpriteDistance = kHpSpriteWidth + 5.0f;
+
+
+
+	//============================================================
+	// チャージゲージ
+	//============================================================
+
+	// チャージゲージ背景
+	std::unique_ptr<KamataEngine::Sprite> chargeGaugeBackgroundSprite_;
+
+	// チャージゲージ本体
+	std::unique_ptr<KamataEngine::Sprite> chargeGaugeSprite_;
+
+	// ゲージ背景サイズ
+	static inline const float kGaugeBackgroundWidth = 28.0f;
+	static inline const float kGaugeBackgroundHeight = 68.0f;
+
+	// ゲージ本体サイズ
+	static inline const float kGaugeWidth = 20.0f;
+	static inline const float kGaugeHeight = 60.0f;
+
+	// ゲージ背景座標（左下基準
+	KamataEngine::Vector2 gaugeBackgroundPos_ = {};
+
+	// ゲージ本体座標（左下基準
+	KamataEngine::Vector2 gaugePos_ = {};
+
+	// ゲージを表示する距離
+	static inline const float kGaugeDistanceX = 80.0f;
+	static inline const float kGaugeDistanceY = kGaugeWidth + 10;
+
+	const KamataEngine::Vector4 chageStapOneColor{0.8f,0.3f,0.3f,1.0f};
+	const KamataEngine::Vector4 chageStapTwoColor{1.0f, 0.1f, 0.1f, 1.0f};
+
+	//========================================================
+	// 矢印周り
+	//========================================================
+
 	// worldPositionをスクリーン座標に変換する
 	KamataEngine::Vector2 WorldToScreen(const KamataEngine::Vector3& worldPosition) const;
 
@@ -29,6 +85,9 @@ class GameHUD {
 
 	// 向いている方向の矢印のサイズ
 	static inline const float kFocusArrowSize = 48.0f;
+
+	// 矢印を表示する距離
+	static inline const float kArrowDistance = 120.0f;
 
 
 	Player* player_ = nullptr;

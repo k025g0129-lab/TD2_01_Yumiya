@@ -83,12 +83,17 @@ public:
 
 	int GetChargeTime() const { return chargeTime_; }
 
+	int GetHP() const { return HP_; }
+
 	// パブリックメンバ変数
 	// チャージ1段階目に必要な時間
 	static inline const int kChargeStepOneTime = 30;
 
 	// チャージ2段階目に必要な時間
 	static inline const int kChargeStepTwoTime = kChargeStepOneTime + 30;
+
+	// 最大HP
+	static inline const int kMaxHP = 3;
 
 private:
 	// ワールド変換データ
@@ -132,9 +137,6 @@ private:
 	//============================================================
 	// HP・被ダメージ周り
 	//============================================================
-
-	// 最大HP
-	static inline const int kMaxHP = 3;
 
 	// HP
 	int HP_ = kMaxHP;
@@ -273,6 +275,9 @@ private:
 
 	// チャージ段階
 	int GetChargeStep() const;
+
+	// 向きに合わせてプレイヤーの角度を変更する
+	void ChangeRotationToDirection();
 
 	//============================================================
 	// ノックバック
