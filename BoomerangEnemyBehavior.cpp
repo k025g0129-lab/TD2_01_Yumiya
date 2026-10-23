@@ -15,6 +15,14 @@ void EnemyBoomerangWalk::Initialize() {
 
 	walkTimer_ = 0.0f;
 	walkMotionTimer_ = 0.0f;
+
+	boomerangEnemy_->SetRotationX(0.0f);
+	boomerangEnemy_->SetRotationY(3.0f * (kPi / 2.0f));
+	boomerangEnemy_->SetRotationZ(0.0f);
+	boomerangEnemy_->SetBoomerangRotationX(0.0f);
+	boomerangEnemy_->SetBoomerangRotationY(3.0f * (kPi / 2.0f));
+	boomerangEnemy_->SetBoomerangRotationZ(0.0f);
+
 }
 
 void EnemyBoomerangWalk::Update() {
@@ -26,10 +34,12 @@ void EnemyBoomerangWalk::Update() {
 	}
 
 	boomerangEnemy_->Move(velocty_);
+	boomerangEnemy_->MoveBoomerang(velocty_);
 	
 }
 
 void EnemyBoomerangWalk::UpdateMotion() {
+
 	walkMotionTimer_ += 1.0f / 60.0f;
 
 	// タイマーが大きくなりすぎないようにする
@@ -47,7 +57,9 @@ void EnemyBoomerangWalk::UpdateMotion() {
 	float angle = kWalkMotionAngleStart + (kWalkMotionAngleEnd - kWalkMotionAngleStart) * t;
 
 	// X軸周りに回転アニメーション
-	boomerangEnemy_->SetRotationX(angle);
+	boomerangEnemy_->SetRotationY(angle + 3.0f * (kPi / 2.0f));
+	boomerangEnemy_->SetBoomerangRotationY(boomerangEnemy_->GetRotationY());
+
 }
 
 EnemyBoomerangAttack::EnemyBoomerangAttack(BoomerangEnemy* boomerangEnemy) { boomerangEnemy_ = boomerangEnemy; }
@@ -61,32 +73,73 @@ void EnemyBoomerangAttack::Initialize() {
 
 	// 初期化
 	translation_ = boomerangEnemy_->GetTranslation();
-	angul = std::numbers::pi_v<float> / 2.0f;
 	attackTimer_ = 0.0f;
 	distanceRadius = boomerangEnemy_->GetWorldPosition().x - distanceCircleCenterPoint.x;
+
+	//モーション
+	attackPhase = AttackPhase::CHARGE;
+	rotateAngul = 0.0f;
+	
 }
 
 void EnemyBoomerangAttack::Update() {
 	attackTimer_ += 1.0f / 60.0f;
 
-	angul -= std::numbers::pi_v<float> * 2.0f / (60.0f * kRotateTime);
+	switch (attackPhase) {
 
-	translation_.x = distanceCircleCenterPoint.x + std::sin(angul) * distanceRadius;
-	translation_.y = verticalCircleCenterPoint.y + std::cos(angul) * kVerticalRadius;
+	case AttackPhase::CHARGE:
 
-	// 一定以上時間が経ったなら歩行に変更
-	if (attackTimer_ >= kRotateTime) {
-		boomerangEnemy_->BehaviorRequestWalk();
+		if (attackTimer_ >= kChargeTime) {
+			attackPhase = AttackPhase::THROWING;
+			attackTimer_ = 0.0f;
+		}
+
+		break;
+
+	case AttackPhase::THROWING:
+	
+		circleAngul -= std::numbers::pi_v<float> * 2.0f / (60.0f * kRotateTime);
+
+		translation_.x = distanceCircleCenterPoint.x + std::sin(circleAngul) * distanceRadius;
+		translation_.y = verticalCircleCenterPoint.y + std::cos(circleAngul) * kVerticalRadius;
+
+		// 一定以上時間が経ったなら歩行に変更
+		if (attackTimer_ >= kRotateTime) {
+			boomerangEnemy_->BehaviorRequestWalk();
+		}
+
+		boomerangEnemy_->GetWorldPosition();
+
+		// 円周をまわる
+		boomerangEnemy_->SetBoomerangTranslation(translation_);
+		break;
 	}
 
-	boomerangEnemy_->GetWorldPosition();
-
-	// 円周をまわる
-	boomerangEnemy_->SetTranslation(translation_);
-	ImGui::Text("%f,%f,%f", boomerangEnemy_->GetWorldPosition().x, boomerangEnemy_->GetWorldPosition().y, boomerangEnemy_->GetWorldPosition().z);
 }
 
-void EnemyBoomerangAttack::UpdateMotion() {}
+void EnemyBoomerangAttack::UpdateMotion() {
+	switch (attackPhase) {
+
+	case AttackPhase::CHARGE:
+		
+		//回転速度
+		rotateAngul +=kChargeRotateAcceleration;
+
+		if (rotateAngul >= kChargeRotateMaxSpeed) {
+			rotateAngul = kChargeRotateMaxSpeed;
+		}
+
+		boomerangEnemy_->SetRotationY(boomerangEnemy_->GetRotationY() - rotateAngul);
+		boomerangEnemy_->SetBoomerangRotationY(boomerangEnemy_->GetRotationY());
+
+		break;
+
+	case AttackPhase::THROWING:
+		boomerangEnemy_->SetBoomerangRotationY(boomerangEnemy_->GetBoomerangRotationY() - rotateAngul);
+		break;
+	}
+
+}
 
 EnemyBoomerangDeath::EnemyBoomerangDeath(BoomerangEnemy* boomerangEnemy) { boomerangEnemy_ = boomerangEnemy; }
 
@@ -116,4 +169,51 @@ void EnemyBoomerangDeath::UpdateMotion() {
 	if (deathTimer_ >= kDeathMotionTime) {
 		boomerangEnemy_->SetDead(true);
 	}
+}
+
+float GraduallyChangingScaleA(float self, float target, float change) {
+
+	// 目標近くの時
+	if (self <= target + change && self >= target - change) {
+
+		// シェイク用で大きく震わせる
+		return self + (change * 3.0f);
+
+		// 目標の近くではない時
+	} else {
+
+		// 目標に近づけさせる
+		if (self > target) {
+			return self - change;
+
+		} else if (self < target) {
+			return self + change;
+		}
+	}
+
+	return self;
+}
+
+float RoundTrip(float self, float target1, float target2, float& change, float second) { 
+
+	if (self >= target1) {
+
+		if (change >= 0.0f) {
+
+			change *= -1.0f;
+		}
+
+	}
+
+	if (self <= target2) {
+		if (change <= 0.0f) {
+
+			change *= -1.0f;
+		}
+	}
+
+
+
+	return self + (change / (second * 60.0f)); 
+
 }

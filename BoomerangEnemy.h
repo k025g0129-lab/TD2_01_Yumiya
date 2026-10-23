@@ -19,7 +19,24 @@ public:
 	void BehaviorRequestWalk() { behaviorRequest_ = EnemyBoomerangBehavior::kWalk; };
 	void BehaviorRequestAttack() { behaviorRequest_ = EnemyBoomerangBehavior::kAttack; };
 
+
+	//以下ブーメラン用関数
+	void MoveBoomerang(const KamataEngine::Vector3& velocity) { worldTransformBoomerang_.translation_ += velocity; };
+
+	// XYZ軸回転設定
+	void SetBoomerangRotationX(float angle) { worldTransformBoomerang_.rotation_.x = angle; }
+	void SetBoomerangRotationY(float angle) { worldTransformBoomerang_.rotation_.y = angle; }
+	void SetBoomerangRotationZ(float angle) { worldTransformBoomerang_.rotation_.z = angle; }
+
+	// XYZ軸回転取得
+	float GetBoomerangRotationX() const { return worldTransformBoomerang_.rotation_.x; }
+	float GetBoomerangRotationY() const { return worldTransformBoomerang_.rotation_.y; }
+	float GetRotationZ() const { return worldTransform_.rotation_.z; }
+	void SetBoomerangTranslation(KamataEngine::Vector3 translation) { worldTransformBoomerang_.translation_ = translation; };
+
 private:
+
+	void Draw() override;
 
 	// 初期化の個別処理
 	void InitializeInternal() override;
@@ -34,5 +51,11 @@ private:
 
 	// モデルの向きに合わせたY軸の回転量(270度)
 	static inline const float kDefaultAngle = 3.0f * (kPi / 2.0f);
+
+
+	//ブーメラン
+	KamataEngine::Model* modelBoomerang_ = nullptr;
+	// ワールド変換データ
+	KamataEngine::WorldTransform worldTransformBoomerang_;
 
 };

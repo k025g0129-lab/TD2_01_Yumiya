@@ -18,17 +18,17 @@ void EnemyJumpWalk::Initialize() {
 	mapChipField_ = jumpEnemy_->GetMapChipField();
 
 	jumpCount_ = 0;
-	isGround_ = false;
+	isJump_ = false;
 	preIsGround_ = true;
+	jumpEnemy_->SetScaleX(1.0f);
+	jumpEnemy_->SetScaleY(1.0f);
+	jumpEnemy_->SetScaleZ(1.0f);
 }
 
 void EnemyJumpWalk::Update() {
 
-	isGround_ = jumpEnemy_->IsGround();
-
-
 	//地上
-	if (isGround_) {
+	if (jumpEnemy_->IsGround()) {
 		velocty_.y += kJumpPower;
 
 		jumpEnemy_->SetGround(false);
@@ -44,7 +44,8 @@ void EnemyJumpWalk::Update() {
 	bool nowGrounfd = jumpEnemy_->IsGround();
 		
 	// 着地
-	if (nowGrounfd && !preIsGround_) {
+	if (jumpEnemy_->IsGround() && !preIsGround_) {
+
 		jumpCount_++;
 		
 		velocty_.y = 0.0f;
@@ -53,7 +54,13 @@ void EnemyJumpWalk::Update() {
 			jumpEnemy_->BehaviorRequestHighJump();
 			return;
 		}
+
+		isJump_ = true;
+	} else {
+
+		isJump_ = false;
 	}
+
 
 	preIsGround_ = nowGrounfd;
 
@@ -61,24 +68,27 @@ void EnemyJumpWalk::Update() {
 
 void EnemyJumpWalk::UpdateMotion() {
 
-	walkMotionTimer_ += 1.0f / 60.0f;
+	jumpEnemy_->SetScaleY(GraduallyChangingScale(jumpEnemy_->GetScaleY(),1.0f,0.015f));
+	
 
-	// タイマーが大きくなりすぎないようにする
-	if (walkMotionTimer_ >= kWalkMotionTime) {
-		walkMotionTimer_ -= kWalkMotionTime;
+	//if (jumpEnemy_->GetScaleY() < 1.0f) {
+	//	jumpEnemy_->SetScaleY(jumpEnemy_->GetScaleY() + 0.015f);
+	//}
+
+	jumpEnemy_->SetScaleZ(GraduallyChangingScale(jumpEnemy_->GetScaleZ(), 1.0f, 0.015f));
+	
+
+	//if (jumpEnemy_->GetScaleZ() > 1.0f) {
+	//	jumpEnemy_->SetScaleZ(jumpEnemy_->GetScaleZ() - 0.015f);
+	//}
+
+	//着地モーション
+	if (isJump_) {
+		jumpEnemy_->SetScaleY(0.7f);
+		jumpEnemy_->SetScaleZ(1.2f);
+
 	}
 
-	// -1.0f ～ 1.0f を周期的に繰り返す値
-	float param = std::sin(2.0f * kPi * walkMotionTimer_ / kWalkMotionTime);
-
-	// -1.0f ～ 1.0f を 0.0f ～ 1.0f に変換
-	float t = (param + 1.0f) / 2.0f;
-
-	// 最初の角度から最後の角度まで補間
-	float angle = kWalkMotionAngleStart + (kWalkMotionAngleEnd - kWalkMotionAngleStart) * t;
-
-	// X軸周りに回転アニメーション
-	jumpEnemy_->SetRotationX(angle);
 }
 
 
@@ -89,6 +99,10 @@ void EnemyHighJump::Initialize() {
 	highJumpPhase = HighJumpPhase::kCharge;
 	chargeTimer_ = 0.0f;
 	mapChipField_ = jumpEnemy_->GetMapChipField(); 
+
+	jumpEnemy_->SetScaleX(1.0f);
+	jumpEnemy_->SetScaleY(1.0f);
+	jumpEnemy_->SetScaleZ(1.0f);
 }
 
 void EnemyHighJump::Update() {
@@ -132,10 +146,45 @@ void EnemyHighJump::UpdateMotion() {
 
 	case HighJumpPhase::kCharge:
 
+		jumpEnemy_->SetScaleY(GraduallyChangingScale(jumpEnemy_->GetScaleY(), 0.5f, 0.03f));
+	
+
+		//if (jumpEnemy_->GetScaleY() > 0.5f) {
+		//	jumpEnemy_->SetScaleY(jumpEnemy_->GetScaleY() - 0.03f);
+		//} else {
+		//	jumpEnemy_->SetScaleY(0.5f);
+		//}
+
+		jumpEnemy_->SetScaleZ(GraduallyChangingScale(jumpEnemy_->GetScaleZ(), 1.5f, 0.03f));
+	
+
+		//if (jumpEnemy_->GetScaleZ() < 1.5f) {
+		//	jumpEnemy_->SetScaleZ(jumpEnemy_->GetScaleZ() + 0.03f);
+		//} else {
+		//	jumpEnemy_->SetScaleZ(1.5f);
+		//}
+
 		break;
 
 	case HighJumpPhase::kJump:
 
+		jumpEnemy_->SetScaleY(GraduallyChangingScale(jumpEnemy_->GetScaleY(), 1.1f, 0.03f));
+	
+
+		//if (jumpEnemy_->GetScaleY() < 1.1f) {
+		//	jumpEnemy_->SetScaleY(jumpEnemy_->GetScaleY() + 0.03f);
+		//} else {
+		//	jumpEnemy_->SetScaleY(1.1f);
+		//}
+
+		jumpEnemy_->SetScaleZ(GraduallyChangingScale(jumpEnemy_->GetScaleZ(), 0.9f, 0.03f));
+	
+
+		//if (jumpEnemy_->GetScaleZ() < 0.9f) {
+		//	jumpEnemy_->SetScaleZ(jumpEnemy_->GetScaleZ() - 0.03f);
+		//} else {
+		//	jumpEnemy_->SetScaleZ(0.9f);
+		//}
 		break;
 	}
 
@@ -170,5 +219,45 @@ void EnemyJumpDeath::UpdateMotion() {
 	if (deathTimer_ >= kDeathMotionTime) {
 		jumpEnemy_->SetDead(true);
 	}
+
+}
+
+float GraduallyChangingScale(float self, float target, float change) {
+
+	
+	//目標近くの時
+	if (self <= target + change && self >= target - change) {
+
+		//シェイク用で大きく震わせる
+		return self + (change * 3.0f) ;
+
+	//目標の近くではない時
+	} else {
+	
+		//目標に近づけさせる
+		if (self > target ) {
+			return self - change;
+		
+		} else if(self < target) {
+			return self + change;
+		
+		}
+	}
+
+	return self;
+}
+
+void ShakeScale(float& self, float shake1, float shake2) { 
+	if (self == shake1) {
+		self = shake1;
+	
+	} else if (self == shake2) {
+		self = shake2;
+	
+	} else {
+		self = shake1;
+	
+	}
+
 
 }

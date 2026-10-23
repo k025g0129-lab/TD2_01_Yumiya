@@ -11,11 +11,29 @@
 #include "ModelManager.h"
 
 using namespace KamataEngine;
+void BoomerangEnemy::Draw() {
+
+	WorldTransformUpdate(worldTransformBoomerang_);
+
+	Model::PreDraw();
+
+	model_->Draw(worldTransform_, *camera_);
+	modelBoomerang_->Draw(worldTransformBoomerang_, *camera_);
+
+	Model::PostDraw();
+
+}
 void BoomerangEnemy::InitializeInternal() {
-	model_ = ModelManager::GetInstance()->Load("BoomerangEnemy", true);
+	model_ = ModelManager::GetInstance()->Load("ThrowingBorn", true);
+	modelBoomerang_ = ModelManager::GetInstance()->Load("BoomerangEnemy", true);
+
+	worldTransformBoomerang_.Initialize();
+
+	worldTransformBoomerang_.translation_ = worldTransform_.translation_;
 
 	// モデルの向きに合わせてY軸回りに270度回転させる
 	worldTransform_.rotation_.y = kDefaultAngle;
+	worldTransformBoomerang_.rotation_.y = kDefaultAngle;
 
 	behaviorRequest_ = EnemyBoomerangBehavior::kWalk;
 	ChangeBehavior();

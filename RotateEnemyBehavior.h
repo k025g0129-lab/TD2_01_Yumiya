@@ -36,15 +36,6 @@ private:
 	// 歩行の速さ
 	static inline const float kWalkSpeed = 0.03f;
 
-	// 歩行モーションの最初の角度
-	static inline const float kWalkMotionAngleStart = kPi / 4.0f;
-
-	// 歩行モーション終わりの角度
-	static inline const float kWalkMotionAngleEnd = -kWalkMotionAngleStart;
-
-	// 歩行アニメーションの周期[秒]
-	static inline const float kWalkMotionTime = 2.0f;
-
 	// 回転までの周期[秒]
 	static inline const float kWalkTime = 5.0f;
 };
@@ -70,7 +61,7 @@ private:
 	static inline const float kRadius = 2.5f;
 
 	// 何秒で1回転するか
-	static inline const float kRotateTime = 2.0f;
+	static inline const float kRotateTime = 5.0f;
 };
 
 class EnemyRotateDeath : public IEnemiesBehavior {

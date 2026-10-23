@@ -24,8 +24,6 @@ void JumpEnemy::InitializeInternal() {
 
 void JumpEnemy::ChangeBehavior() {
 
-
-
 	// 振る舞い変更のリクエストが来ていた場合、振る舞いを変更する
 	if (behaviorRequest_ != EnemyJumpBehavior::kUnknown) {
 		// 振る舞い変更の反映
@@ -50,7 +48,7 @@ void JumpEnemy::ChangeBehavior() {
 			behavior_ = std::make_unique<EnemyJumpDeath>(this);
 			break;
 		}
-
+		 
 		behavior_->Initialize();
 		behaviorRequest_ = EnemyJumpBehavior::kUnknown;
 	}
