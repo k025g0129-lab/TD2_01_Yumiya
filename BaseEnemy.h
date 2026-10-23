@@ -2,6 +2,7 @@
 #include<KamataEngine.h>
 #include"Collision.h"
 #include "IEnemyBehavior.h"
+#include <memory>
 
 // 前方宣言
 class Player;
@@ -103,6 +104,43 @@ class BaseEnemy {
 
 	// 敵のHP。敵に応じて初期化でそれぞれ変える
 	int HP_ = 3;
+
+	// 敵の最大HP
+	int maxHP_ = 3;
+
+	//============================================================
+	// HPゲージ
+	//============================================================
+
+	// HPゲージ背景
+	std::unique_ptr<KamataEngine::Sprite> hpGaugeBackgroundSprite_;
+
+	// HPゲージ本体
+	std::unique_ptr<KamataEngine::Sprite> hpGaugeSprite_;
+
+	// ゲージ背景のサイズ
+	static inline const float kHPGaugeBackgroundWidth = 64.0f;
+	static inline const float kHPGaugeBackgroundHeight = 12.0f;
+
+	// ゲージ本体のサイズ
+	static inline const float kHPGaugeWidth = 60.0f;
+	static inline const float kHPGaugeHeight = 8.0f;
+
+	// 敵の中心からゲージまでの高さ（ワールド座標）
+	static inline const float kHPGaugeOffsetY = 0.9f;
+
+	// 画面サイズ
+	static inline const float kScreenWidth = 1280.0f;
+	static inline const float kScreenHeight = 720.0f;
+
+	// ゲージ初期化
+	void InitializeHPGauge();
+
+	// ゲージ更新
+	void UpdateHPGauge();
+
+	// ゲージ描画
+	void DrawHPGauge();
 
   private:
 	void InitializeCommon(KamataEngine::Camera* camera, KamataEngine::Vector3 position);
