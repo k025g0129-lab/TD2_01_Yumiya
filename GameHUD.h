@@ -67,6 +67,9 @@ class GameHUD {
 	const KamataEngine::Vector4 chageStapOneColor{0.8f,0.3f,0.3f,1.0f};
 	const KamataEngine::Vector4 chageStapTwoColor{1.0f, 0.1f, 0.1f, 1.0f};
 
+	// チャージ完了時の色
+	const KamataEngine::Vector4 chageCompleteColor{1.0f, 0.8f, 0.1f, 1.0f};
+
 	//========================================================
 	// 矢印周り
 	//========================================================

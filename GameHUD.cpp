@@ -118,16 +118,21 @@ void GameHUD::Update() {
 
 		chargeRate = static_cast<float>(chargeTime) / static_cast<float>(Player::kChargeStepOneTime);
 
-		// 1段階目の色
 		chargeGaugeSprite_->SetColor(chageStapOneColor);
 
-	} else {
+	} else if (chargeTime < Player::kChargeStepTwoTime) {
 
 		// チャージ2段階目
 		chargeRate = static_cast<float>(chargeTime - Player::kChargeStepOneTime) / static_cast<float>(Player::kChargeStepTwoTime - Player::kChargeStepOneTime);
 
-		// 2段階目の色
 		chargeGaugeSprite_->SetColor(chageStapTwoColor);
+
+	} else {
+
+		// チャージ完了
+		chargeRate = 1.0f;
+
+		chargeGaugeSprite_->SetColor(chageCompleteColor);
 	}
 
 	// 進行率を0.0f～1.0fに制限
