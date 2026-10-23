@@ -33,6 +33,7 @@ private:
 	float walkTimer_ = 0.0f;
 	float walkMotionTimer_ = 0.0f;
 
+
 	// 攻撃までの周期[秒]
 	static inline const float kWalkTime = 5.0f;
 
