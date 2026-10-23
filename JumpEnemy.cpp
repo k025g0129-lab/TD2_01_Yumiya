@@ -150,38 +150,30 @@ KamataEngine::Vector3 JumpEnemy::CornerPosition(const KamataEngine::Vector3& cen
 	return center + offsetTable[static_cast<uint32_t>(corner)];
 }
 
-void JumpEnemy::OnCollision(Player* player) {
+void JumpEnemy::OnCollision() {
 	// 死んでいるなら何もしない
 	if (enumBehavior_ == EnemyJumpBehavior::kDeathDirection) {
 		return;
 	}
-
-	// プレイヤーが攻撃中なら死ぬ
-	if (player->IsAttack()) {
-		// 振る舞いをデス演出に変更
-		behaviorRequest_ = EnemyJumpBehavior::kDeathDirection;
-
-		// あたり判定無効フラグを立てる
-		isCollisionDisabled_ = true;
-
-		// 敵と自キャラの中間位置にエフェクトを生成
-		Vector3 effectPosition = (GetWorldPosition() + player->GetWorldPosition()) / 2.0f;
-
-		if (gameScene_) {
-			gameScene_->CreateHitEffect(effectPosition);
-		}
-	}
 }
 
-void JumpEnemy::OnCollisionBullet() {
-	// 振る舞いをデス演出に変更
-	behaviorRequest_ = EnemyJumpBehavior::kDeathDirection;
-
-	// あたり判定無効フラグを立てる
-	isCollisionDisabled_ = true;
+void JumpEnemy::OnCollisionBullet(int bulletAttack) {
+	// ダメージを受ける
+	HP_ -= bulletAttack;
 
 	// エフェクトを生成
 	if (gameScene_) {
 		gameScene_->CreateHitEffect(GetWorldPosition());
 	}
+
+	// 死んでなければ処理終了
+	if (HP_ > 0) {
+		return;
+	}
+
+	// 振る舞いをデス演出に変更
+	behaviorRequest_ = EnemyJumpBehavior::kDeathDirection;
+
+	// あたり判定無効フラグを立てる
+	isCollisionDisabled_ = true;
 }
