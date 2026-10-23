@@ -55,6 +55,31 @@ class BaseEnemy {
 	// Y軸回転取得
 	float GetRotationY() const { return worldTransform_.rotation_.y; }
 
+	// Z軸回転設定
+	void SetRotationZ(float angle) { worldTransform_.rotation_.z = angle; }
+
+	// Z軸回転取得
+	float GetRotationZ() const { return worldTransform_.rotation_.z; }
+
+
+	// X軸サイズ設定
+	void SetScaleX(float size) { worldTransform_.scale_.x = size; }
+
+	// X軸サイズ取得
+	float GetScaleX() const { return worldTransform_.scale_.x; }
+
+	// Y軸サイズ設定
+	void SetScaleY(float size) { worldTransform_.scale_.y = size; }
+
+	// Y軸サイズ取得
+	float GetScaleY() const { return worldTransform_.scale_.y; }
+
+	// Z軸サイズ設定
+	void SetScaleZ(float size) { worldTransform_.scale_.z = size; }
+
+	// Z軸サイズ取得
+	float GetScaleZ() const { return worldTransform_.scale_.z; }
+
 	// 速度設定
 	void SetVelocity(const KamataEngine::Vector3& velocity) { velocity_ = velocity; }
 
@@ -145,3 +170,4 @@ class BaseEnemy {
   private:
 	void InitializeCommon(KamataEngine::Camera* camera, KamataEngine::Vector3 position);
 };
+

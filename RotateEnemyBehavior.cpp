@@ -15,6 +15,9 @@ void EnemyRotateWalk::Initialize() {
 
 	walkTimer_ = 0.0f;
 	walkMotionTimer_ = 0.0f;
+	rotateEnemy_->SetRotationX(0.0f);
+	rotateEnemy_->SetRotationY(0.0f);
+	rotateEnemy_->SetRotationZ(0.0f);
 }
 
 void EnemyRotateWalk::Update() {
@@ -30,24 +33,9 @@ void EnemyRotateWalk::Update() {
 }
 
 void EnemyRotateWalk::UpdateMotion() {
-	walkMotionTimer_ += 1.0f / 60.0f;
-
-	// タイマーが大きくなりすぎないようにする
-	if (walkMotionTimer_ >= kWalkMotionTime) {
-		walkMotionTimer_ -= kWalkMotionTime;
-	}
-
-	// -1.0f ～ 1.0f を周期的に繰り返す値
-	float param = std::sin(2.0f * kPi * walkMotionTimer_ / kWalkMotionTime);
-
-	// -1.0f ～ 1.0f を 0.0f ～ 1.0f に変換
-	float t = (param + 1.0f) / 2.0f;
-
-	// 最初の角度から最後の角度まで補間
-	float angle = kWalkMotionAngleStart + (kWalkMotionAngleEnd - kWalkMotionAngleStart) * t;
 
 	// X軸周りに回転アニメーション
-	rotateEnemy_->SetRotationX(angle);
+	rotateEnemy_->SetRotationX(rotateEnemy_->GetRotationX() + 0.01f);
 }
 
 EnemyRotateFlyRing::EnemyRotateFlyRing(RotateEnemy* rotateEnemy) { rotateEnemy_ = rotateEnemy; }
@@ -78,13 +66,23 @@ void EnemyRotateFlyRing::Update() {
 	}
 
 	rotateEnemy_->GetWorldPosition();
-
+		
 	// 円周をまわる
 	rotateEnemy_->SetTranslation(translation_);
 	ImGui::Text("%f,%f,%f", rotateEnemy_->GetWorldPosition().x, rotateEnemy_->GetWorldPosition().y, rotateEnemy_->GetWorldPosition().z);
 }
 
-void EnemyRotateFlyRing::UpdateMotion() {}
+void EnemyRotateFlyRing::UpdateMotion() {
+
+
+
+	// Z軸周りに回転アニメーション
+	rotateEnemy_->SetRotationZ(rotateEnemy_->GetRotationZ() - (std::numbers::pi_v<float> * 2.0f) / (60.0f * kRotateTime));
+
+	// X軸周りに回転アニメーション
+	rotateEnemy_->SetRotationX(rotateEnemy_->GetRotationX() + 0.01f);
+
+}
 
 EnemyRotateDeath::EnemyRotateDeath(RotateEnemy* rotateenemy) { rotateEnemy_ = rotateenemy; }
 

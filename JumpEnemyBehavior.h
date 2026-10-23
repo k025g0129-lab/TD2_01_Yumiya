@@ -38,24 +38,14 @@ private:
 
 	//ジャンプ
 	int jumpCount_ = 0;
-	bool isGround_ = true;
+	bool isJump_ = true;
 	bool preIsGround_ = true;
 
 	static inline const int kJumpCountMax = 7;
-	static inline const float kJumpPower = 0.25f;
-	static inline const float kGravity = 0.02f;
+	static inline const float kJumpPower = 0.125f;
+	static inline const float kGravity = 0.005f;
 
-	// 歩行モーションの最初の角度
-	static inline const float kWalkMotionAngleStart = kPi / 4.0f;
 
-	// 歩行モーション終わりの角度
-	static inline const float kWalkMotionAngleEnd = -kWalkMotionAngleStart;
-
-	// 歩行アニメーションの周期[秒]
-	static inline const float kWalkMotionTime = 2.0f;
-
-	// 回転までの周期[秒]
-	static inline const float kWalkTime = 5.0f;
 };
 
 
@@ -83,10 +73,13 @@ private:
 	float chargeTimer_ = 0.0f;
 
 	static inline const float kChargeTime = 100.7f;
-	static inline const float kHighJumpPower = 0.5f;
-	static inline const float kGravity = 0.02f;
+	static inline const float kHighJumpPower = 0.35f;
+	static inline const float kGravity = 0.01f;
 
 	KamataEngine::Vector3 velocity_{};
+
+	//モーション
+
 };
 
 class EnemyJumpDeath : public IEnemiesBehavior {
@@ -115,3 +108,6 @@ private:
 	// 死亡演出中の回転速度
 	static inline const float kDeathSpinSpeed = kPi * 6.0f;
 };
+
+float GraduallyChangingScale(float self, float target, float change);
+void ShakeScale(float& self, float shake1, float shake2);

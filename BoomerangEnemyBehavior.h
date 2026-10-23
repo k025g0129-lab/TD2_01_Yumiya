@@ -33,20 +33,21 @@ private:
 	float walkTimer_ = 0.0f;
 	float walkMotionTimer_ = 0.0f;
 
+	// 攻撃までの周期[秒]
+	static inline const float kWalkTime = 5.0f;
+
 	// 歩行の速さ
-	static inline const float kWalkSpeed = 0.03f;
+	static inline const float kWalkSpeed = 0.01f;
+
+	//モーションの周期[秒]
+	static inline const float kWalkMotionTime = 2.0f;
 
 	// 歩行モーションの最初の角度
-	static inline const float kWalkMotionAngleStart = kPi / 4.0f;
+	static inline const float kWalkMotionAngleStart = kPi / 8.0f;
 
 	// 歩行モーション終わりの角度
 	static inline const float kWalkMotionAngleEnd = -kWalkMotionAngleStart;
 
-	// 歩行アニメーションの周期[秒]
-	static inline const float kWalkMotionTime = 2.0f;
-
-	// 回転までの周期[秒]
-	static inline const float kWalkTime = 5.0f;
 };
 
 class EnemyBoomerangAttack : public IEnemiesBehavior {
@@ -61,7 +62,9 @@ private:
 
 	KamataEngine::Vector3 translation_{};
 	float attackTimer_ = 0.0f;
-	float angul = -std::numbers::pi_v<float>;
+	float circleAngul = std::numbers::pi_v<float> / 2.0f;
+	float rotateAngul = 0.0f;
+	float a = 0.0f;
 
 	// 縦円の中心点
 	KamataEngine::Vector3 verticalCircleCenterPoint = {0.0f, 0.0f, 0.0f};
@@ -73,8 +76,28 @@ private:
 	static inline const float kVerticalRadius = 4.0f;
 	float distanceRadius = 2.5f;
 
+	// 何秒溜めるか
+	static inline const float kChargeTime = 2.0f;
+
 	// 何秒で1回転するか
 	static inline const float kRotateTime = 5.0f;
+
+
+	//攻撃フェーズ
+	enum AttackPhase{
+		CHARGE,
+		THROWING,
+	};
+
+	AttackPhase attackPhase = AttackPhase::CHARGE;
+
+	// チャージ時の回転の加速度
+	static inline const float kChargeRotateAcceleration = 0.006f;
+
+	// チャージ時の最大回転速度
+	static inline const float kChargeRotateMaxSpeed = 0.3f;
+
+
 };
 
 class EnemyBoomerangDeath : public IEnemiesBehavior {
@@ -102,3 +125,6 @@ private:
 	// 死亡演出中の回転速度
 	static inline const float kDeathSpinSpeed = kPi * 6.0f;
 };
+
+float GraduallyChangingScaleA(float self, float target, float change);
+float RoundTrip(float self, float target1, float target2, float& change, float second);
