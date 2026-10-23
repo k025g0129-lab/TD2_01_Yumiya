@@ -7,13 +7,12 @@
 
 // 前方宣言
 class MapChipField;
-class Player;
 
 class BoomerangEnemy final : public BaseEnemy {
 public:
 
-	void OnCollision(Player* player) override;
-	void OnCollisionBullet() override;
+	void OnCollision() override;
+	void OnCollisionBullet(int bulletAttack) override;
 
 	//振る舞いをリクエストする
 	void BehaviorRequestWalk() { behaviorRequest_ = EnemyBoomerangBehavior::kWalk; };

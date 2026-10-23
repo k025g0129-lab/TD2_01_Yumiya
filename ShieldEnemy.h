@@ -9,7 +9,7 @@ class GameScene;
 
 class ShieldEnemy : public BaseEnemy {
   public:
-	void OnCollision(Player* player) override;
+	void OnCollision() override;
 
 
   private:

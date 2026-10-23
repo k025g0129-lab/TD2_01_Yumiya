@@ -71,42 +71,42 @@ void ShieldEnemy::InitializeInternal () {
 //	WorldTransformUpdate(worldTransform_);
 //}
 
-void ShieldEnemy::OnCollision(Player* player) {
+void ShieldEnemy::OnCollision() {
 	// 死んでいるなら何もしない
 	if (behavior_ == Behavior::kDeathDirection) {
 		return;
 	}
 
-	// プレイヤーが攻撃中なら死ぬ
-	if (player->IsAttack()) {
+	//// プレイヤーが攻撃中なら死ぬ
+	//if (player->IsAttack()) {
 
-		// プレイヤーと向き合っている(向きが違う)時はガード成功
-		if (lrDirection_ != player->GetLRDirection()) {
-			// ガードエフェクトの生成
-			gameScene_->CreateGuardEffect(GetWorldPosition());
+	//	// プレイヤーと向き合っている(向きが違う)時はガード成功
+	//	if (lrDirection_ != player->GetLRDirection()) {
+	//		// ガードエフェクトの生成
+	//		gameScene_->CreateGuardEffect(GetWorldPosition());
 
-			// ガード演出へ移行
-			behaviorRequest_ = Behavior::kGuard;
+	//		// ガード演出へ移行
+	//		behaviorRequest_ = Behavior::kGuard;
 
-			// プレイヤーのノックバックを要求
-			player->RequestKnockback();
+	//		// プレイヤーのノックバックを要求
+	//		player->RequestKnockback();
 
-			return;
-		}
+	//		return;
+	//	}
 
-		// 振る舞いをデス演出に変更
-		behaviorRequest_ = Behavior::kDeathDirection;
+	//	// 振る舞いをデス演出に変更
+	//	behaviorRequest_ = Behavior::kDeathDirection;
 
-		// あたり判定無効フラグを立てる
-		isCollisionDisabled_ = true;
+	//	// あたり判定無効フラグを立てる
+	//	isCollisionDisabled_ = true;
 
-		// 敵と自キャラの中間位置にエフェクトを生成
-		Vector3 effectPosition = (GetWorldPosition() + player->GetWorldPosition()) / 2.0f;
+	//	// 敵と自キャラの中間位置にエフェクトを生成
+	//	Vector3 effectPosition = (GetWorldPosition() + player->GetWorldPosition()) / 2.0f;
 
-		if (gameScene_) {
-			gameScene_->CreateHitEffect(effectPosition);
-		}
-	}
+	//	if (gameScene_) {
+	//		gameScene_->CreateHitEffect(effectPosition);
+	//	}
+	//}
 }
 
 void ShieldEnemy::BehaviorWalkInitialize() {
