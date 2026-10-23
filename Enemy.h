@@ -6,12 +6,11 @@
 
 // 前方宣言
 class MapChipField;
-class Player;
 
 class Enemy final : public BaseEnemy {
 public:
-	void OnCollision(Player *player) override;
-	void OnCollisionBullet() override;
+	void OnCollision() override;
+	void OnCollisionBullet(int bulletAttack) override;
 
 private:
 	// 初期化の個別処理

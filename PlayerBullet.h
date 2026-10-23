@@ -26,8 +26,7 @@ class PlayerBullet {
 	// 命中しているか
 	bool IsHit() const { return isHit_; }
 
-	// 命中時の処理
-	void OnCollision() { isHit_ = true; }
+	int GetAttack() const { return attack_; }
 
 	/// ===============================================
 	/// セッター
@@ -37,6 +36,9 @@ class PlayerBullet {
 	/// 方向の設定
 	/// </summary>
 	void SetDirection(Direction direction) { direction_ = direction; }
+
+	// 命中時の処理
+	void OnCollision() { isHit_ = true; }
 
 	/// ===============================================
 	/// public関数
@@ -55,7 +57,7 @@ class PlayerBullet {
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(KamataEngine::Camera* camera, KamataEngine::Vector3 position, Direction direction);
+	void Initialize(KamataEngine::Camera* camera, KamataEngine::Vector3 position, Direction direction, int chargeStep);
 
 	/// <summary>
 	/// 更新
@@ -84,8 +86,8 @@ private:
 	// 速度
 	KamataEngine::Vector3 velocity_ = {};
 
-	// 速度定数
-	static inline const float kSpeed = 0.1f;
+	// チャージ段階に応じた速度定数
+	static inline const float kSpeedTable[] = {0.1f, 0.2f, 0.4f};
 
 	// 方向
 	Direction direction_ = Direction::kRight;
@@ -100,14 +102,20 @@ private:
 	// 命中フラグ
 	bool isHit_ = false;
 
+	// この矢の攻撃力
+	int attack_ = 0;
+
+	// チャージ段階に対応した攻撃力
+	static inline const int kAttackTable[] = {1, 3, 5};
+
 	/// ===============================================
 	/// private関数
 	/// ===============================================
 
 	/// <summary>
-	/// 方向から加速度を算出する
+	/// 方向から速度を算出する
 	/// </summary>
-	void DirectionToAcceleration();
+	void DirectionToVelocity(int chargeStep);
 
 	/// <summary>
 	/// 方向から角度を算出する

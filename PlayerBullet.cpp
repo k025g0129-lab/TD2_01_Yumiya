@@ -24,7 +24,7 @@ PlayerBullet::PlayerBullet() {}
 
 PlayerBullet::~PlayerBullet() {}
 
-void PlayerBullet::Initialize(Camera* camera, Vector3 position, Direction direction) {
+void PlayerBullet::Initialize(Camera* camera, Vector3 position, Direction direction, int chargeStep) {
 	// ポインタの引き渡しとエラー処理
 	if (camera == nullptr) {
 		assert(false && "PlayerBulletのCameraのポインタがNULLです");
@@ -49,7 +49,10 @@ void PlayerBullet::Initialize(Camera* camera, Vector3 position, Direction direct
 	DirectionToRotate();
 
 	// 加速度の設定
-	DirectionToAcceleration();
+	DirectionToVelocity(chargeStep);
+
+	// 攻撃力の設定
+	attack_ = kAttackTable[chargeStep];
 }
 
 void PlayerBullet::Update() {
@@ -67,40 +70,44 @@ void PlayerBullet::Update() {
 }
 
 void PlayerBullet::Draw() {
+	// この辺にチャージ段階に応じて異なるパーティクル出す処理とか書く
+
 	// カメラ内にいる場合描画
 	if (isInCamera_) {
 		model_->Draw(worldTransform_, *camera_);
 	}
 }
 
-void PlayerBullet::DirectionToAcceleration() {
+void PlayerBullet::DirectionToVelocity(int chargeStep) {
 	// 斜め方向による減衰率
 	float kDiagonalSpeedDecay = 0.7f;
+
+	float bulletSpeed = kSpeedTable[chargeStep];
 
 	// 速度の設定
 	switch (direction_) {
 	case Direction::kUp:
-		velocity_ = {0.0f, kSpeed, 0.0f};
+		velocity_ = {0.0f, bulletSpeed, 0.0f};
 		break;
 
 	case Direction::kRightUp:
-		velocity_ = {kSpeed * kDiagonalSpeedDecay, kSpeed * kDiagonalSpeedDecay, 0.0f};
+		velocity_ = {bulletSpeed * kDiagonalSpeedDecay, bulletSpeed * kDiagonalSpeedDecay, 0.0f};
 		break;
 
 	case Direction::kRight:
-		velocity_ = {kSpeed, 0.0f, 0.0f};
+		velocity_ = {bulletSpeed, 0.0f, 0.0f};
 		break;
 
 	case Direction::kRightDown:
-		velocity_ = {kSpeed * kDiagonalSpeedDecay, -kSpeed * kDiagonalSpeedDecay, 0.0f};
+		velocity_ = {bulletSpeed * kDiagonalSpeedDecay, -bulletSpeed * kDiagonalSpeedDecay, 0.0f};
 		break;
 
 	case Direction::kDown:
-		velocity_ = {0.0f, -kSpeed, 0.0f};
+		velocity_ = {0.0f, -bulletSpeed, 0.0f};
 		break;
 
 	default:
-		velocity_ = {kSpeed, 0.0f, 0.0f};
+		velocity_ = {bulletSpeed, 0.0f, 0.0f};
 	}
 }
 
