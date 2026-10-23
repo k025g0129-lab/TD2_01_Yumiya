@@ -59,7 +59,11 @@ void Player::Initialize(Camera* camera, Vector3 position) {
 	//通過ポイント初期化
 	JumpThroughInitialize();
 
+	// 矢のチャージ時間の初期化
 	chargeTime_ = 0;
+
+	// HPの初期化
+	HP_ = kMaxHP;
 }
 
 void Player::Update() {
@@ -190,6 +194,8 @@ void Player::Update() {
 	} else {
 		ImGui::Text("isGround: OFF");
 	}
+
+	ImGui::Text("HP = %d", HP_);
 
 	ImGui::Text("worldTransform_.translation_.y = %f , jumpThroughPoint_ = %f", worldTransform_.translation_.y, jumpThroughPoint_[1].yPos_);
 	ImGui::Text("velocity_.y = %f ", velocity_.y);
@@ -869,23 +875,21 @@ AABB Player::GetAABB() const {
 	return aabb;
 }
 
-void Player::OnCollision(const BaseEnemy* enemy) {
+void Player::OnCollision() {
 	// すでに死んでいたら早期リターン
 	if (isDead_) {
 		return;
 	}
 
-	// 現状は敵に当たった時、敵に対して行いたい処理がない
-	// そのため、警告を抑制する意味で無意味な処理を書く
-	(void)enemy;
-
-	// 攻撃中はダメージ無効
-	if (IsAttack()) {
+	// ノックバック初めの時間に無敵でないと、そのまま敵にめり込んで死ぬ場合があるので、吹っ飛ばされている間は無敵
+	if (IsKnockbackInvincible()) {
 		return;
 	}
 
-	// ノックバック初めの時間に無敵でないと、そのまま敵にめり込んで死ぬ場合があるので、吹っ飛ばされている間は無敵
-	if (IsKnockbackInvincible()) {
+	HP_ -= 1;
+
+	// HPが残っているなら終了
+	if (HP_ > 0) {
 		return;
 	}
 

@@ -44,7 +44,7 @@ public:
 	void Draw();
 
 	// 敵と当たった時の処理
-	void OnCollision(const BaseEnemy* enemy);
+	void OnCollision();
 
 	// ノックバックを要求
 	void RequestKnockback() { isKnockbackRequested_ = true; }
@@ -73,9 +73,6 @@ public:
 
 	// 死亡しているか
 	bool IsDead() const { return isDead_; }
-
-	// 攻撃中か
-	bool IsAttack() const { return behavior_ == Behavior::kAttack; }
 
 	LRDirection GetLRDirection() const { return lrDirection_; }
 
@@ -118,6 +115,12 @@ private:
 	// 接地フラグ
 	bool isGround_ = true;
 
+	// 最大HP
+	static inline const int kMaxHP = 3;
+
+	// HP
+	int HP_ = kMaxHP;
+
 	// マップチップフィールド
 	MapChipField* mapChipField_ = nullptr;
 
@@ -139,7 +142,6 @@ private:
 	enum class Behavior {
 		kRoot,         // 通常状態
 		kCharge,       // 溜める
-		kAttack,       // 攻撃中
 		kKnockback,    // ノックバック
 		kSqueezeDeath, // 挟まれ死亡演出
 		kUnknown
@@ -211,9 +213,9 @@ private:
 	//ジャンプポイント数(後々変更するか消す可能性あり)
 	static inline const int maxJumpThroughPointIndex = 10;
 
-	JumpThroughPoint jumpThroughPoint_[maxJumpThroughPointIndex];
-	JumpThroughPoint jumpUpperLimitsPoint;
-	JumpThroughPoint jumpLowerLimitsPoint;
+	JumpThroughPoint jumpThroughPoint_[maxJumpThroughPointIndex]{};
+	JumpThroughPoint jumpUpperLimitsPoint{};
+	JumpThroughPoint jumpLowerLimitsPoint{};
 
 
 	// 弓のチャージ時間
