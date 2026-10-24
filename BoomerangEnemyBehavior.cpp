@@ -16,12 +16,16 @@ void EnemyBoomerangWalk::Initialize() {
 	walkTimer_ = 0.0f;
 	walkMotionTimer_ = 0.0f;
 
+	//向き調整
 	boomerangEnemy_->SetRotationX(0.0f);
 	boomerangEnemy_->SetRotationY(3.0f * (kPi / 2.0f));
 	boomerangEnemy_->SetRotationZ(0.0f);
 	boomerangEnemy_->SetBoomerangRotationX(0.0f);
 	boomerangEnemy_->SetBoomerangRotationY(3.0f * (kPi / 2.0f));
 	boomerangEnemy_->SetBoomerangRotationZ(0.0f);
+
+	//投げているかどうか
+	boomerangEnemy_->SetBoomerangFlying(false);
 
 }
 
@@ -92,6 +96,9 @@ void EnemyBoomerangAttack::Update() {
 		if (attackTimer_ >= kChargeTime) {
 			attackPhase = AttackPhase::THROWING;
 			attackTimer_ = 0.0f;
+
+			//ブーメランを投げる
+			boomerangEnemy_->SetBoomerangFlying(true);
 		}
 
 		break;
@@ -105,7 +112,9 @@ void EnemyBoomerangAttack::Update() {
 
 		// 一定以上時間が経ったなら歩行に変更
 		if (attackTimer_ >= kRotateTime) {
+
 			boomerangEnemy_->BehaviorRequestWalk();
+			boomerangEnemy_->SetBoomerangFlying(false);
 		}
 
 		boomerangEnemy_->GetWorldPosition();
@@ -144,30 +153,74 @@ void EnemyBoomerangAttack::UpdateMotion() {
 EnemyBoomerangDeath::EnemyBoomerangDeath(BoomerangEnemy* boomerangEnemy) { boomerangEnemy_ = boomerangEnemy; }
 
 void EnemyBoomerangDeath::Initialize() {
+	velocty_ = {0.0f, kAscensionSpeed, 0.0f};
 
 	deathTimer_ = 0.0f;
 
+	boomerangEnemy_->SetRotationX(0.0f);
+	boomerangEnemy_->SetRotationY(3.0f * (kPi / 2.0f));
+	boomerangEnemy_->SetRotationZ(0.0f);
+
 	// 死亡演出開始時の角度を保存
-	deathStartRotationX_ = boomerangEnemy_->GetRotationX();
+	deathStartRotationZ_ = boomerangEnemy_->GetRotationZ();
+
+
 }
 
-void EnemyBoomerangDeath::Update() {}
+void EnemyBoomerangDeath::Update() {
+	switch (deathPhase) {
+
+	case DeathPhase::HEAD_SHOT:
+		break;
+
+	case DeathPhase::ASCENSION:
+
+		Vector4 color = boomerangEnemy_->GetObjectColorRGBA();
+
+		color.x += 0.01f;
+		color.y += 0.01f;
+		color.z += 0.01f;
+		color.w -= 0.01f;
+
+		color.x = std::clamp(color.x, 0.0f, 10.0f);
+		color.y = std::clamp(color.y, 0.0f, 10.0f);
+		color.z = std::clamp(color.z, 0.0f, 10.0f);
+		color.w = std::clamp(color.w, 0.0f, 1.0f);
+
+		boomerangEnemy_->SetObjectColorRGBA(color);
+		break;
+	}
+}
 
 void EnemyBoomerangDeath::UpdateMotion() {
 
 	deathTimer_ += 1.0f / 60.0f;
 
-	// デスタイマーを 0.0f ～ 1.0f に変換
-	float t = std::clamp(deathTimer_ / kDeathMotionTime, 0.0f, 1.0f);
+	switch (deathPhase) {
 
-	// X軸回転で倒れる
-	boomerangEnemy_->SetRotationX(Lerp(deathStartRotationX_, kDeathMotionAngleEnd, Ease::EaseInOut(t)));
+	case DeathPhase::HEAD_SHOT: {
 
-	// Y軸回転でぐるぐる回る
-	boomerangEnemy_->SetRotationY(boomerangEnemy_->GetRotationY() + kDeathSpinSpeed * (1.0f / 60.0f));
+		// デスタイマーを 0.0f ～ 1.0f に変換
+		float t = std::clamp(deathTimer_ / kHeadShotMotionTime, 0.0f, 1.0f);
 
-	if (deathTimer_ >= kDeathMotionTime) {
-		boomerangEnemy_->SetDead(true);
+		// X軸回転で倒れる
+		boomerangEnemy_->SetRotationZ(Lerp(deathStartRotationZ_, kHeadShotMotionAngleEnd, Ease::EaseOutElastic(t)));
+		if (deathTimer_ >= kHeadShotMotionTime) {
+			deathPhase = DeathPhase::ASCENSION;
+			deathTimer_ = 0.0f;
+		}
+	} break;
+
+	case DeathPhase::ASCENSION:
+
+		boomerangEnemy_->Move(velocty_);
+
+		if (deathTimer_ >= kAscensionMotionTime) {
+			deathTimer_ = 0.0f;
+			deathPhase = DeathPhase::HEAD_SHOT;
+			boomerangEnemy_->SetDead(true);
+		}
+		break;
 	}
 }
 

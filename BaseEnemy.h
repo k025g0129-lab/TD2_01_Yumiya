@@ -92,6 +92,9 @@ class BaseEnemy {
 	// 死亡フラグ設定
 	void SetDead(bool isDead) { isDead_ = isDead; }
 
+	KamataEngine::Vector4 const GetObjectColorRGBA() { return objectColor_.GetColor(); };
+	void SetObjectColorRGBA(KamataEngine::Vector4 objectColorRGBA) { objectColor_.SetColor(objectColorRGBA); };
+
   protected:
 	// 初期化の共通処理
 	virtual void InitializeInternal() = 0;
@@ -107,6 +110,9 @@ class BaseEnemy {
 
 	// モデル
 	KamataEngine::Model* model_ = nullptr;
+
+	//カラー
+	KamataEngine::ObjectColor objectColor_;
 
 	// カメラ
 	KamataEngine::Camera* camera_ = nullptr;

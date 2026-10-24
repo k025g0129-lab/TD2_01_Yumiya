@@ -20,6 +20,8 @@ void BaseEnemy::Initialize(Camera* camera, Vector3 position) {
 
 	// HPゲージの初回更新
 	UpdateHPGauge();
+
+	objectColor_.Initialize();
 }
 
 void BaseEnemy::Update() {
@@ -42,7 +44,7 @@ void BaseEnemy::Update() {
 void BaseEnemy::Draw() {
 	Model::PreDraw();
 
-	model_->Draw(worldTransform_, *camera_);
+	model_->Draw(worldTransform_, *camera_, &objectColor_);
 
 	Model::PostDraw();
 

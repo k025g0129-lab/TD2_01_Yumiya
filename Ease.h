@@ -1,4 +1,7 @@
 #pragma once
+#include <cmath>
+#include <numbers>
+
 class Ease {
 public:
 	static float EaseIn(float t);
@@ -10,4 +13,7 @@ public:
 	static float EaseInBack(float t);
 
 	static float EaseOutBack(float t);
+
+	static float EaseOutElastic(float t);
+
 };

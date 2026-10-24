@@ -11,6 +11,15 @@
 #include "ModelManager.h"
 
 using namespace KamataEngine;
+AABB BoomerangEnemy::GetBoomerangAABB() const { 
+	AABB re{};
+	Vector3 pos = worldTransformBoomerang_.translation_;
+
+	re.min = {pos.x - kBoomerangWidth / 2.0f, pos.y - kBoomerangHeight / 2.0f, pos.z - kBoomerangWidth / 2.0f};
+	re.max = {pos.x + kBoomerangWidth / 2.0f, pos.y + kBoomerangHeight / 2.0f, pos.z + kBoomerangWidth / 2.0f};
+	
+	return AABB(); }
+bool BoomerangEnemy::GetIsBoomerangFlying() { return isBoomerangFlying_; }
 void BoomerangEnemy::Draw() {
 
 	WorldTransformUpdate(worldTransformBoomerang_);
@@ -37,6 +46,8 @@ void BoomerangEnemy::InitializeInternal() {
 
 	behaviorRequest_ = EnemyBoomerangBehavior::kWalk;
 	ChangeBehavior();
+
+	SetBoomerangFlying(false);
 }
 
 void BoomerangEnemy::ChangeBehavior() {

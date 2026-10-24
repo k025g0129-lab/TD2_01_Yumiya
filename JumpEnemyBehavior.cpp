@@ -194,32 +194,76 @@ void EnemyHighJump::UpdateMotion() {
 EnemyJumpDeath::EnemyJumpDeath(JumpEnemy* jumpEnemy) { jumpEnemy_ = jumpEnemy; }
 
 void EnemyJumpDeath::Initialize() {
+	velocty_ = {0.0f, kAscensionSpeed, 0.0f};
+
 	deathTimer_ = 0.0f;
 
-	// 死亡演出開始時の角度を保存
-	deathStartRotationX_ = jumpEnemy_->GetRotationX();
 	mapChipField_ = jumpEnemy_->GetMapChipField();
+
+	jumpEnemy_->SetRotationX(0.0f);
+	jumpEnemy_->SetRotationY(3.0f * (kPi / 2.0f));
+	jumpEnemy_->SetRotationZ(0.0f);
+
+	// 死亡演出開始時の角度を保存
+	deathStartRotationZ_ = jumpEnemy_->GetRotationZ();
 }
 
-void EnemyJumpDeath::Update() {}
+void EnemyJumpDeath::Update() {
+	switch (deathPhase) {
+
+	case DeathPhase::HEAD_SHOT:
+		break;
+
+	case DeathPhase::ASCENSION:
+
+		Vector4 color = jumpEnemy_->GetObjectColorRGBA();
+
+		color.x += 0.01f;
+		color.y += 0.01f;
+		color.z += 0.01f;
+		color.w -= 0.01f;
+
+		color.x = std::clamp(color.x, 0.0f, 10.0f);
+		color.y = std::clamp(color.y, 0.0f, 10.0f);
+		color.z = std::clamp(color.z, 0.0f, 10.0f);
+		color.w = std::clamp(color.w, 0.0f, 1.0f);
+
+		jumpEnemy_->SetObjectColorRGBA(color);
+		break;
+	}
+}
 
 void EnemyJumpDeath::UpdateMotion() {
 
+	
 	deathTimer_ += 1.0f / 60.0f;
 
-	// デスタイマーを 0.0f ～ 1.0f に変換
-	float t = std::clamp(deathTimer_ / kDeathMotionTime, 0.0f, 1.0f);
+	switch (deathPhase) {
 
-	// X軸回転で倒れる
-	jumpEnemy_->SetRotationX(Lerp(deathStartRotationX_, kDeathMotionAngleEnd, Ease::EaseInOut(t)));
+	case DeathPhase::HEAD_SHOT: {
 
-	// Y軸回転でぐるぐる回る
-	jumpEnemy_->SetRotationY(jumpEnemy_->GetRotationY() + kDeathSpinSpeed * (1.0f / 60.0f));
+		// デスタイマーを 0.0f ～ 1.0f に変換
+		float t = std::clamp(deathTimer_ / kHeadShotMotionTime, 0.0f, 1.0f);
 
-	if (deathTimer_ >= kDeathMotionTime) {
-		jumpEnemy_->SetDead(true);
+		// X軸回転で倒れる
+		jumpEnemy_->SetRotationZ(Lerp(deathStartRotationZ_, kHeadShotMotionAngleEnd, Ease::EaseOutElastic(t)));
+		if (deathTimer_ >= kHeadShotMotionTime) {
+			deathPhase = DeathPhase::ASCENSION;
+			deathTimer_ = 0.0f;
+		}
+	} break;
+
+	case DeathPhase::ASCENSION:
+
+		jumpEnemy_->Move(velocty_);
+
+		if (deathTimer_ >= kAscensionMotionTime) {
+			deathTimer_ = 0.0f;
+			deathPhase = DeathPhase::HEAD_SHOT;
+			jumpEnemy_->SetDead(true);
+		}
+		break;
 	}
-
 }
 
 float GraduallyChangingScale(float self, float target, float change) {

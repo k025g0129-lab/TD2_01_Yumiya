@@ -87,29 +87,81 @@ void EnemyRotateFlyRing::UpdateMotion() {
 EnemyRotateDeath::EnemyRotateDeath(RotateEnemy* rotateenemy) { rotateEnemy_ = rotateenemy; }
 
 void EnemyRotateDeath::Initialize() {
+	velocty_ = {0.0f, kAscensionSpeed, 0.0f};
 
 	deathTimer_ = 0.0f;
 
+
+	rotateEnemy_->SetRotationX(0.0f);
+	rotateEnemy_->SetRotationY(0.0f);
+	rotateEnemy_->SetRotationZ(0.0f);
+
 	// 死亡演出開始時の角度を保存
-	deathStartRotationX_ = rotateEnemy_->GetRotationX();
+	deathStartRotationZ_ = rotateEnemy_->GetRotationZ();
+
+
 }
 
-void EnemyRotateDeath::Update() {}
+void EnemyRotateDeath::Update() {
+	switch (deathPhase) {
+
+	case DeathPhase::HEAD_SHOT: 
+		break;
+
+	case DeathPhase::ASCENSION:
+
+		Vector4 color = rotateEnemy_->GetObjectColorRGBA();
+
+		color.x += 0.01f;
+		color.y += 0.01f;
+		color.z += 0.01f;
+		color.w -= 0.01f;
+
+		color.x = std::clamp(color.x, 0.0f, 10.0f);
+		color.y = std::clamp(color.y, 0.0f, 10.0f);
+		color.z = std::clamp(color.z, 0.0f, 10.0f);
+		color.w = std::clamp(color.w, 0.0f, 1.0f);
+
+		rotateEnemy_->SetObjectColorRGBA(color);
+		break;
+	
+	}
+
+
+
+}
 
 void EnemyRotateDeath::UpdateMotion() {
 
 	deathTimer_ += 1.0f / 60.0f;
 
-	// デスタイマーを 0.0f ～ 1.0f に変換
-	float t = std::clamp(deathTimer_ / kDeathMotionTime, 0.0f, 1.0f);
+	switch (deathPhase) {
 
-	// X軸回転で倒れる
-	rotateEnemy_->SetRotationX(Lerp(deathStartRotationX_, kDeathMotionAngleEnd, Ease::EaseInOut(t)));
+		case DeathPhase::HEAD_SHOT: {
 
-	// Y軸回転でぐるぐる回る
-	rotateEnemy_->SetRotationY(rotateEnemy_->GetRotationY() + kDeathSpinSpeed * (1.0f / 60.0f));
+			// デスタイマーを 0.0f ～ 1.0f に変換
+			float t = std::clamp(deathTimer_ / kHeadShotMotionTime, 0.0f, 1.0f);
 
-	if (deathTimer_ >= kDeathMotionTime) {
-		rotateEnemy_->SetDead(true);
+			// X軸回転で倒れる
+			rotateEnemy_->SetRotationZ(Lerp(deathStartRotationZ_, kHeadShotMotionAngleEnd, Ease::EaseOutElastic(t)));
+			if (deathTimer_ >= kHeadShotMotionTime) {
+				deathPhase = DeathPhase::ASCENSION;
+				deathTimer_ = 0.0f;
+			}
+		}
+		break;
+
+		case DeathPhase::ASCENSION:
+
+			rotateEnemy_->Move(velocty_);			
+
+			if (deathTimer_ >= kAscensionMotionTime) {
+			    deathTimer_ = 0.0f;
+			    deathPhase = DeathPhase::HEAD_SHOT;
+				rotateEnemy_->SetDead(true);
+			}
+		break;
+
 	}
+
 }

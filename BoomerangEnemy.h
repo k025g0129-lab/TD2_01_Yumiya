@@ -30,8 +30,14 @@ public:
 	// XYZ軸回転取得
 	float GetBoomerangRotationX() const { return worldTransformBoomerang_.rotation_.x; }
 	float GetBoomerangRotationY() const { return worldTransformBoomerang_.rotation_.y; }
-	float GetRotationZ() const { return worldTransform_.rotation_.z; }
+	float GetBoomerangRotationZ() const { return worldTransformBoomerang_.rotation_.z; }
 	void SetBoomerangTranslation(KamataEngine::Vector3 translation) { worldTransformBoomerang_.translation_ = translation; };
+
+	//プレイヤーとブーメランの当たり判定用
+	AABB GetBoomerangAABB() const;
+	bool GetIsBoomerangFlying();
+	void SetBoomerangFlying(bool isFrying) { isBoomerangFlying_ = isFrying; };
+
 
 private:
 
@@ -56,5 +62,12 @@ private:
 	KamataEngine::Model* modelBoomerang_ = nullptr;
 	// ワールド変換データ
 	KamataEngine::WorldTransform worldTransformBoomerang_;
+	
+	//ブーメランが投げられているか
+	bool isBoomerangFlying_ = false;
+	
+	//ブーメラン当たり判定
+	static inline const float kBoomerangWidth = 1.0f;
+	static inline const float kBoomerangHeight = 1.0f;
 
 };

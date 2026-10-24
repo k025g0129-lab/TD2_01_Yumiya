@@ -110,18 +110,30 @@ public:
 
 private:
 	BoomerangEnemy* boomerangEnemy_;
+	KamataEngine::Vector3 velocty_{};
+
+	enum DeathPhase {
+		HEAD_SHOT,
+		ASCENSION,
+	};
+
+	DeathPhase deathPhase = DeathPhase::HEAD_SHOT;
 
 	// 死亡演出タイマー
 	float deathTimer_ = 0.0f;
 
-	// 死亡演出開始時のX回転
-	float deathStartRotationX_ = 0.0f;
+	// 死亡演出開始時のZ回転
+	float deathStartRotationZ_ = 0.0f;
 
-	// 死亡演出時間
-	static inline const float kDeathMotionTime = 1.0f;
+	// 演出時間
+	static inline const float kHeadShotMotionTime = 1.0f;
+	static inline const float kAscensionMotionTime = 3.0f;
+
+	// 昇天の速さ
+	static inline const float kAscensionSpeed = 0.03f;
 
 	// 死亡演出で倒れ切る角度
-	static inline const float kDeathMotionAngleEnd = -kPi / 2.0f;
+	static inline const float kHeadShotMotionAngleEnd = -kPi / 2.0f;
 
 	// 死亡演出中の回転速度
 	static inline const float kDeathSpinSpeed = kPi * 6.0f;

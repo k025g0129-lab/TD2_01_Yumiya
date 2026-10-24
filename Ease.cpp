@@ -31,3 +31,18 @@ float Ease::EaseOutBack(float t) {
 
 	return 1.0f + c3 * x * x * x + c1 * x * x;
 }
+
+float Ease::EaseOutElastic(float t) {
+	const float c4 = (2.0f * std::numbers::pi_v<float>) / 3.0f;
+
+	if (t == 0.0f) {
+		return 0.0f;
+	}
+
+	if (t == 1.0f) {
+		return 1.0f;
+	}
+
+	return std::pow(2.0f, -10.0f * t) * std::sin((t * 10.0f - 0.75f) * c4) + 1.0f;
+	
+}

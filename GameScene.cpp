@@ -341,6 +341,24 @@ void GameScene::CheckAllCollisions() {
 				enemy->OnCollisionBullet(bullet->GetAttack());
 			}
 		}
+
+		//敵の投擲物とプレイヤーの当たり判定
+
+		//ブーメランの敵
+		BoomerangEnemy* boomerangEnemy = dynamic_cast<BoomerangEnemy*>(enemy.get());
+
+		//ブーメランの敵かを確認
+		if (boomerangEnemy != nullptr) {
+		
+			//ブーメランが投げられているなら
+			if (boomerangEnemy->GetIsBoomerangFlying()) {
+
+				//プレイヤーとブーメランの接触判定
+				if (IsCollision(playerAABB, boomerangEnemy->GetAABB())) {
+					player_->OnCollision();
+				}
+			}
+		}
 	}
 }
 
