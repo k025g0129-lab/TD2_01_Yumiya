@@ -6,16 +6,21 @@
 
 // 前方宣言
 class Player;
+class GameScene;
 
 class GameHUD {
   public:
-	void Initialize(Player* player, KamataEngine::Camera* camera);
+	void Initialize(Player* player, KamataEngine::Camera* camera, GameScene *gameScene);
 
 	void Update();
 
 	void Draw();
 
+
   private:
+	// ゲームシーン
+	GameScene* gameScene_ = nullptr;
+
 	//========================================================
 	// HP表示
 	//========================================================
@@ -115,4 +120,36 @@ class GameHUD {
 
 	// 残弾文字色
 	static inline const KamataEngine::Vector4 kAmmoColor = {1.0f, 1.0f, 1.0f, 1.0f};
+
+	//============================================================
+	// ウェーブ表示
+	//============================================================
+
+	// ウェーブ番号の表示位置
+	static inline const KamataEngine::Vector2 kWaveNumberPosition = {kScreenWide / 2.0f, 10.0f};
+
+	// ウェーブ番号の文字サイズ
+	static inline constexpr float kWaveNumberFontSize = 36.0f;
+
+	// ウェーブ番号の文字色
+	static inline const KamataEngine::Vector4 kWaveNumberColor = {1.0f, 1.0f, 1.0f, 1.0f};
+
+	// ウェーブゲージの背景
+	std::unique_ptr<KamataEngine::Sprite> waveGaugeBackgroundSprite_;
+
+	// 左側のゲージ
+	std::unique_ptr<KamataEngine::Sprite> waveGaugeLeftSprite_;
+
+	// 右側のゲージ
+	std::unique_ptr<KamataEngine::Sprite> waveGaugeRightSprite_;
+
+	// ゲージの大きさ
+	static inline constexpr float kWaveGaugeWidth = 600.0f;
+	static inline constexpr float kWaveGaugeHeight = 16.0f;
+
+	// ゲージの表示位置（左上）
+	static inline const KamataEngine::Vector2 kWaveGaugePosition = {(kScreenWide - kWaveGaugeWidth) / 2.0f, 60.0f};
+
+	// ゲージの色
+	static inline const KamataEngine::Vector4 kWaveGaugeColor = {1.0f, 0.8f, 0.1f, 1.0f};
 };

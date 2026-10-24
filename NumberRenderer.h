@@ -15,6 +15,9 @@ public:
 	// 最大桁数を基準に右詰めで数字を描画
 	void DrawNumberRightAligned(int32_t value, const KamataEngine::Vector2& position, size_t maxDigitCount, float fontSize, const KamataEngine::Vector4& color, bool drawPercent = false);
 
+	// 現在の文字数を基準に中央揃えで数字を描画
+	void DrawNumberCenterAligned(int32_t value, const KamataEngine::Vector2& position, float fontSize, const KamataEngine::Vector4& color, bool drawPercent = false);
+
 	~NumberRenderer();
 
 	// 1フレーム分の描画を開始

@@ -156,6 +156,34 @@ void NumberRenderer::DrawNumberRightAligned(int32_t value, const Vector2& positi
 	DrawNumber(value, drawPosition, fontSize, color, drawPercent);
 }
 
+void NumberRenderer::DrawNumberCenterAligned(int32_t value, const Vector2& position, float fontSize, const Vector4& color, bool drawPercent) {
+
+	// 表示する数字を文字列化
+	std::string numberText = std::to_string(value);
+
+	// 表示する文字数を取得
+	size_t characterCount = numberText.size();
+
+	// %記号を表示する場合は文字数を追加
+	if (drawPercent) {
+		characterCount++;
+	}
+
+	// 1文字ごとの横間隔
+	float characterInterval = fontSize * kCharacterIntervalRate;
+
+	// 表示全体の横幅を算出
+	float textWidth = (static_cast<float>(characterCount) - 1.0f) * characterInterval + fontSize;
+
+	// 指定された座標を中心とする描画開始位置
+	Vector2 drawPosition = position;
+
+	drawPosition.x -= textWidth / 2.0f;
+
+	// 既存の数字描画関数を使用
+	DrawNumber(value, drawPosition, fontSize, color, drawPercent);
+}
+
 NumberRenderer::~NumberRenderer() {
 	for (auto& characterSprites : numberSprites_) {
 		for (Sprite* numberSprite : characterSprites) {

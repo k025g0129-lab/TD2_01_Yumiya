@@ -14,11 +14,7 @@
 
 using namespace KamataEngine;
 
-Player::~Player() {
-	for (PlayerBullet* bullet : bullets_) {
-		delete bullet;
-	}
-}
+Player::~Player() { ClearBullets(); }
 
 void Player::Initialize(Camera* camera, Vector3 position) {
 
@@ -1116,6 +1112,17 @@ void Player::ApplyGlobalVariables() {
 	kKnockbackAfterTime = globalVariables->GetFloatValue(groupName, "KnockbackAfterTime");
 	kKnockbackSpeed = globalVariables->GetFloatValue(groupName, "KnockbackSpeed");
 	kKnockbackAttenuation = globalVariables->GetFloatValue(groupName, "KnockbackAttenuation");
+}
+
+void Player::ClearBullets() {
+
+	// 全ての弾を削除
+	for (PlayerBullet* bullet : bullets_) {
+		delete bullet;
+	}
+
+	// 配列を空にする
+	bullets_.clear();
 }
 
 void Player::CorrectPositionInScreen() {

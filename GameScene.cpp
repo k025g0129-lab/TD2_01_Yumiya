@@ -29,6 +29,10 @@ void GameScene::Initialize() {
 	// フェーズ初期化
 	phase_ = Phase::kFadeIn;
 
+	// ウェーブ初期化
+	currentWave_ = 1;
+	waveTimer_ = 0.0f;
+
 	// カメラの初期化
 	camera_ = std::make_unique<Camera>();
 	camera_->farZ = 1100.0f;
@@ -97,14 +101,12 @@ void GameScene::Initialize() {
 
 	// HUDの生成
 	gameHUD = std::make_unique<GameHUD>();
-	gameHUD->Initialize(player_.get(), camera_.get());
+	gameHUD->Initialize(player_.get(), camera_.get(), this);
 }
 
 void GameScene::Update() {
 	// フェーズ切り替え
 	ChangePhase();
-
-	gameHUD->Update();
 
 	switch (phase_) {
 	case Phase::kFadeIn:
@@ -114,6 +116,11 @@ void GameScene::Update() {
 
 	case Phase::kPlay:
 		UpdatePlayPhase();
+
+		// プレイヤーが生存している場合のみウェーブ更新
+		if (!player_->IsDead()) {
+			UpdateWave();
+		}
 		break;
 
 	case Phase::kDeath:
@@ -128,6 +135,8 @@ void GameScene::Update() {
 
 	// パーティクル更新
 	bulletTrailParticles_->Update();
+
+	gameHUD->Update();
 
 #ifdef _DEBUG
 
@@ -170,7 +179,6 @@ void GameScene::Draw() {
 
 	Model::PostDraw();
 
-	gameHUD->Draw();
 
 	player_->Draw();
 
@@ -191,6 +199,7 @@ void GameScene::Draw() {
 		deathParticles_->Draw();
 	}
 
+	gameHUD->Draw();
 
 	if (fade_) {
 		fade_->Draw();
@@ -527,4 +536,49 @@ void GameScene::DrawHitEffects() {
 	for (const auto& effect : effects_) {
 		effect->Draw();
 	}
+}
+
+void GameScene::UpdateWave() {
+
+	// ウェーブ経過時間を更新
+	waveTimer_ += kWaveDeltaTime;
+
+	// 制限時間に達していなければ終了
+	if (waveTimer_ < kWaveDuration) {
+		return;
+	}
+
+	// 次のウェーブへ進行
+	AdvanceWave();
+}
+
+void GameScene::AdvanceWave() {
+
+	// 現在のウェーブを終了
+	ClearWave();
+
+	// ウェーブ番号を進める
+	currentWave_++;
+
+	// 経過時間を初期化
+	waveTimer_ = 0.0f;
+
+	// 次のウェーブの敵を生成
+	SpawnWaveEnemies();
+}
+
+void GameScene::ClearWave() {
+
+	// プレイヤーの弾を全削除
+	player_->ClearBullets();
+
+	// 敵を全削除
+	enemies_.clear();
+
+	// 残弾数を全回復
+	player_->ReloadAmmo();
+}
+
+void GameScene::SpawnWaveEnemies() {
+	// 仮置き
 }
