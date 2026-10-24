@@ -417,6 +417,9 @@ void Player::BehaviorChargeUpdate() {
 		// 弾生成
 		PlayerBullet* bullet = new PlayerBullet();
 
+		// パーティクル管理先を設定
+		bullet->SetTrailParticles(bulletTrailParticles_);
+
 		// 弾初期化
 		bullet->Initialize(camera_, worldTransform_.translation_, static_cast<Direction>(direction_), chargeStep);
 

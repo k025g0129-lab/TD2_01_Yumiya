@@ -13,6 +13,7 @@
 #include"BaseEffect.h"
 #include "GameHUD.h"
 #include "IScene.h"
+#include "BulletTrailParticles.h"
 
 // 前方宣言
 class HitEffect;
@@ -47,6 +48,9 @@ class GameScene : public IScene {
 
 	// プレイヤー
 	std::unique_ptr<Player> player_;
+
+	// 矢の軌跡パーティクル
+	std::unique_ptr<BulletTrailParticles> bulletTrailParticles_;
 
 	// 敵
 	std::list<std::unique_ptr<BaseEnemy>> enemies_;

@@ -12,6 +12,7 @@
 // 前方宣言
 class MapChipField;
 class BaseEnemy;
+class BulletTrailParticles;
 
 enum Corner { kRightBottom, kLeftBottom, kRightTop, kLeftTop, kNumCorner };
 
@@ -86,6 +87,11 @@ public:
 
 	int GetHP() const { return HP_; }
 
+	// 矢の軌跡パーティクル管理先を設定
+	void SetBulletTrailParticles(BulletTrailParticles* trailParticles) {
+		bulletTrailParticles_ = trailParticles;
+	}
+
 	// パブリックメンバ変数
 	// チャージ1段階目に必要な時間
 	static inline const int kChargeStepOneTime = 30;
@@ -134,6 +140,9 @@ private:
 
 	// 接地確認用の微小な下方向オフセット
 	static inline const float kGroundCheckOffset = 0.1f;
+
+	// 軌跡パーティクル
+	BulletTrailParticles* bulletTrailParticles_ = nullptr;
 
 	//============================================================
 	// HP・被ダメージ周り

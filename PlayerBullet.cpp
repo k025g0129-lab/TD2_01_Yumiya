@@ -2,10 +2,11 @@
 
 #include "Matrix4x4Util.h"
 #include "ModelManager.h"
-
+#include "BulletTrailParticles.h"
 #include <assert.h>
 #include <cmath>
 #include <numbers>
+#include <algorithm>
 
 using namespace KamataEngine;
 
@@ -48,22 +49,28 @@ void PlayerBullet::Initialize(Camera* camera, Vector3 position, Direction direct
 	// 角度の設定
 	DirectionToRotate();
 
-	// 加速度の設定
-	DirectionToVelocity(chargeStep);
+	// チャージ段階を保存
+	chargeStep_ = std::clamp(chargeStep, 0, 2);
 
-	// 攻撃力の設定
-	attack_ = kAttackTable[chargeStep];
+	// 加速度の設定
+	DirectionToVelocity();
+
+	// パーティクル発生管理
+	particleEmitFrame_ = 0;
+	particleEmissionCount_ = 0;
 }
 
 void PlayerBullet::Update() {
 	// 位置に速度を加算
-	worldTransform_.translation_.x += velocity_.x;
-	worldTransform_.translation_.y += velocity_.y;
+	worldTransform_.translation_ += velocity_;
 
 	// カメラ内にいるか判定(仮置き処理)
 	if (std::abs(worldTransform_.translation_.x - camera_->translation_.x) >= 15.0f || std::abs(worldTransform_.translation_.y - camera_->translation_.y) >= 10.0f) {
 		isInCamera_ = false;
 	}
+
+	// 軌跡の新規生成を要求
+	EmitParticles();
 
 	// ワールド変換データの更新
 	WorldTransformUpdate(worldTransform_);
@@ -78,11 +85,39 @@ void PlayerBullet::Draw() {
 	}
 }
 
-void PlayerBullet::DirectionToVelocity(int chargeStep) {
+void PlayerBullet::EmitParticles() {
+
+	// パーティクル管理先がなければ生成しない
+	if (trailParticlesManager_ == nullptr) {
+		return;
+	}
+
+	// カメラ外では生成しない
+	if (!isInCamera_) {
+		return;
+	}
+
+	// 発生間隔
+	particleEmitFrame_++;
+
+	if (particleEmitFrame_ < kParticleEmitInterval) {
+		return;
+	}
+
+	particleEmitFrame_ = 0;
+
+	// GameSceneが所有する管理クラスへ生成を依頼
+	trailParticlesManager_->Emit(worldTransform_.translation_, velocity_, chargeStep_, particleEmissionCount_);
+
+	// 次の生成時の配置を変化させる
+	particleEmissionCount_++;
+}
+
+void PlayerBullet::DirectionToVelocity() {
 	// 斜め方向による減衰率
 	float kDiagonalSpeedDecay = 0.7f;
 
-	float bulletSpeed = kSpeedTable[chargeStep];
+	float bulletSpeed = kSpeedTable[chargeStep_];
 
 	// 速度の設定
 	switch (direction_) {

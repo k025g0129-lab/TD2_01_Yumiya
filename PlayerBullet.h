@@ -1,8 +1,12 @@
 #pragma once
 #include"PlayerDirection.h"
 #include "Collision.h"
-
+#include <memory>
+#include <vector>
 #include <KamataEngine.h>
+
+// 前方宣言
+class BulletTrailParticles;
 
 class PlayerBullet {
   public:
@@ -26,7 +30,7 @@ class PlayerBullet {
 	// 命中しているか
 	bool IsHit() const { return isHit_; }
 
-	int GetAttack() const { return attack_; }
+	int GetAttack() const { return kAttackTable[chargeStep_]; }
 
 	/// ===============================================
 	/// セッター
@@ -39,6 +43,11 @@ class PlayerBullet {
 
 	// 命中時の処理
 	void OnCollision() { isHit_ = true; }
+
+	// 軌跡パーティクル管理先を設定
+	void SetTrailParticles(BulletTrailParticles* trailParticles) {
+		trailParticlesManager_ = trailParticles;
+	}
 
 	/// ===============================================
 	/// public関数
@@ -102,11 +111,31 @@ private:
 	// 命中フラグ
 	bool isHit_ = false;
 
-	// この矢の攻撃力
-	int attack_ = 0;
+	// この矢のチャージ段階
+	int chargeStep_ = 0;
 
 	// チャージ段階に対応した攻撃力
 	static inline const int kAttackTable[] = {1, 3, 5};
+
+
+	//============================================================
+	// 矢の軌跡パーティクル
+	//============================================================
+
+	// パーティクル
+	BulletTrailParticles* trailParticlesManager_ = nullptr;
+
+	// パーティクル生成間隔（フレーム）
+	static inline constexpr int kParticleEmitInterval = 4;
+
+	// パーティクル生成回数
+	int particleEmissionCount_ = 0;
+
+	// パーティクル生成用カウンター
+	int particleEmitFrame_ = 0;
+
+	// パーティクル生成要求
+	void EmitParticles();
 
 	/// ===============================================
 	/// private関数
@@ -115,7 +144,7 @@ private:
 	/// <summary>
 	/// 方向から速度を算出する
 	/// </summary>
-	void DirectionToVelocity(int chargeStep);
+	void DirectionToVelocity();
 
 	/// <summary>
 	/// 方向から角度を算出する
