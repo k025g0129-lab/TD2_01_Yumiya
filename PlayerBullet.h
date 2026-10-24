@@ -7,6 +7,7 @@
 
 // 前方宣言
 class BulletTrailParticles;
+class BaseEnemy;
 
 class PlayerBullet {
   public:
@@ -27,10 +28,13 @@ class PlayerBullet {
 	// あたり判定の取得
 	OBB GetOBB() const;
 
-	// 命中しているか
-	bool IsHit() const { return isHit_; }
+	// 消滅するべきか
+	bool IsFinished() const { return remainingHits_ <= 0; }
 
 	int GetAttack() const { return kAttackTable[chargeStep_]; }
+
+	// 既に命中した敵か
+	bool HasHitEnemy(const BaseEnemy* enemy) const;
 
 	/// ===============================================
 	/// セッター
@@ -40,9 +44,6 @@ class PlayerBullet {
 	/// 方向の設定
 	/// </summary>
 	void SetDirection(Direction direction) { direction_ = direction; }
-
-	// 命中時の処理
-	void OnCollision() { isHit_ = true; }
 
 	// 軌跡パーティクル管理先を設定
 	void SetTrailParticles(BulletTrailParticles* trailParticles) {
@@ -78,6 +79,9 @@ class PlayerBullet {
 	/// </summary>
 	void Draw();
 
+	// 敵に命中したとき
+	void OnCollision(BaseEnemy* enemy);
+
 private:
 	/// ===============================================
 	/// private変数
@@ -108,14 +112,20 @@ private:
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;
 
-	// 命中フラグ
-	bool isHit_ = false;
-
 	// この矢のチャージ段階
 	int chargeStep_ = 0;
 
 	// チャージ段階に対応した攻撃力
 	static inline const int kAttackTable[] = {1, 3, 5};
+
+	// 残り命中可能回数
+	int remainingHits_ = 0;
+
+	// チャージ段階別の命中可能回数
+	static inline constexpr int kHitCountTable[] = {1, 2, 5};
+
+	// この矢が既に命中した敵
+	std::vector<const BaseEnemy*> hitEnemies_;
 
 
 	//============================================================

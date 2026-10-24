@@ -21,6 +21,11 @@ OBB PlayerBullet::GetOBB() const {
 	return result;
 }
 
+bool PlayerBullet::HasHitEnemy(const BaseEnemy* enemy) const {
+	// 命中済みの敵を検索
+	return std::find(hitEnemies_.begin(), hitEnemies_.end(), enemy) != hitEnemies_.end();
+}
+
 PlayerBullet::PlayerBullet() {}
 
 PlayerBullet::~PlayerBullet() {}
@@ -58,6 +63,12 @@ void PlayerBullet::Initialize(Camera* camera, Vector3 position, Direction direct
 	// パーティクル発生管理
 	particleEmitFrame_ = 0;
 	particleEmissionCount_ = 0;
+
+	// 残り命中可能回数の初期化
+	remainingHits_ = kHitCountTable[chargeStep_];
+
+	// 命中履歴の初期化
+	hitEnemies_.clear();
 }
 
 void PlayerBullet::Update() {
@@ -83,6 +94,25 @@ void PlayerBullet::Draw() {
 	if (isInCamera_) {
 		model_->Draw(worldTransform_, *camera_);
 	}
+}
+
+void PlayerBullet::OnCollision(BaseEnemy* enemy) {
+
+	// 既に命中可能回数を使い切っていたら終了
+	if (IsFinished()) {
+		return;
+	}
+
+	// 同じ敵に命中済みなら終了
+	if (HasHitEnemy(enemy)) {
+		return;
+	}
+
+	// 命中した敵を記録
+	hitEnemies_.push_back(enemy);
+
+	// 残り命中可能回数を減らす
+	remainingHits_--;
 }
 
 void PlayerBullet::EmitParticles() {

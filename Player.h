@@ -57,6 +57,9 @@ public:
 	// 調整項目を適用
 	static void ApplyGlobalVariables();
 
+	// 残弾数を全回復
+	void ReloadAmmo() { ammo_ = kMaxAmmo; }
+
 	//============================================================
 	// ゲッター・セッター
 	//============================================================
@@ -92,6 +95,9 @@ public:
 		bulletTrailParticles_ = trailParticles;
 	}
 
+	// 残弾数を取得
+	int GetAmmo() const { return ammo_; }
+
 	// パブリックメンバ変数
 	// チャージ1段階目に必要な時間
 	static inline const int kChargeStepOneTime = 30;
@@ -101,6 +107,9 @@ public:
 
 	// 最大HP
 	static inline const int kMaxHP = 3;
+
+	// 最大弾数
+	static inline constexpr int kMaxAmmo = 20;
 
 private:
 	// ワールド変換データ
@@ -263,6 +272,9 @@ private:
 
 	// 弓のチャージ時間
 	int chargeTime_ = 0;
+
+	// 現在の残弾数
+	int ammo_ = kMaxAmmo;
 
 	// チャージ段階に応じたジャンプ力
 	static inline constexpr std::array<float, 3> kJumpPowerTable = {0.6f, 0.9f, 1.2f};

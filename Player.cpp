@@ -89,19 +89,22 @@ void Player::Initialize(Camera* camera, Vector3 position) {
 	worldTransform_.rotation_.z = 0.0f;
 	aimStartRotationZ_ = 0.0f;
 	aimTurnTimer_ = kAimTurnTime;
+
+	// 残弾数の初期化
+	ammo_ = kMaxAmmo;
 }
 
 void Player::Update() {
 	// 弾の更新
 	for (int i = static_cast<int>(bullets_.size()) - 1; i >= 0; --i) {
 
-		// 命中済みの弾は更新しない
-		if (!bullets_[i]->IsHit()) {
+		// 消滅していない矢の更新
+		if (!bullets_[i]->IsFinished()) {
 			bullets_[i]->Update();
 		}
 
 		// 命中した弾、またはカメラ外の弾を削除
-		if (bullets_[i]->IsHit() || !bullets_[i]->GetisInCamera()) {
+		if (bullets_[i]->IsFinished() || !bullets_[i]->GetisInCamera()) {
 			delete bullets_[i];
 			bullets_.erase(bullets_.begin() + i);
 		}
@@ -262,7 +265,7 @@ void Player::Draw() {
 
 	// 弾の描画
 	for (PlayerBullet* bullet : bullets_) {
-		if (!bullet->IsHit()) {
+		if (!bullet->IsFinished()) {
 			bullet->Draw();
 		}
 	}
@@ -305,7 +308,11 @@ void Player::BehaviorRootUpdate() {
 
 	// 攻撃状態へのリクエスト
 	if (GameInput::GetInstance()->IsTrigger(GameAction::kAttack)) {
-		behaviorRequest_ = Behavior::kCharge;
+		if (ammo_ > 0) {
+			behaviorRequest_ = Behavior::kCharge;
+		} else {
+			// 弾切れUI表示リクエストの予定
+		}
 	}
 
 	//通過ポイント更新
@@ -425,6 +432,8 @@ void Player::BehaviorChargeUpdate() {
 
 		// 配列更新
 		bullets_.push_back(bullet);
+
+		ammo_--;
 
 		// 通常状態へのリクエスト
 		behaviorRequest_ = Behavior::kRoot;

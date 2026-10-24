@@ -343,8 +343,8 @@ void GameScene::CheckAllCollisions() {
 		// 全ての矢を確認
 		for (PlayerBullet* bullet : bullets) {
 
-			// 命中済みの弾は判定しない
-			if (bullet->IsHit()) {
+			// この敵に命中済みなら判定しない
+			if (bullet->HasHitEnemy(enemy.get())) {
 				continue;
 			}
 
@@ -353,7 +353,7 @@ void GameScene::CheckAllCollisions() {
 
 			// 弾と敵の接触判定
 			if (IsCollision(enemy->GetAABB(), bulletOBB)) {
-				bullet->OnCollision();
+				bullet->OnCollision(enemy.get());
 				enemy->OnCollisionBullet(bullet->GetAttack());
 			}
 		}
