@@ -20,9 +20,8 @@ void BulletTrailParticles::Initialize(Camera* camera) {
 
 	assert(model_);
 
-	objectColor_.Initialize();
-
 	trailParticles_.clear();
+	freeParticles_.clear();
 }
 
 void BulletTrailParticles::Emit(const Vector3& position, const Vector3& velocity, int chargeStep, int emissionCount) {
@@ -48,9 +47,29 @@ void BulletTrailParticles::Emit(const Vector3& position, const Vector3& velocity
 	// 粒子生成
 	for (int i = 0; i < particleCount; ++i) {
 
-		std::unique_ptr<TrailParticle> particle = std::make_unique<TrailParticle>();
+		std::unique_ptr<TrailParticle> particle;
 
-		particle->worldTransform.Initialize();
+		// 再利用できる粒子がある場合
+		if (!freeParticles_.empty()) {
+
+			// 待機中の粒子を取得
+			particle = std::move(freeParticles_.back());
+
+			// 待機リストから取り除く
+			freeParticles_.pop_back();
+
+		} else {
+
+			// 新しい粒子を生成
+			particle = std::make_unique<TrailParticle>();
+
+			// GPUリソースの初期化は初回のみ
+			particle->worldTransform.Initialize();
+			particle->objectColor.Initialize();
+		}
+
+		// 粒子の経過時間を初期化
+		particle->elapsedTime = 0.0f;
 
 		// 横方向に分散する割合
 		float spreadRate = 0.0f;
@@ -94,7 +113,13 @@ void BulletTrailParticles::Update() {
 
 		// 寿命が終わった粒子を削除
 		if (particle->elapsedTime >= kParticleDuration) {
+
+			// 寿命が終わった粒子を再利用リストへ移動
+			freeParticles_.push_back(std::move(*it));
+
+			// 使用中の粒子リストから削除
 			it = trailParticles_.erase(it);
+
 			continue;
 		}
 
@@ -116,7 +141,7 @@ void BulletTrailParticles::Update() {
 
 void BulletTrailParticles::Draw() {
 
-	// 呼び出し元でModel::PreDraw()を実行する
+	// 粒子ごとに描画
 	for (const std::unique_ptr<TrailParticle>& particle : trailParticles_) {
 
 		// 寿命に応じた透明度
@@ -124,16 +149,14 @@ void BulletTrailParticles::Draw() {
 
 		alpha = std::clamp(alpha, 0.0f, 1.0f);
 
-		// 粒子固有の色を使う
+		// 粒子固有の色を使用
 		Vector4 color = particle->color;
 		color.w *= alpha;
 
-		objectColor_.SetColor(color);
+		// 粒子専用の色情報を更新
+		particle->objectColor.SetColor(color);
 
-		Model::PreDraw();
-
-		model_->Draw(particle->worldTransform, *camera_, &objectColor_);
-
-		Model::PostDraw();
+		// 粒子を描画
+		model_->Draw(particle->worldTransform, *camera_, &particle->objectColor);
 	}
 }

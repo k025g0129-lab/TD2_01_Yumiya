@@ -178,7 +178,11 @@ void GameScene::Draw() {
 		enemy->Draw();
 	}
 
+	Model::PreDraw();
+
 	bulletTrailParticles_->Draw();
+
+	Model::PostDraw();
 
 	// ヒットエフェクトの描画
 	DrawHitEffects();
