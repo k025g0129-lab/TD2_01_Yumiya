@@ -182,6 +182,7 @@ xcopy "$(ProjectDir)..\External\KamataEngine\shaders" "$(ProjectDir)Resources\En
     <ClCompile Include="BaseEnemy.cpp" />
     <ClCompile Include="BoomerangEnemy.cpp" />
     <ClCompile Include="BoomerangEnemyBehavior.cpp" />
+    <ClCompile Include="BulletTrailParticles.cpp" />
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="DeathParticles.cpp" />
@@ -218,6 +219,7 @@ xcopy "$(ProjectDir)..\External\KamataEngine\shaders" "$(ProjectDir)Resources\En
     <ClInclude Include="BaseEnemy.h" />
     <ClInclude Include="BoomerangEnemy.h" />
     <ClInclude Include="BoomerangEnemyBehavior.h" />
+    <ClInclude Include="BulletTrailParticles.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="DeathParticles.h" />

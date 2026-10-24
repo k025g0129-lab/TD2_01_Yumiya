@@ -80,6 +80,12 @@ void GameScene::Initialize() {
 	// 調整項目の適用
 	Player::ApplyGlobalVariables();
 
+	// 矢の軌跡パーティクルを生成
+	bulletTrailParticles_ = std::make_unique<BulletTrailParticles>();
+
+	// 初期化
+	bulletTrailParticles_->Initialize(camera_.get());
+
 	// フィールドのオブジェクトを生成
 	GenerateFieldObjects();
 
@@ -119,6 +125,9 @@ void GameScene::Update() {
 		fade_->Update();
 		break;
 	}
+
+	// パーティクル更新
+	bulletTrailParticles_->Update();
 
 #ifdef _DEBUG
 
@@ -169,6 +178,8 @@ void GameScene::Draw() {
 		enemy->Draw();
 	}
 
+	bulletTrailParticles_->Draw();
+
 	// ヒットエフェクトの描画
 	DrawHitEffects();
 
@@ -218,6 +229,7 @@ void GameScene::GenerateFieldObjects() {
 
 				player_ = std::make_unique<Player>();
 				player_->SetMapChipField(mapChipField_.get());
+				player_->SetBulletTrailParticles(bulletTrailParticles_.get());
 				player_->Initialize(camera_.get(), mapPosition);
 
 				break;

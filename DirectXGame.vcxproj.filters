@@ -231,6 +231,9 @@
     <ClCompile Include="GameHUD.cpp">
       <Filter>GameHUD</Filter>
     </ClCompile>
+    <ClCompile Include="BulletTrailParticles.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Player.h">
@@ -343,6 +346,9 @@
     </ClInclude>
     <ClInclude Include="PlayerDirection.h">
       <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="BulletTrailParticles.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
