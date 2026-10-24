@@ -2,6 +2,8 @@
 #include "Matrix4x4Util.h"
 #include "Player.h"
 #include <algorithm>
+#include "GameScene.h"
+#include <cmath>
 
 using namespace KamataEngine;
 
@@ -17,9 +19,13 @@ const std::array<Direction, kCountOfDirection> directions = {
 };
 }
 
-void GameHUD::Initialize(Player* player, Camera* camera) {
+void GameHUD::Initialize(Player* player, Camera* camera, GameScene *gameScene) {
 	player_ = player;
 	camera_ = camera;
+	gameScene_ = gameScene;
+
+	// 数字描画の初期化
+	numberRenderer_.Initialize();
 
 	//========================================================
 	// HP
@@ -88,6 +94,44 @@ void GameHUD::Initialize(Player* player, Camera* camera) {
 		arrowSprite_[i]->SetRotation(rotation);
 	}
 
+
+	//============================================================
+	// ウェーブゲージ
+	//============================================================
+
+	// ゲージの中心座標
+	float waveGaugeCenterX = kWaveGaugePosition.x + kWaveGaugeWidth / 2.0f;
+
+	// 背景の生成
+	waveGaugeBackgroundSprite_.reset(Sprite::Create(whiteTextureHandle, kWaveGaugePosition));
+
+	waveGaugeBackgroundSprite_->SetSize({kWaveGaugeWidth, kWaveGaugeHeight});
+
+	waveGaugeBackgroundSprite_->SetColor({0.2f, 0.2f, 0.2f, 1.0f});
+
+	// 左側のゲージを生成
+	waveGaugeLeftSprite_.reset(Sprite::Create(whiteTextureHandle, {waveGaugeCenterX, kWaveGaugePosition.y}));
+
+	// 右側のゲージを生成
+	waveGaugeRightSprite_.reset(Sprite::Create(whiteTextureHandle, {waveGaugeCenterX, kWaveGaugePosition.y}));
+
+	// 左側のゲージは右上を基準にする
+	waveGaugeLeftSprite_->SetAnchorPoint({1.0f, 0.0f});
+
+	// 右側のゲージは左上を基準にする
+	waveGaugeRightSprite_->SetAnchorPoint({0.0f, 0.0f});
+
+	// 左右の初期サイズ
+	KamataEngine::Vector2 halfGaugeSize = {kWaveGaugeWidth / 2.0f, kWaveGaugeHeight};
+
+	waveGaugeLeftSprite_->SetSize(halfGaugeSize);
+	waveGaugeRightSprite_->SetSize(halfGaugeSize);
+
+	// ゲージの色
+	waveGaugeLeftSprite_->SetColor(kWaveGaugeColor);
+	waveGaugeRightSprite_->SetColor(kWaveGaugeColor);
+
+	
 	// 更新することで最初のフレームから位置を補正
 	Update();
 }
@@ -180,9 +224,42 @@ void GameHUD::Update() {
 		// Spriteに座標を反映
 		arrowSprite_[i]->SetPosition(arrowsPos_[i]);
 	}
+
+
+	//============================================================
+	// ウェーブゲージ
+	//============================================================
+
+	// ウェーブ残り時間を取得
+	float remainingTime = gameScene_->GetWaveRemainingTime();
+
+	// 残り時間の割合
+	float remainingRate = remainingTime / GameScene::kWaveDuration;
+
+	// 0.0f～1.0fに制限
+	remainingRate = std::clamp(remainingRate, 0.0f, 1.0f);
+
+	// 左右それぞれの幅を算出
+	float halfWidth = kWaveGaugeWidth / 2.0f * remainingRate;
+
+	// ゲージのサイズを更新
+	waveGaugeLeftSprite_->SetSize({halfWidth, kWaveGaugeHeight});
+
+	waveGaugeRightSprite_->SetSize({halfWidth, kWaveGaugeHeight});
 }
 void GameHUD::Draw() {
 	Sprite::PreDraw();
+
+	// 数字描画の使用位置をリセット
+	numberRenderer_.BeginFrame();
+
+
+	// 残弾表示
+	// プレイヤーの残弾数を取得
+	int ammo = player_->GetAmmo();
+
+	// 残弾数を描画
+	numberRenderer_.DrawNumberRightAligned(ammo, kAmmoPosition, 2, kAmmoFontSize, kAmmoColor);
 
 	// HP表示
 	for (int i = 0; i < hpSprite_.size(); i++) {
@@ -207,6 +284,23 @@ void GameHUD::Draw() {
 			arrowSprite->Draw();
 		}
 	}
+
+	//============================================================
+	// ウェーブ表示
+	//============================================================
+
+	// ウェーブ番号を取得
+	int currentWave = gameScene_->GetCurrentWave();
+
+	// ウェーブ番号を描画
+	numberRenderer_.DrawNumberCenterAligned(currentWave, kWaveNumberPosition, kWaveNumberFontSize, kWaveNumberColor);
+
+	// ゲージ背景を描画
+	waveGaugeBackgroundSprite_->Draw();
+
+	// 左右のゲージを描画
+	waveGaugeLeftSprite_->Draw();
+	waveGaugeRightSprite_->Draw();
 
 	Sprite::PostDraw();
 }

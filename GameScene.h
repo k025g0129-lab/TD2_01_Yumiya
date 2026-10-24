@@ -44,6 +44,16 @@ class GameScene : public IScene {
 	// ガードエフェクトを生成
 	void CreateGuardEffect(const KamataEngine::Vector3& position);
 
+
+	// 現在のウェーブを取得
+	int GetCurrentWave() const { return currentWave_; }
+
+	// ウェーブ残り時間を取得
+	float GetWaveRemainingTime() const { return kWaveDuration - waveTimer_; }
+
+	// ウェーブの制限時間（秒）
+	static inline constexpr float kWaveDuration = 30.0f;
+
   private:
 
 	// プレイヤー
@@ -118,6 +128,33 @@ class GameScene : public IScene {
 	std::vector<std::vector<std::unique_ptr<KamataEngine::WorldTransform>>> worldTransformBlocks_;
 
 	KamataEngine::Model* modelBlock_ = nullptr;
+
+	//============================================================
+	// ウェーブ管理
+	//============================================================
+
+	// 現在のウェーブ（1から開始）
+	int currentWave_ = 1;
+
+	// 現在のウェーブの経過時間（秒）
+	float waveTimer_ = 0.0f;
+
+	// 1フレームの時間
+	static inline constexpr float kWaveDeltaTime = 1.0f / 60.0f;
+
+	// ウェーブを更新する
+	void UpdateWave();
+
+	// 次のウェーブに移行する
+	void AdvanceWave();
+
+	// ウェーブ切り替え時のリセット
+	void ClearWave();
+
+	// ウェーブに応じた敵を生成する
+	void SpawnWaveEnemies();
+
+
 
 	// 画面サイズ
 	const int kMaxWindowWidth = 1280;

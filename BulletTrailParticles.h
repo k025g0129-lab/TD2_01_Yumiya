@@ -20,8 +20,10 @@ public:
 
 private:
 	// 粒子1個分の情報
+	// 粒子1個分の情報
 	struct TrailParticle {
 		KamataEngine::WorldTransform worldTransform;
+		KamataEngine::ObjectColor objectColor;
 		KamataEngine::Vector3 velocity = {};
 		KamataEngine::Vector4 color = {};
 		float elapsedTime = 0.0f;
@@ -30,14 +32,14 @@ private:
 	// 発生した粒子
 	std::vector<std::unique_ptr<TrailParticle>> trailParticles_;
 
+	// 再利用待ちの粒子
+	std::vector<std::unique_ptr<TrailParticle>> freeParticles_;
+
 	// パーティクルモデル
 	KamataEngine::Model* model_ = nullptr;
 
 	// カメラ
 	KamataEngine::Camera* camera_ = nullptr;
-
-	// 描画色
-	KamataEngine::ObjectColor objectColor_;
 
 	// チャージ段階別の発生数
 	static inline constexpr int kParticleCountTable[] = {2, 5, 10};
