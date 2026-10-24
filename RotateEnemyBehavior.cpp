@@ -10,6 +10,7 @@ using namespace KamataEngine;
 
 EnemyRotateWalk::EnemyRotateWalk(RotateEnemy* rotateEnemy) { rotateEnemy_ = rotateEnemy; }
 
+
 void EnemyRotateWalk::Initialize() {
 	velocty_ = {-kWalkSpeed, 0.0f, 0.0f};
 
