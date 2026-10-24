@@ -21,6 +21,9 @@ void GameHUD::Initialize(Player* player, Camera* camera) {
 	player_ = player;
 	camera_ = camera;
 
+	// 数字描画の初期化
+	numberRenderer_.Initialize();
+
 	//========================================================
 	// HP
 	//========================================================
@@ -183,6 +186,17 @@ void GameHUD::Update() {
 }
 void GameHUD::Draw() {
 	Sprite::PreDraw();
+
+	// 数字描画の使用位置をリセット
+	numberRenderer_.BeginFrame();
+
+
+	// 残弾表示
+	// プレイヤーの残弾数を取得
+	int ammo = player_->GetAmmo();
+
+	// 残弾数を描画
+	numberRenderer_.DrawNumberRightAligned(ammo, kAmmoPosition, 2, kAmmoFontSize, kAmmoColor);
 
 	// HP表示
 	for (int i = 0; i < hpSprite_.size(); i++) {

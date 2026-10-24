@@ -2,6 +2,7 @@
 #include "KamataEngine.h"
 #include "PlayerDirection.h"
 #include <array>
+#include "NumberRenderer.h"
 
 // 前方宣言
 class Player;
@@ -98,4 +99,20 @@ class GameHUD {
 
 	static inline const float kScreenWide = 1280.0f;
 	static inline const float kScreenHeight = 720.0f;
+
+	//============================================================
+	// 残弾表示
+	//============================================================
+
+	// 数字描画
+	NumberRenderer numberRenderer_;
+
+	// 残弾表示位置
+	static inline const KamataEngine::Vector2 kAmmoPosition = {1100.0f, 30.0f};
+
+	// 残弾文字サイズ
+	static inline constexpr float kAmmoFontSize = 40.0f;
+
+	// 残弾文字色
+	static inline const KamataEngine::Vector4 kAmmoColor = {1.0f, 1.0f, 1.0f, 1.0f};
 };
