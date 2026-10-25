@@ -79,6 +79,6 @@ private:
 
 	static inline const float kBaseLeft = 30.0f;
 	static inline const float kBaseRight = 100.0f;
-	static inline const float kBaseBottom = 10.6f;
-	static inline const float kBaseTop = 100.0f;
+	static inline const float kBaseBottom = 10.7f;
+	static inline const float kBaseTop = 10.7f;
 };
