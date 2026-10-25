@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "GameScene.h"
 #include <cmath>
+#include "Ease.h"
 
 using namespace KamataEngine;
 
@@ -131,6 +132,14 @@ void GameHUD::Initialize(Player* player, Camera* camera, GameScene *gameScene) {
 	waveGaugeLeftSprite_->SetColor(kWaveGaugeColor);
 	waveGaugeRightSprite_->SetColor(kWaveGaugeColor);
 
+	// ウェーブ開始アニメーションの初期化
+	previousWave_ = 0;
+	waveAnimationTimer_ = 0.0f;
+	waveNumberPosition_ = kWaveStartPosition;
+	waveNumberFontSize_ = kWaveStartFontSize;
+
+
+
 	
 	// 更新することで最初のフレームから位置を補正
 	Update();
@@ -189,6 +198,8 @@ void GameHUD::Update() {
 	chargeGaugeBackgroundSprite_->SetPosition(gaugeBackgroundPos_);
 	chargeGaugeSprite_->SetPosition(gaugePos_);
 
+	// ウェーブ開始アニメーションの更新
+	UpdateWaveAnimation();
 
 	//========================================================
 	// 矢印周り
@@ -293,7 +304,7 @@ void GameHUD::Draw() {
 	int currentWave = gameScene_->GetCurrentWave();
 
 	// ウェーブ番号を描画
-	numberRenderer_.DrawNumberCenterAligned(currentWave, kWaveNumberPosition, kWaveNumberFontSize, kWaveNumberColor);
+	numberRenderer_.DrawNumberCenterAligned(currentWave, waveNumberPosition_, waveNumberFontSize_, kWaveNumberColor);
 
 	// ゲージ背景を描画
 	waveGaugeBackgroundSprite_->Draw();
@@ -320,4 +331,60 @@ Vector2 GameHUD::WorldToScreen(const Vector3& worldPosition) const {
 	screenPosition.y = (1.0f - ndcPosition.y) * 0.5f * kScreenHeight;
 
 	return screenPosition;
+}
+
+void GameHUD::UpdateWaveAnimation() {
+
+	// 現在のウェーブ番号を取得
+	int currentWave = gameScene_->GetCurrentWave();
+
+	// ウェーブ番号が変化した場合
+	if (previousWave_ != currentWave) {
+
+		// 現在のウェーブ番号を記録
+		previousWave_ = currentWave;
+
+		// アニメーションを最初から開始
+		waveAnimationTimer_ = 0.0f;
+	}
+
+	// アニメーション経過時間を更新
+	waveAnimationTimer_ += kWaveAnimationDeltaTime;
+
+	//============================================================
+	// 中央で静止
+	//============================================================
+
+	if (waveAnimationTimer_ < kWaveWaitDuration) {
+
+		// 表示位置を中央に固定
+		waveNumberPosition_ = kWaveStartPosition;
+
+		// 表示サイズを大きくする
+		waveNumberFontSize_ = kWaveStartFontSize;
+
+		return;
+	}
+
+	//============================================================
+	// 上部へ移動
+	//============================================================
+
+	// 移動開始後の経過時間
+	float moveElapsedTime = waveAnimationTimer_ - kWaveWaitDuration;
+
+	// 移動進行率
+	float t = std::clamp(moveElapsedTime / kWaveMoveDuration, 0.0f, 1.0f);
+
+	// イージング
+	float easedT = Ease::EaseInOut(t);
+
+	// X座標を補間
+	waveNumberPosition_.x = std::lerp(kWaveStartPosition.x, kWaveNumberPosition.x, easedT);
+
+	// Y座標を補間
+	waveNumberPosition_.y = std::lerp(kWaveStartPosition.y, kWaveNumberPosition.y, easedT);
+
+	// 文字サイズを補間
+	waveNumberFontSize_ = std::lerp(kWaveStartFontSize, kWaveNumberFontSize, easedT);
 }
