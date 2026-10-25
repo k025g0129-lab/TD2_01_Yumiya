@@ -11,22 +11,30 @@
 #include "ModelManager.h"
 
 using namespace KamataEngine;
+
 AABB BoomerangEnemy::GetBoomerangAABB() const { 
-	AABB re{};
+	AABB result{};
 	Vector3 pos = worldTransformBoomerang_.translation_;
 
-	re.min = {pos.x - kBoomerangWidth / 2.0f, pos.y - kBoomerangHeight / 2.0f, pos.z - kBoomerangWidth / 2.0f};
-	re.max = {pos.x + kBoomerangWidth / 2.0f, pos.y + kBoomerangHeight / 2.0f, pos.z + kBoomerangWidth / 2.0f};
+	result.min = {pos.x - kBoomerangWidth / 2.0f, pos.y - kBoomerangHeight / 2.0f, pos.z - kBoomerangWidth / 2.0f};
+	result.max = {pos.x + kBoomerangWidth / 2.0f, pos.y + kBoomerangHeight / 2.0f, pos.z + kBoomerangWidth / 2.0f};
 	
-	return AABB(); }
+	return result;
+}
+
 bool BoomerangEnemy::GetIsBoomerangFlying() { return isBoomerangFlying_; }
+
 void BoomerangEnemy::Draw() {
 
+	// ブーメランのワールド変換を更新
 	WorldTransformUpdate(worldTransformBoomerang_);
 
+	// 親クラスの描画処理
+	BaseEnemy::Draw();
+
+	// ブーメランの描画
 	Model::PreDraw();
 
-	model_->Draw(worldTransform_, *camera_);
 	modelBoomerang_->Draw(worldTransformBoomerang_, *camera_);
 
 	Model::PostDraw();
