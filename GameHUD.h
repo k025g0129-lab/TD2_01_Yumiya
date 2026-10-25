@@ -113,7 +113,7 @@ class GameHUD {
 	NumberRenderer numberRenderer_;
 
 	// 残弾表示位置
-	static inline const KamataEngine::Vector2 kAmmoPosition = {1100.0f, 30.0f};
+	static inline const KamataEngine::Vector2 kAmmoPosition = {1180.0f, 30.0f};
 
 	// 残弾文字サイズ
 	static inline constexpr float kAmmoFontSize = 40.0f;
@@ -121,12 +121,26 @@ class GameHUD {
 	// 残弾文字色
 	static inline const KamataEngine::Vector4 kAmmoColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
+	// 残弾アイコン
+	std::unique_ptr<KamataEngine::Sprite> ammoIconSprite_;
+
+	// 残弾アイコンの位置とサイズ
+	static inline const KamataEngine::Vector2 kAmmoIconPosition = {1040.0f, 20.0f};
+	static inline const KamataEngine::Vector2 kAmmoIconSize = {128.0f, 64.0f};
+
+
 	//============================================================
 	// ウェーブ表示
 	//============================================================
 
+	// Wave文字画像
+	std::unique_ptr<KamataEngine::Sprite> waveLabelSprite_;
+
+	// Wave画像と数字の間隔
+	static inline constexpr float kWaveLabelGap = 8.0f;
+
 	// ウェーブ番号の表示位置
-	static inline const KamataEngine::Vector2 kWaveNumberPosition = {kScreenWide / 2.0f, 10.0f};
+	static inline const KamataEngine::Vector2 kWaveNumberPosition = {700.0f, 10.0f};
 
 	// ウェーブ番号の文字サイズ
 	static inline constexpr float kWaveNumberFontSize = 36.0f;
@@ -152,4 +166,38 @@ class GameHUD {
 
 	// ゲージの色
 	static inline const KamataEngine::Vector4 kWaveGaugeColor = {1.0f, 0.8f, 0.1f, 1.0f};
+
+	//============================================================
+	// ウェーブ開始アニメーション
+	//============================================================
+
+	// 前回確認したウェーブ番号
+	int previousWave_ = 0;
+
+	// アニメーション経過時間
+	float waveAnimationTimer_ = 0.0f;
+
+	// 中央で静止する時間
+	static inline constexpr float kWaveWaitDuration = 1.0f;
+
+	// 上部へ移動する時間
+	static inline constexpr float kWaveMoveDuration = 0.2f;
+
+	// 1フレームの時間
+	static inline constexpr float kWaveAnimationDeltaTime = 1.0f / 60.0f;
+
+	// 開始位置
+	static inline const KamataEngine::Vector2 kWaveStartPosition = {800.0f, kScreenHeight / 2.0f};
+
+	// 開始時の文字サイズ
+	static inline constexpr float kWaveStartFontSize = 100.0f;
+
+	// 現在の描画位置
+	KamataEngine::Vector2 waveNumberPosition_ = kWaveStartPosition;
+
+	// 現在の文字サイズ
+	float waveNumberFontSize_ = kWaveStartFontSize;
+
+	// ウェーブ開始アニメーションを更新
+	void UpdateWaveAnimation();
 };

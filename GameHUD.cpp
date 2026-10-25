@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "GameScene.h"
 #include <cmath>
+#include "Ease.h"
 
 using namespace KamataEngine;
 
@@ -26,6 +27,13 @@ void GameHUD::Initialize(Player* player, Camera* camera, GameScene *gameScene) {
 
 	// 数字描画の初期化
 	numberRenderer_.Initialize();
+
+	// 残弾アイコン
+	uint32_t ammoTextureHandle = TextureManager::Load("Sprite/HUD/ammo.png");
+
+	ammoIconSprite_.reset(Sprite::Create(ammoTextureHandle, kAmmoIconPosition));
+
+	ammoIconSprite_->SetSize(kAmmoIconSize);
 
 	//========================================================
 	// HP
@@ -99,6 +107,13 @@ void GameHUD::Initialize(Player* player, Camera* camera, GameScene *gameScene) {
 	// ウェーブゲージ
 	//============================================================
 
+	// Wave画像
+	uint32_t waveTextureHandle = TextureManager::Load("Sprite/HUD/Wave.png");
+
+	waveLabelSprite_.reset(Sprite::Create(waveTextureHandle, {0.0f, 0.0f}));
+
+	waveLabelSprite_->SetAnchorPoint({1.0f, 0.0f});
+
 	// ゲージの中心座標
 	float waveGaugeCenterX = kWaveGaugePosition.x + kWaveGaugeWidth / 2.0f;
 
@@ -130,6 +145,14 @@ void GameHUD::Initialize(Player* player, Camera* camera, GameScene *gameScene) {
 	// ゲージの色
 	waveGaugeLeftSprite_->SetColor(kWaveGaugeColor);
 	waveGaugeRightSprite_->SetColor(kWaveGaugeColor);
+
+	// ウェーブ開始アニメーションの初期化
+	previousWave_ = 0;
+	waveAnimationTimer_ = 0.0f;
+	waveNumberPosition_ = kWaveStartPosition;
+	waveNumberFontSize_ = kWaveStartFontSize;
+
+
 
 	
 	// 更新することで最初のフレームから位置を補正
@@ -189,6 +212,8 @@ void GameHUD::Update() {
 	chargeGaugeBackgroundSprite_->SetPosition(gaugeBackgroundPos_);
 	chargeGaugeSprite_->SetPosition(gaugePos_);
 
+	// ウェーブ開始アニメーションの更新
+	UpdateWaveAnimation();
 
 	//========================================================
 	// 矢印周り
@@ -255,6 +280,9 @@ void GameHUD::Draw() {
 
 
 	// 残弾表示
+	// アイコン
+	ammoIconSprite_->Draw();
+
 	// プレイヤーの残弾数を取得
 	int ammo = player_->GetAmmo();
 
@@ -289,11 +317,20 @@ void GameHUD::Draw() {
 	// ウェーブ表示
 	//============================================================
 
+	// Wave画像のサイズを数字に合わせる
+	waveLabelSprite_->SetSize({waveNumberFontSize_ * 3.0f, waveNumberFontSize_});
+
+	// Wave画像を数字の左側に配置
+	waveLabelSprite_->SetPosition({waveNumberPosition_.x - waveNumberFontSize_ / 2.0f - kWaveLabelGap, waveNumberPosition_.y});
+
+	// Wave画像を描画
+	waveLabelSprite_->Draw();
+
 	// ウェーブ番号を取得
 	int currentWave = gameScene_->GetCurrentWave();
 
 	// ウェーブ番号を描画
-	numberRenderer_.DrawNumberCenterAligned(currentWave, kWaveNumberPosition, kWaveNumberFontSize, kWaveNumberColor);
+	numberRenderer_.DrawNumberCenterAligned(currentWave, waveNumberPosition_, waveNumberFontSize_, kWaveNumberColor);
 
 	// ゲージ背景を描画
 	waveGaugeBackgroundSprite_->Draw();
@@ -320,4 +357,60 @@ Vector2 GameHUD::WorldToScreen(const Vector3& worldPosition) const {
 	screenPosition.y = (1.0f - ndcPosition.y) * 0.5f * kScreenHeight;
 
 	return screenPosition;
+}
+
+void GameHUD::UpdateWaveAnimation() {
+
+	// 現在のウェーブ番号を取得
+	int currentWave = gameScene_->GetCurrentWave();
+
+	// ウェーブ番号が変化した場合
+	if (previousWave_ != currentWave) {
+
+		// 現在のウェーブ番号を記録
+		previousWave_ = currentWave;
+
+		// アニメーションを最初から開始
+		waveAnimationTimer_ = 0.0f;
+	}
+
+	// アニメーション経過時間を更新
+	waveAnimationTimer_ += kWaveAnimationDeltaTime;
+
+	//============================================================
+	// 中央で静止
+	//============================================================
+
+	if (waveAnimationTimer_ < kWaveWaitDuration) {
+
+		// 表示位置を中央に固定
+		waveNumberPosition_ = kWaveStartPosition;
+
+		// 表示サイズを大きくする
+		waveNumberFontSize_ = kWaveStartFontSize;
+
+		return;
+	}
+
+	//============================================================
+	// 上部へ移動
+	//============================================================
+
+	// 移動開始後の経過時間
+	float moveElapsedTime = waveAnimationTimer_ - kWaveWaitDuration;
+
+	// 移動進行率
+	float t = std::clamp(moveElapsedTime / kWaveMoveDuration, 0.0f, 1.0f);
+
+	// イージング
+	float easedT = Ease::EaseInOut(t);
+
+	// X座標を補間
+	waveNumberPosition_.x = std::lerp(kWaveStartPosition.x, kWaveNumberPosition.x, easedT);
+
+	// Y座標を補間
+	waveNumberPosition_.y = std::lerp(kWaveStartPosition.y, kWaveNumberPosition.y, easedT);
+
+	// 文字サイズを補間
+	waveNumberFontSize_ = std::lerp(kWaveStartFontSize, kWaveNumberFontSize, easedT);
 }
