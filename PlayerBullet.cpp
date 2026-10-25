@@ -76,7 +76,7 @@ void PlayerBullet::Update() {
 	worldTransform_.translation_ += velocity_;
 
 	// カメラ内にいるか判定(仮置き処理)
-	if (std::abs(worldTransform_.translation_.x - camera_->translation_.x) >= 15.0f || std::abs(worldTransform_.translation_.y - camera_->translation_.y) >= 10.0f) {
+	if (std::abs(worldTransform_.translation_.x - camera_->translation_.x) >= 20.0f || std::abs(worldTransform_.translation_.y - camera_->translation_.y) >= 10.0f) {
 		isInCamera_ = false;
 	}
 

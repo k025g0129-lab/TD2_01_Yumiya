@@ -67,7 +67,7 @@ class GameHUD {
 	KamataEngine::Vector2 gaugePos_ = {};
 
 	// ゲージを表示する距離
-	static inline const float kGaugeDistanceX = 80.0f;
+	static inline const float kGaugeDistanceX = 120.0f;
 	static inline const float kGaugeDistanceY = kGaugeWidth + 10;
 
 	const KamataEngine::Vector4 chageStapOneColor{0.8f,0.3f,0.3f,1.0f};
