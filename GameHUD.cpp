@@ -28,6 +28,13 @@ void GameHUD::Initialize(Player* player, Camera* camera, GameScene *gameScene) {
 	// 数字描画の初期化
 	numberRenderer_.Initialize();
 
+	// 残弾アイコン
+	uint32_t ammoTextureHandle = TextureManager::Load("Sprite/HUD/ammo.png");
+
+	ammoIconSprite_.reset(Sprite::Create(ammoTextureHandle, kAmmoIconPosition));
+
+	ammoIconSprite_->SetSize(kAmmoIconSize);
+
 	//========================================================
 	// HP
 	//========================================================
@@ -99,6 +106,13 @@ void GameHUD::Initialize(Player* player, Camera* camera, GameScene *gameScene) {
 	//============================================================
 	// ウェーブゲージ
 	//============================================================
+
+	// Wave画像
+	uint32_t waveTextureHandle = TextureManager::Load("Sprite/HUD/Wave.png");
+
+	waveLabelSprite_.reset(Sprite::Create(waveTextureHandle, {0.0f, 0.0f}));
+
+	waveLabelSprite_->SetAnchorPoint({1.0f, 0.0f});
 
 	// ゲージの中心座標
 	float waveGaugeCenterX = kWaveGaugePosition.x + kWaveGaugeWidth / 2.0f;
@@ -266,6 +280,9 @@ void GameHUD::Draw() {
 
 
 	// 残弾表示
+	// アイコン
+	ammoIconSprite_->Draw();
+
 	// プレイヤーの残弾数を取得
 	int ammo = player_->GetAmmo();
 
@@ -299,6 +316,15 @@ void GameHUD::Draw() {
 	//============================================================
 	// ウェーブ表示
 	//============================================================
+
+	// Wave画像のサイズを数字に合わせる
+	waveLabelSprite_->SetSize({waveNumberFontSize_ * 3.0f, waveNumberFontSize_});
+
+	// Wave画像を数字の左側に配置
+	waveLabelSprite_->SetPosition({waveNumberPosition_.x - waveNumberFontSize_ / 2.0f - kWaveLabelGap, waveNumberPosition_.y});
+
+	// Wave画像を描画
+	waveLabelSprite_->Draw();
 
 	// ウェーブ番号を取得
 	int currentWave = gameScene_->GetCurrentWave();
