@@ -27,7 +27,11 @@ void BoomerangEnemy::Draw() {
 	Model::PreDraw();
 
 	model_->Draw(worldTransform_, *camera_);
-	modelBoomerang_->Draw(worldTransformBoomerang_, *camera_);
+
+	if (enumBehavior_ != EnemyBoomerangBehavior::kDeathDirection) {
+		modelBoomerang_->Draw(worldTransformBoomerang_, *camera_);
+	}
+
 
 	Model::PostDraw();
 
