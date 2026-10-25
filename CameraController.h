@@ -48,7 +48,7 @@ private:
 	void UpdateFollow();
 
 	// 追従対象とカメラの座標の差（オフセット）
-	KamataEngine::Vector3 targetOffset_ = {0.0f, 0.0f, -15.0f};
+	KamataEngine::Vector3 targetOffset_ = {0.0f, 0.0f, -25.0f};
 
 	// カメラ移動範囲
 	Rect movableArea_ = {};
@@ -77,8 +77,8 @@ private:
 	// 移動範囲の基礎値
 	//============================================================
 
-	static inline const float kBaseLeft = 11.0f;
+	static inline const float kBaseLeft = 30.0f;
 	static inline const float kBaseRight = 100.0f;
-	static inline const float kBaseBottom = 6.0f;
+	static inline const float kBaseBottom = 10.6f;
 	static inline const float kBaseTop = 100.0f;
 };
