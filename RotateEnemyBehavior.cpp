@@ -70,7 +70,7 @@ void EnemyRotateFlyRing::Update() {
 		
 	// 円周をまわる
 	rotateEnemy_->SetTranslation(translation_);
-	ImGui::Text("%f,%f,%f", rotateEnemy_->GetWorldPosition().x, rotateEnemy_->GetWorldPosition().y, rotateEnemy_->GetWorldPosition().z);
+	//ImGui::Text("%f,%f,%f", rotateEnemy_->GetWorldPosition().x, rotateEnemy_->GetWorldPosition().y, rotateEnemy_->GetWorldPosition().z);
 }
 
 void EnemyRotateFlyRing::UpdateMotion() {

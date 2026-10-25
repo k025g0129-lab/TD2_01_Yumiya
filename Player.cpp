@@ -214,32 +214,32 @@ void Player::Update() {
 // 削除予定
 #ifdef _DEBUG
 
-	ImGui::Begin("JumpThrough");
+	//ImGui::Begin("JumpThrough");
 
-	// リロードボタン
-	if (isJumpThrough_) {
-		ImGui::Text("JumpThrough: ON");
-	} else {
-		ImGui::Text("JumpThrough: OFF");
-	}
+	//// リロードボタン
+	//if (isJumpThrough_) {
+	//	ImGui::Text("JumpThrough: ON");
+	//} else {
+	//	ImGui::Text("JumpThrough: OFF");
+	//}
 
-	// 接地判定
-	if (isGround_) {
-		ImGui::Text("isGround: ON");
-	} else {
-		ImGui::Text("isGround: OFF");
-	}
+	//// 接地判定
+	//if (isGround_) {
+	//	ImGui::Text("isGround: ON");
+	//} else {
+	//	ImGui::Text("isGround: OFF");
+	//}
 
-	ImGui::Text("pos.x = %.2f", GetWorldPosition().x);
+	//ImGui::Text("pos.x = %.2f", GetWorldPosition().x);
 
-	ImGui::Text("worldTransform_.translation_.y = %f , jumpThroughPoint_ = %f", worldTransform_.translation_.y, jumpThroughPoint_[1].yPos_);
-	ImGui::Text("velocity_.y = %f ", velocity_.y);
-	ImGui::Text("chargeKeyTime = %d ", chargeTime_);
-	ImGui::Text("LowerLimitBlockYIndex = %d ", int(mapChipField_->GetLowerLimitBlockYIndex() - uint32_t(1)));
-	ImGui::Text("PlayerYIndex = %d ", int(mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_).yIndex));
+	//ImGui::Text("worldTransform_.translation_.y = %f , jumpThroughPoint_ = %f", worldTransform_.translation_.y, jumpThroughPoint_[1].yPos_);
+	//ImGui::Text("velocity_.y = %f ", velocity_.y);
+	//ImGui::Text("chargeKeyTime = %d ", chargeTime_);
+	//ImGui::Text("LowerLimitBlockYIndex = %d ", int(mapChipField_->GetLowerLimitBlockYIndex() - uint32_t(1)));
+	//ImGui::Text("PlayerYIndex = %d ", int(mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_).yIndex));
 
 
-	ImGui::End();
+	//ImGui::End();
 
 #endif // _DEBUG
 
