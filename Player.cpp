@@ -230,7 +230,7 @@ void Player::Update() {
 		ImGui::Text("isGround: OFF");
 	}
 
-	ImGui::Text("HP = %d", HP_);
+	ImGui::Text("pos.x = %.2f", GetWorldPosition().x);
 
 	ImGui::Text("worldTransform_.translation_.y = %f , jumpThroughPoint_ = %f", worldTransform_.translation_.y, jumpThroughPoint_[1].yPos_);
 	ImGui::Text("velocity_.y = %f ", velocity_.y);
