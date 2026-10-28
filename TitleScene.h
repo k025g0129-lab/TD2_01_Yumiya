@@ -3,9 +3,11 @@
 #include "Fade.h"
 #include "IScene.h"
 #include "time.h"
+#include "Skydome.h"
 
 class TitleScene : public IScene {
   public:
+
 	// 初期化処理
 	void Initialize() override;
 
@@ -39,7 +41,7 @@ class TitleScene : public IScene {
 	KamataEngine::Model* modelPlayer_;
 
 	// 敵見た目用モデル
-	KamataEngine::Model* modelEnemys_[4];
+	KamataEngine::Model* modelEnemys_[5];
 
 	// タイトル用ワールド変換
 	KamataEngine::WorldTransform worldTransformTitle_;
@@ -48,14 +50,17 @@ class TitleScene : public IScene {
 	KamataEngine::WorldTransform worldTransformPlayer_;
 
 	// 敵見た目用ワールド変換
-	KamataEngine::WorldTransform worldTransformEnemys_[4];
+	KamataEngine::WorldTransform worldTransformEnemys_[5][4];
 
 	//敵速度
-	KamataEngine::Vector3 enemysVelocty_[4] = {};
+	KamataEngine::Vector3 enemysVelocty_[5][4] = {};
 
 	// アニメーション用タイマー
 	float animationTimer_ = 0.0f;
 
 	// フェード
 	std::unique_ptr<Fade> fade_;
+
+	// 天球
+	std::unique_ptr<Skydome> skydome_;
 };

@@ -9,6 +9,8 @@
 using namespace KamataEngine;
 
 void TitleScene::Initialize() {
+	srand(static_cast<unsigned int>(time(nullptr)));
+
 	phase_ = Phase::kFadeIn;
 	animationTimer_ = 0.0f;
 
@@ -28,6 +30,12 @@ void TitleScene::Initialize() {
 	modelEnemys_[1] = modelManager->Load("BoomerangEnemy", true);
 	modelEnemys_[2] = modelManager->Load("JumpEnemy", true);
 	modelEnemys_[3] = modelManager->Load("ThrowingBorn", true);
+	modelEnemys_[4] = modelManager->Load("enemy", true);
+
+	// 天球の生成
+	skydome_ = std::make_unique<Skydome>();
+	skydome_->Initialize(modelManager->Load("SkyDome", true), camera_.get());
+
 
 	// タイトル文字のワールド変換
 	worldTransformTitle_.Initialize();
@@ -41,15 +49,19 @@ void TitleScene::Initialize() {
 
 
 
-	for (int i = 0; i < 4; i++) {
-		//敵モデルのワールド変換
-		worldTransformEnemys_[i].Initialize();
-		worldTransformEnemys_[i].translation_ = {float(rand() % 9 - 4), float(rand() % 3 + 2), 0.0f};
-		worldTransformEnemys_[i].rotation_.y = std::numbers::pi_v<float> / 2.0f;
-		enemysVelocty_[i] = {
-		    float(rand() % 5 - 2) / 100.0f,
-		     - float(rand() % 6 + 3) / 100.0f,
-		};
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 4; j++) {
+			//敵モデルのワールド変換
+			worldTransformEnemys_[i][j].Initialize();
+			worldTransformEnemys_[i][j].translation_ = {float(rand() % 18 - 8), float(rand() % 5 + 8), 3.0f};
+			worldTransformEnemys_[i][j].rotation_.y = std::numbers::pi_v<float> / 2.0f;
+			enemysVelocty_[i][j] = {
+			    float(rand() % 5 - 2) / 100.0f,
+			    -float(rand() % 6 + 3) / 100.0f,
+			};
+
+		
+		}
 
 	}
 
@@ -77,13 +89,21 @@ void TitleScene::Update() {
 
 
 	//敵の落下
-	for (int i = 0; i < 4; i++) {
-		//worldTransformEnemys_[i].translation_.x += enemysVelocty_[i].x;
-		worldTransformEnemys_[i].translation_.y += enemysVelocty_[i].y;
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 4; j++) {
+			//worldTransformEnemys_[i].translation_.x += enemysVelocty_[i].x;
+			worldTransformEnemys_[i][j].translation_.y += enemysVelocty_[i][j].y;
+			worldTransformEnemys_[i][j].rotation_.x += enemysVelocty_[i][j].x;
+			worldTransformEnemys_[i][j].rotation_.y += enemysVelocty_[i][j].y;
 
+			if (worldTransformEnemys_[i][j].translation_.y <= -5.0f) {
+				worldTransformEnemys_[i][j].translation_ = {float(rand() % 18 - 8), float(rand() % 5 + 8), 3.0f};
+				enemysVelocty_[i][j] = {
+				    float(rand() % 5 - 2) / 100.0f,
+				    -float(rand() % 6 + 3) / 100.0f,
+				};
+			}
 
-		if (worldTransformEnemys_[i].translation_.y <= -5.0f) {
-			worldTransformEnemys_[i].translation_ = {float(rand() % 9 - 4), float(rand() % 5 + 5), 0.0f};
 		}
 
 	}
@@ -92,8 +112,10 @@ void TitleScene::Update() {
 	// ワールド行列更新
 	WorldTransformUpdate(worldTransformTitle_);
 	WorldTransformUpdate(worldTransformPlayer_);
-	for (int i = 0; i < 4; i++) {
-		WorldTransformUpdate(worldTransformEnemys_[i]);
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 4; j++) {
+			WorldTransformUpdate(worldTransformEnemys_[i][j]);
+		}
 	}
 
 
@@ -125,10 +147,24 @@ void TitleScene::Update() {
 		}
 		break;
 	}
+
+	skydome_->Update();
 }
 
 void TitleScene::Draw() {
+
+	skydome_->Draw();
+
+
 	Model::PreDraw();
+
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (modelEnemys_[i]) {
+				modelEnemys_[i]->Draw(worldTransformEnemys_[i][j], *camera_);
+			}
+		}
+	}
 
 	if (modelTitle_) {
 		modelTitle_->Draw(worldTransformTitle_, *camera_);
@@ -138,13 +174,6 @@ void TitleScene::Draw() {
 		modelPlayer_->Draw(worldTransformPlayer_, *camera_);
 	}
 
-	for (int i = 0; i < 4; i++) {
-		if (modelEnemys_[i]) {
-			modelEnemys_[i]->Draw(worldTransformEnemys_[i], *camera_);
-		}
-	
-	
-	}
 
 	Model::PostDraw();
 
