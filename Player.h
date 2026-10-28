@@ -13,6 +13,7 @@
 class MapChipField;
 class BaseEnemy;
 class BulletTrailParticles;
+class CameraController;
 
 enum Corner { kRightBottom, kLeftBottom, kRightTop, kLeftTop, kNumCorner };
 
@@ -63,6 +64,9 @@ public:
 	// 全ての弾を削除
 	void ClearBullets();
 
+	// クリアモーションを要求
+	void RequestClearBehavior() { behaviorRequest_ = Behavior::kClear; }
+
 	//============================================================
 	// ゲッター・セッター
 	//============================================================
@@ -100,6 +104,8 @@ public:
 
 	// 残弾数を取得
 	int GetAmmo() const { return ammo_; }
+
+	void SetCameraController(CameraController* cameraController) { cameraController_ = cameraController; }
 
 	// パブリックメンバ変数
 	// チャージ1段階目に必要な時間
@@ -141,6 +147,8 @@ private:
 
 	// マップチップフィールド
 	MapChipField* mapChipField_ = nullptr;
+
+	CameraController* cameraController_ = nullptr;
 
 	KamataEngine::Vector3 CornerPosition(const KamataEngine::Vector3& center, Corner corner);
 
@@ -199,6 +207,7 @@ private:
 		kCharge,       // 溜める
 		kKnockback,    // ノックバック
 		kSqueezeDeath, // 挟まれ死亡演出
+		kClear,
 		kUnknown
 	};
 
@@ -374,6 +383,25 @@ private:
 
 	// ノックバック後の減速率
 	static inline float kKnockbackAttenuation = 0.15f;
+
+	// クリアモーション
+	void BehaviorClearInitialize();
+	void BehaviorClearUpdate();
+
+	// クリアモーションの進行段階
+	enum class ClearPhase { kJump, kTurn, kFinished };
+
+	ClearPhase clearPhase_ = ClearPhase::kJump;
+
+	bool hasClearJumpStarted_ = false;
+
+	float clearTurnStartRotationY_ = 0.0f;
+	float clearTurnTargetRotationY_ = 0.0f;
+	float clearTurnTimer_ = 0.0f;
+
+	static inline constexpr float kClearJumpVelocity = 0.7f;
+	static inline constexpr float kClearTurnTime = 0.5f;
+	static inline constexpr float kClearFrontRotationY = std::numbers::pi_v<float>;
 
 	//============================================================
 	// マップチップ回り

@@ -92,6 +92,7 @@ class GameScene : public IScene {
 		kFadeIn,  // フェードイン
 		kPlay,    // ゲームプレイ
 		kDeath,   // デス演出
+		kClear,   // クリア
 		kFadeOut, // フェードアウト
 	};
 
@@ -153,6 +154,64 @@ class GameScene : public IScene {
 
 	// ウェーブに応じた敵を生成する
 	void SpawnWaveEnemies();
+
+	// そのウェーブの全敵数
+	int totalEnemyCount_ = 0;
+
+	// 最終ウェーブ
+	static inline constexpr int kFinalWave = 5;
+
+	//============================================================
+	// クリア演出
+	//============================================================
+
+	// クリア後の待機時間
+	static inline constexpr float kClearWaitDuration = 0.75f;
+
+	// CLEARモデル
+	KamataEngine::Model* modelClear_ = nullptr;
+
+	// CLEARモデルのワールド変換
+	KamataEngine::WorldTransform worldTransformClear_;
+
+	// CLEARモデルの落下開始位置
+	KamataEngine::Vector3 clearModelStartPosition_ = {};
+
+	// CLEARモデルの落下終了位置
+	KamataEngine::Vector3 clearModelEndPosition_ = {};
+
+	// CLEARモデルの落下経過時間
+	float clearModelTimer_ = 0.0f;
+
+	// CLEARモデルの落下時間
+	static inline constexpr float kClearModelDuration = 0.65f;
+
+	// 落下開始位置の高さ
+	static inline constexpr float kClearModelStartHeight = 8.0f;
+
+	// 落下終了位置の高さ
+	static inline constexpr float kClearModelEndHeight = 3.5f;
+
+	// CLEARモデルの落下が始まったか
+	bool isClearModelStarted_ = false;
+
+	// クリア演出経過時間
+	float clearTimer_ = 0.0f;
+
+	// カメラ接近を開始したか
+	bool isClearCameraStarted_ = false;
+
+	// CLEARモデルの落下開始
+	void StartClearModelDrop();
+
+	// CLEARモデルの落下更新
+	void UpdateClearModelDrop();
+
+	// クリア開始処理
+	void StartClear();
+
+	// クリア中の更新処理
+	void UpdateClearPhase();
 
 
 

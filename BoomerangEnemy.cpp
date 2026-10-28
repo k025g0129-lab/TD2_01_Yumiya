@@ -9,6 +9,7 @@
 #include "Ease.h"
 #include"GameScene.h"
 #include "ModelManager.h"
+#include "SoundManager.h"
 
 using namespace KamataEngine;
 
@@ -34,8 +35,6 @@ void BoomerangEnemy::Draw() {
 
 	// ブーメランの描画
 	Model::PreDraw();
-
-	model_->Draw(worldTransform_, *camera_);
 
 	if (enumBehavior_ != EnemyBoomerangBehavior::kDeathDirection) {
 		modelBoomerang_->Draw(worldTransformBoomerang_, *camera_);
@@ -114,8 +113,14 @@ void BoomerangEnemy::OnCollisionBullet(int bulletAttack) {
 
 	// 死んでなければ処理終了
 	if (HP_ > 0) {
+		// 死んでいなければ通常被弾SEを鳴らす
+		SoundManager::GetInstance()->PlaySe(SeType::kEnemyDamage);
+
 		return;
 	}
+
+	// 死んでいれば死亡を鳴らす
+	SoundManager::GetInstance()->PlaySe(SeType::kEnemyDeath);
 
 	// 振る舞いをデス演出に変更
 	behaviorRequest_ = EnemyBoomerangBehavior::kDeathDirection;
