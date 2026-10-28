@@ -54,11 +54,11 @@ void GameScene::Initialize() {
 
 	// CLEARモデルの読み込み
 	// 仮置きタイトルフォント
-	modelClear_ = modelManager->Load("titleFont", true);
+	modelClear_ = modelManager->Load("ClearText", true);
 
 	// CLEARモデルのワールド変換を初期化
 	worldTransformClear_.Initialize();
-	worldTransformClear_.scale_ = {0.5f, 0.5f, 0.5f};
+	worldTransformClear_.scale_ = {1.5f, 1.5f, 1.5f};
 
 	// CLEARモデルの落下初期化
 	clearModelTimer_ = 0.0f;
