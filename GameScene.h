@@ -154,6 +154,9 @@ class GameScene : public IScene {
 	// ウェーブに応じた敵を生成する
 	void SpawnWaveEnemies();
 
+	// そのウェーブの全敵数
+	int totalEnemyCount_ = 0;
+
 
 
 	// 画面サイズ

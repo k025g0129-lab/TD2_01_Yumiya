@@ -33,6 +33,7 @@ void GameScene::Initialize() {
 	// ウェーブ初期化
 	currentWave_ = 1;
 	waveTimer_ = 0.0f;
+	totalEnemyCount_ = 0;
 
 	// カメラの初期化
 	camera_ = std::make_unique<Camera>();
@@ -95,6 +96,9 @@ void GameScene::Initialize() {
 	GenerateFieldObjects();
 
 	assert(player_ != nullptr && "プレイヤーがCSV内に配置されていません");
+
+	// ウェーブ1の敵を生成
+	SpawnWaveEnemies();
 
 	// 追従カメラをプレイヤーにセット
 	cameraController_->SetTarget(player_.get());
@@ -251,10 +255,6 @@ void GameScene::GenerateFieldObjects() {
 
 				break;
 			}
-
-				case MapChipType::kEnemy: {
-					GenerateEnemy(mapPosition, mapChipField_->GetMapChipSubIDByIndex(j, i));
-				}
 			}
 
 			// ブロックを横に伸ばす
@@ -547,8 +547,8 @@ void GameScene::UpdateWave() {
 	// ウェーブ経過時間を更新
 	waveTimer_ += kWaveDeltaTime;
 
-	// 制限時間に達していなければ終了
-	if (waveTimer_ < kWaveDuration) {
+	// 制限時間に達するか敵が全滅すれば終了
+	if (waveTimer_ < kWaveDuration && !enemies_.empty()) {
 		return;
 	}
 
@@ -586,5 +586,43 @@ void GameScene::ClearWave() {
 }
 
 void GameScene::SpawnWaveEnemies() {
-	// 仮置き
+
+	// 現在のステージデータを取得
+	const StageData& stageData = StageManager::GetInstance()->GetCurrentStageData();
+
+	// ウェーブごとのCSVファイルパスを生成
+	std::string waveFileName = "fieldsData/" + stageData.name + "_wave" + std::to_string(currentWave_) + ".csv";
+
+	// 敵配置用のマップチップフィールド
+	MapChipField waveField;
+
+	// ウェーブ配置CSVを読み込む
+	waveField.LoadMapChipCsv(waveFileName);
+
+	// CSVの縦横サイズを取得
+	uint32_t numBlockVertical = waveField.GetNumBlockVertical();
+	uint32_t numBlockHorizontal = waveField.GetNumBlockHorizontal();
+
+	// 敵配置データを走査
+	for (uint32_t i = 0; i < numBlockVertical; ++i) {
+		for (uint32_t j = 0; j < numBlockHorizontal; ++j) {
+
+			// 敵以外のマップチップは無視
+			if (waveField.GetMapChipTypeByIndex(j, i) != MapChipType::kEnemy) {
+				continue;
+			}
+
+			// 配置座標を取得
+			Vector3 enemyPosition = waveField.GetMapChipPositionByIndex(j, i);
+
+			// 敵の種類を取得
+			uint8_t enemyType = waveField.GetMapChipSubIDByIndex(j, i);
+
+			// 敵を生成
+			GenerateEnemy(enemyPosition, enemyType);
+		}
+	}
+
+	// ウェーブ開始時の総敵数を記録
+	totalEnemyCount_ = static_cast<int>(enemies_.size());
 }

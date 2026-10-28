@@ -36,8 +36,6 @@ void BoomerangEnemy::Draw() {
 	// ブーメランの描画
 	Model::PreDraw();
 
-	model_->Draw(worldTransform_, *camera_);
-
 	if (enumBehavior_ != EnemyBoomerangBehavior::kDeathDirection) {
 		modelBoomerang_->Draw(worldTransformBoomerang_, *camera_);
 	}
