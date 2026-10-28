@@ -1,9 +1,9 @@
 #include "EnemyBehavior.h"
 #include "Enemy.h"
-#include "RotateEnemy.h"
 #include "Matrix4x4Util.h"
 #include <algorithm>
 #include "Ease.h"
+
 
 using namespace KamataEngine;
 
@@ -22,49 +22,57 @@ void EnemyWalk::Update() {
 void EnemyWalk::UpdateMotion() {
 	walkTimer_ += 1.0f / 60.0f;
 
-	// タイマーが大きくなりすぎないようにする
-	if (walkTimer_ >= kWalkMotionTime) {
-		walkTimer_ -= kWalkMotionTime;
-	}
-
-	// -1.0f ～ 1.0f を周期的に繰り返す値
-	float param = std::sin(2.0f * kPi * walkTimer_ / kWalkMotionTime);
-
-	// -1.0f ～ 1.0f を 0.0f ～ 1.0f に変換
-	float t = (param + 1.0f) / 2.0f;
-
-	// 最初の角度から最後の角度まで補間
-	float angle = kWalkMotionAngleStart + (kWalkMotionAngleEnd - kWalkMotionAngleStart) * t;
 
 	// X軸周りに回転アニメーション
-	enemy_->SetRotationX(angle);
+	enemy_->SetRotationX(walkTimer_);
 }
 
 EnemyDeath::EnemyDeath(BaseEnemy* enemy) { enemy_ = enemy; }
 
 void EnemyDeath::Initialize() {
+	velocty_ = {0.0f, kAscensionSpeed, 0.0f};
+
 	deathTimer_ = 0.0f;
 
+	enemy_->SetRotationX(0.0f);
+	enemy_->SetRotationY(0.0f);
+	enemy_->SetRotationZ(0.0f);
+
 	// 死亡演出開始時の角度を保存
-	deathStartRotationX_ = enemy_->GetRotationX();
+	deathStartRotationZ_ = enemy_->GetRotationZ();
 }
 
 void EnemyDeath::Update() {}
 
 void EnemyDeath::UpdateMotion() {
+
 	deathTimer_ += 1.0f / 60.0f;
 
-	// デスタイマーを 0.0f ～ 1.0f に変換
-	float t = std::clamp(deathTimer_ / kDeathMotionTime, 0.0f, 1.0f);
+	switch (deathPhase) {
 
-	// X軸回転で倒れる
-	enemy_->SetRotationX(Lerp(deathStartRotationX_, kDeathMotionAngleEnd, Ease::EaseInOut(t)));
+	case DeathPhase::HEAD_SHOT: {
 
-	// Y軸回転でぐるぐる回る
-	enemy_->SetRotationY(enemy_->GetRotationY() + kDeathSpinSpeed * (1.0f / 60.0f));
+		// デスタイマーを 0.0f ～ 1.0f に変換
+		float t = std::clamp(deathTimer_ / kHeadShotMotionTime, 0.0f, 1.0f);
 
-	if (deathTimer_ >= kDeathMotionTime) {
-		enemy_->SetDead(true);
+		// X軸回転で倒れる
+		enemy_->SetRotationZ(Lerp(deathStartRotationZ_, kHeadShotMotionAngleEnd, Ease::EaseOutElastic(t)));
+		if (deathTimer_ >= kHeadShotMotionTime) {
+			deathPhase = DeathPhase::ASCENSION;
+			deathTimer_ = 0.0f;
+		}
+	} break;
+
+	case DeathPhase::ASCENSION:
+
+		enemy_->Move(velocty_);
+
+		if (deathTimer_ >= kAscensionMotionTime) {
+			deathTimer_ = 0.0f;
+			deathPhase = DeathPhase::HEAD_SHOT;
+			enemy_->SetDead(true);
+		}
+		break;
 	}
 }
 
