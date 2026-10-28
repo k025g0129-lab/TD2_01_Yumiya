@@ -286,6 +286,7 @@ void Player::Draw() {
 
 		// 周期の半分は非表示
 		if (blinkTime < kDamageBlinkInterval / 2.0f) {
+			Model::PostDraw();
 			return;
 		}
 	}
@@ -329,24 +330,24 @@ void Player::BehaviorRootUpdate() {
 
 void Player::JumpThroughInitialize() {
 
-	int jumpThroughPointIndex = 0;
+	jumpThroughPointCount_ = 0;
 
 	//ブロックを感知するとジャンプポイントを接地
 	for (int i = 0; i < static_cast<int>(mapChipField_->GetNumBlockVertical()); i++) {
 		if (mapChipField_->GetMapChipTypeByIndex(0, i) == MapChipType::kBlock) {
 
-			if (jumpThroughPointIndex >= maxJumpThroughPointIndex) {
+			if (jumpThroughPointCount_ >= maxJumpThroughPointIndex) {
 				break;
 			}
 
-			jumpThroughPoint_[jumpThroughPointIndex].yPos_ = mapChipField_->GetMapChipPositionByIndex(0, i).y;
+			jumpThroughPoint_[jumpThroughPointCount_].yPos_ = mapChipField_->GetMapChipPositionByIndex(0, i).y;
 
-			IsJumpThroughPointOver(&jumpThroughPoint_[jumpThroughPointIndex]);
+			IsJumpThroughPointOver(&jumpThroughPoint_[jumpThroughPointCount_]);
 
 			// iではなくjumpThroughPointIndexを使用
-			jumpThroughPoint_[jumpThroughPointIndex].isPreOver = jumpThroughPoint_[jumpThroughPointIndex].isOver;
+			jumpThroughPoint_[jumpThroughPointCount_].isPreOver = jumpThroughPoint_[jumpThroughPointCount_].isOver;
 
-			jumpThroughPointIndex++;
+			jumpThroughPointCount_++;
 		}
 	}
 
@@ -364,29 +365,48 @@ void Player::JumpThroughInitialize() {
 
 void Player::JumpThroughUpdate() {
 
-	for (int i = 0; i < maxJumpThroughPointIndex; i++) {
+	for (int i = 0; i < jumpThroughPointCount_; ++i) {
 
-		//通過ポイントより上か下かの処理
-		IsJumpThroughPointOver(&jumpThroughPoint_[i]);
+		JumpThroughPoint& point = jumpThroughPoint_[i];
 
-		//通過したなら他の場所を透過出来ないように
-		if (jumpThroughPoint_[i].isOver != jumpThroughPoint_[i].isPreOver) {
-			isJumpThrough_ = false;
+		// 現在の位置を判定
+		IsJumpThroughPointOver(&point);
+
+		// 下方向へポイントを通過したか
+		bool isCrossedDown = point.isPreOver && !point.isOver;
+
+		// 床通過中かつ下降中だけ通過回数を減らす
+		if (isJumpThrough_ && velocity_.y <= 0.0f && isCrossedDown) {
+
+			--remainingJumpThroughCount_;
+
+			// 指定回数を通過したら終了
+			if (remainingJumpThroughCount_ <= 0) {
+				remainingJumpThroughCount_ = 0;
+				isJumpThrough_ = false;
+			}
 		}
 
-		// トリガー用
-		jumpThroughPoint_[i].isPreOver = jumpThroughPoint_[i].isOver;
+		// 次フレームの判定用に保存
+		point.isPreOver = point.isOver;
 	}
 
+	// 上限・下限ポイントも更新
 	IsJumpThroughPointOver(&jumpUpperLimitsPoint);
 	IsJumpThroughPointOver(&jumpLowerLimitsPoint);
 
-	// 通過したなら他の場所を透過出来ないように
+	// 上限を通過した場合は終了
 	if (jumpUpperLimitsPoint.isOver != jumpUpperLimitsPoint.isPreOver) {
 		isJumpThrough_ = false;
+		remainingJumpThroughCount_ = 0;
 	}
 
-	// トリガー用
+	// 下限を越えた場合は終了
+	if (jumpLowerLimitsPoint.isPreOver && !jumpLowerLimitsPoint.isOver) {
+		isJumpThrough_ = false;
+		remainingJumpThroughCount_ = 0;
+	}
+
 	jumpUpperLimitsPoint.isPreOver = jumpUpperLimitsPoint.isOver;
 	jumpLowerLimitsPoint.isPreOver = jumpLowerLimitsPoint.isOver;
 }
@@ -454,33 +474,28 @@ void Player::BehaviorChargeUpdate() {
 		case 0:
 			// SEを鳴らす
 			SoundManager::GetInstance()->PlaySe(SeType::kShot1);
-
 			break;
 
 		case 1:
 			// SEを鳴らす
 			SoundManager::GetInstance()->PlaySe(SeType::kShot2);
-
-			// 下降
-			if (direction_ == Direction::kUp) {
-				isJumpThrough_ = true;
-				isGround_ = false;
-			}
 			break;
 
 		case 2:
 			// SEを鳴らす
 			SoundManager::GetInstance()->PlaySe(SeType::kShot3);
-
-			// 2階分下降する処理
-			// 仮置きで1段階の処理をコピペ
-			if (direction_ == Direction::kUp) {
-				isJumpThrough_ = true;
-				isGround_ = false;
-			}
 			break;
 		}
 
+		// 上方向への射撃なら床通過を開始
+		if (direction_ == Direction::kUp && chargeStep >= 1) {
+
+			// チャージ段階に応じて通過回数を設定
+			remainingJumpThroughCount_ = chargeStep;
+
+			isJumpThrough_ = true;
+			isGround_ = false;
+		}
 
 		// ジャンプ
 		if (direction_ == Direction::kDown) {
@@ -776,18 +791,31 @@ void Player::MapChipCollisionTop(CollisionMapInfo& info) {
 }
 
 void Player::MapChipCollisionBottom(CollisionMapInfo& info) {
-	// 下降あり？
+
+	// 下降していなければ処理しない
 	if (info.moveDistance.y >= 0.0f) {
 		return;
 	}
 
-	// 通り抜ける
+	// 床通過中
 	if (isJumpThrough_) {
-		if (jumpLowerLimitsPoint.isOver == true) {
 
+		// 最下段の床の矩形を取得
+		uint32_t lowerFloorIndex = mapChipField_->GetLowerLimitBlockYIndex() - 1;
+
+		Rect lowerFloorRect = mapChipField_->RectByIndex(0, lowerFloorIndex);
+
+		// 移動後の足元のY座標
+		float nextBottomY = worldTransform_.translation_.y + info.moveDistance.y - kHeight / 2.0f;
+
+		// 足元が最下段の床に到達していないなら通過を継続
+		if (nextBottomY > lowerFloorRect.top) {
 			return;
 		}
 
+		// 最下段に到達する場合は通過を終了
+		isJumpThrough_ = false;
+		remainingJumpThroughCount_ = 0;
 	}
 
 	// 移動後の4つの角の座標

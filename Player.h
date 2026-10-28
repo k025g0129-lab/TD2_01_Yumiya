@@ -175,7 +175,7 @@ private:
 	float damageInvincibleTimer_ = 0.0f;
 
 	// 被弾後の無敵時間
-	static inline float kDamageInvincibleTime = 0.75f;
+	static inline float kDamageInvincibleTime = 1.5f;
 
 	// 被弾後無敵を更新する
 	void UpdateDamageInvincibility();
@@ -269,6 +269,12 @@ private:
 
 	// ジャンプでの通り抜け
 	bool isJumpThrough_ = false;
+
+	// 今回の射撃で残っている床の通過回数
+	int remainingJumpThroughCount_ = 0;
+
+	// 初期化済みの通過ポイント数
+	int jumpThroughPointCount_ = 0;
 
 	//通過ポイントより上か
 	bool isOverJumpThroughPoint = false;

@@ -98,6 +98,24 @@ class GameHUD {
 	// 矢印を表示する距離
 	static inline const float kArrowDistance = 120.0f;
 
+	// 矢印の通常色
+	static inline const KamataEngine::Vector4 kArrowNormalColor = {1.0f, 0.85f, 0.0f, 1.0f};
+
+	// 特殊効果が使用可能な矢印の色
+	static inline const KamataEngine::Vector4 kArrowSpecialColor = {1.0f, 0.0f, 0.0f, 1.0f};
+
+	// 非選択中の透明度
+	static inline constexpr float kArrowInactiveAlpha = 0.75f;
+
+	// 上方向の特殊効果説明
+	std::unique_ptr<KamataEngine::Sprite> jumpSprite_;
+
+	// 下方向の特殊効果説明
+	std::unique_ptr<KamataEngine::Sprite> downSprite_;
+
+	// 矢印から文字までの距離
+	static inline constexpr float kSpecialTextDistance = 30.0f;
+
 
 	Player* player_ = nullptr;
 	KamataEngine::Camera* camera_ = nullptr;
@@ -140,7 +158,7 @@ class GameHUD {
 	static inline constexpr float kWaveLabelGap = 8.0f;
 
 	// ウェーブ番号の表示位置
-	static inline const KamataEngine::Vector2 kWaveNumberPosition = {700.0f, 10.0f};
+	static inline const KamataEngine::Vector2 kWaveNumberPosition = {800.0f, 10.0f};
 
 	// ウェーブ番号の文字サイズ
 	static inline constexpr float kWaveNumberFontSize = 36.0f;
@@ -200,4 +218,38 @@ class GameHUD {
 
 	// ウェーブ開始アニメーションを更新
 	void UpdateWaveAnimation();
+
+
+	//============================================================
+	// 敵数表示
+	//============================================================
+
+	// 残り敵数の表示位置
+	static inline const KamataEngine::Vector2 kEnemyCountPosition = {450.0f, 10.0f};
+
+	// 総敵数の表示位置
+	static inline const KamataEngine::Vector2 kEnemyTotalCountPosition = {560.0f, 10.0f};
+
+	// 敵数の文字サイズ
+	static inline constexpr float kEnemyCountFontSize = 32.0f;
+
+	// 敵数の文字色
+	static inline const KamataEngine::Vector4 kEnemyCountColor = {0.95f, 0.01f, 0.01f, 1.0f};
+
+
+	//============================================================
+	// 操作方法表示
+	//============================================================
+
+	// WSD操作スプライトの表示位置
+	static inline const KamataEngine::Vector2 kWSDPosition = {120.0f, kScreenHeight - 72.0f};
+
+	// スペースキー操作のスプライト表示位置
+	static inline const KamataEngine::Vector2 kSpacePosition = {30.0f + (kScreenWide / 2.0f), kScreenHeight - 72.0f};
+
+	// WSD操作のスプライト
+	std::unique_ptr<KamataEngine::Sprite> wsdSprite_;
+
+	// スペースキー操作のスプライト
+	std::unique_ptr<KamataEngine::Sprite> spaceSprite_;
 };

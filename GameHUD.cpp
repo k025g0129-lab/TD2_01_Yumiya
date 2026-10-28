@@ -28,12 +28,21 @@ void GameHUD::Initialize(Player* player, Camera* camera, GameScene *gameScene) {
 	// 数字描画の初期化
 	numberRenderer_.Initialize();
 
+	uint32_t whiteTextureHandle = TextureManager::Load("white1x1.png");
+
 	// 残弾アイコン
 	uint32_t ammoTextureHandle = TextureManager::Load("Sprite/HUD/ammo.png");
 
 	ammoIconSprite_.reset(Sprite::Create(ammoTextureHandle, kAmmoIconPosition));
 
 	ammoIconSprite_->SetSize(kAmmoIconSize);
+
+	// 操作のスプライト
+	uint32_t spaceTextureHandle = TextureManager::Load("Sprite/HUD/space.png");
+	uint32_t wsdTextureHandle = TextureManager::Load("Sprite/HUD/WSD.png");
+
+	spaceSprite_.reset(Sprite::Create(spaceTextureHandle, kSpacePosition));
+	wsdSprite_.reset(Sprite::Create(wsdTextureHandle, kWSDPosition));
 
 	//========================================================
 	// HP
@@ -61,8 +70,6 @@ void GameHUD::Initialize(Player* player, Camera* camera, GameScene *gameScene) {
 	//============================================================
 	// チャージゲージ
 	//============================================================
-
-	uint32_t whiteTextureHandle = TextureManager::Load("white1x1.png");
 
 	chargeGaugeBackgroundSprite_.reset(Sprite::Create(whiteTextureHandle, gaugeBackgroundPos_));
 
@@ -102,6 +109,18 @@ void GameHUD::Initialize(Player* player, Camera* camera, GameScene *gameScene) {
 		arrowSprite_[i]->SetRotation(rotation);
 	}
 
+
+	// 特殊効果説明スプライト
+	uint32_t jumpTextureHandle = TextureManager::Load("Sprite/HUD/Jump.png");
+
+	uint32_t downTextureHandle = TextureManager::Load("Sprite/HUD/Down.png");
+
+	jumpSprite_.reset(Sprite::Create(jumpTextureHandle, {0.0f, 0.0f}));
+	downSprite_.reset(Sprite::Create(downTextureHandle, {0.0f, 0.0f}));
+
+	// 中央基準
+	jumpSprite_->SetAnchorPoint({1.0f, 0.5f});
+	downSprite_->SetAnchorPoint({1.0f, 0.5f});
 
 	//============================================================
 	// ウェーブゲージ
@@ -222,34 +241,61 @@ void GameHUD::Update() {
 	// プレイヤーの現在の向き
 	Direction playerDirection = player_->GetDirection();
 
-	for (size_t i = 0; i < arrowsPos_.size(); ++i) {
-		int directionValue = static_cast<int>(directions[i]);
+	// 1段階以上チャージされているか
+	bool isSpecialChargeReady = chargeTime >= Player::kChargeStepOneTime;
 
-		// Directionから方向ベクトルを復元
+	// 矢印を更新
+	for (size_t i = 0; i < arrowsPos_.size(); ++i) {
+
+		Direction arrowDirection = directions[i];
+
+		int directionValue = static_cast<int>(arrowDirection);
+
 		int directionX = directionValue / 10 - 5;
 		int directionY = directionValue % 10 - 5;
 
-		// プレイヤーを中心に矢印を配置
+		// 矢印の座標
 		arrowsPos_[i].x = playerScreenPos.x + directionX * kArrowDistance;
+
 		arrowsPos_[i].y = playerScreenPos.y - directionY * kArrowDistance;
 
-		// 向いている方向の矢印だけ大きくする
-		if (directions[i] == playerDirection) {
-			arrowSprite_[i]->SetSize({kFocusArrowSize, kFocusArrowSize});
+		// 選択中の矢印か
+		bool isSelected = (arrowDirection == playerDirection);
 
-			// 向いている矢印は普通の色にする
-			arrowSprite_[i]->SetColor({1.0f, 1.0f, 1.0f, 1.0f});
+		// 特殊効果のある方向か
+		bool isSpecialDirection = (arrowDirection == Direction::kUp || arrowDirection == Direction::kDown);
+
+		// 特殊効果が有効か
+		bool isSpecialActive = isSpecialChargeReady && isSpecialDirection;
+
+		// 矢印の色
+		Vector4 arrowColor = isSpecialActive ? kArrowSpecialColor : kArrowNormalColor;
+
+		// 選択していない矢印は半透明
+		if (!isSelected) {
+			arrowColor.w = kArrowInactiveAlpha;
+		}
+
+		// 色を反映
+		arrowSprite_[i]->SetColor(arrowColor);
+
+		// サイズを反映
+		if (isSelected) {
+			arrowSprite_[i]->SetSize({kFocusArrowSize, kFocusArrowSize});
 		} else {
 			arrowSprite_[i]->SetSize({kBaseArrowSize, kBaseArrowSize});
-
-			// 向いてない矢印は薄くする
-			arrowSprite_[i]->SetColor({1.0f, 1.0f, 1.0f, 0.75f});
 		}
 
 		// Spriteに座標を反映
 		arrowSprite_[i]->SetPosition(arrowsPos_[i]);
 	}
 
+	// 特殊効果説明の位置更新
+	// Jump! の表示位置
+	jumpSprite_->SetPosition({playerScreenPos.x - kSpecialTextDistance, playerScreenPos.y + kArrowDistance});
+
+	// Down! の表示位置
+	downSprite_->SetPosition({playerScreenPos.x - kSpecialTextDistance, playerScreenPos.y - kArrowDistance});
 
 	//============================================================
 	// ウェーブゲージ
@@ -278,7 +324,6 @@ void GameHUD::Draw() {
 	// 数字描画の使用位置をリセット
 	numberRenderer_.BeginFrame();
 
-
 	// 残弾表示
 	// アイコン
 	ammoIconSprite_->Draw();
@@ -288,6 +333,10 @@ void GameHUD::Draw() {
 
 	// 残弾数を描画
 	numberRenderer_.DrawNumberRightAligned(ammo, kAmmoPosition, 2, kAmmoFontSize, kAmmoColor);
+
+	// 操作スプライト
+	wsdSprite_->Draw();
+	spaceSprite_->Draw();
 
 	// HP表示
 	for (int i = 0; i < hpSprite_.size(); i++) {
@@ -310,6 +359,19 @@ void GameHUD::Draw() {
 		// 矢印
 		for (std::unique_ptr<Sprite>& arrowSprite : arrowSprite_) {
 			arrowSprite->Draw();
+		}
+
+		// 1段階以上チャージしている場合
+		if (player_->GetChargeTime() >= Player::kChargeStepOneTime) {
+
+			Direction direction = player_->GetDirection();
+
+			// Jump、Down
+			if (direction == Direction::kUp) {
+				downSprite_->Draw();
+			} else if (direction == Direction::kDown) {
+				jumpSprite_->Draw();
+			}
 		}
 	}
 
@@ -338,6 +400,22 @@ void GameHUD::Draw() {
 	// 左右のゲージを描画
 	waveGaugeLeftSprite_->Draw();
 	waveGaugeRightSprite_->Draw();
+
+	//============================================================
+	// 敵数表示
+	//============================================================
+
+	// 現在の敵数を取得
+	int remainingEnemyCount = gameScene_->GetRemainingEnemyCount();
+
+	// ウェーブ開始時の総敵数を取得
+	int totalEnemyCount = gameScene_->GetTotalEnemyCount();
+
+	// 残り敵数とスラッシュを描画
+	numberRenderer_.DrawNumberRightAligned(remainingEnemyCount, kEnemyCountPosition, 2, kEnemyCountFontSize, kEnemyCountColor, true);
+
+	// 総敵数を描画
+	numberRenderer_.DrawNumber(totalEnemyCount, kEnemyTotalCountPosition, kEnemyCountFontSize, kEnemyCountColor);
 
 	Sprite::PostDraw();
 }
