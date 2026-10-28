@@ -40,6 +40,7 @@ void TitleScene::Initialize() {
 	worldTransformPlayer_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
 
 
+
 	for (int i = 0; i < 4; i++) {
 		//敵モデルのワールド変換
 		worldTransformEnemys_[i].Initialize();
