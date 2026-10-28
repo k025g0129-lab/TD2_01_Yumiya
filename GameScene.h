@@ -51,6 +51,12 @@ class GameScene : public IScene {
 	// ウェーブ残り時間を取得
 	float GetWaveRemainingTime() const { return kWaveDuration - waveTimer_; }
 
+	// 現在残っている敵数を取得
+	int GetRemainingEnemyCount() const { return static_cast<int>(enemies_.size()); }
+
+	// ウェーブ開始時の総敵数を取得
+	int GetTotalEnemyCount() const { return totalEnemyCount_; }
+
 	// ウェーブの制限時間（秒）
 	static inline constexpr float kWaveDuration = 30.0f;
 
