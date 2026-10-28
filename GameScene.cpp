@@ -10,6 +10,7 @@
 #include "JumpEnemy.h"
 #include "StageManager.h"
 #include "ModelManager.h"
+#include "SoundManager.h"
 
 using namespace KamataEngine;
 
@@ -102,6 +103,9 @@ void GameScene::Initialize() {
 	// HUDの生成
 	gameHUD = std::make_unique<GameHUD>();
 	gameHUD->Initialize(player_.get(), camera_.get(), this);
+
+	// BGM
+	SoundManager::GetInstance()->PlayBgm(BgmType::kGame);
 }
 
 void GameScene::Update() {
@@ -553,6 +557,8 @@ void GameScene::UpdateWave() {
 }
 
 void GameScene::AdvanceWave() {
+	// ウェーブ開始SE
+	SoundManager::GetInstance()->PlaySe(SeType::kWave);
 
 	// 現在のウェーブを終了
 	ClearWave();

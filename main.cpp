@@ -2,19 +2,23 @@
 #include"KamataEngine.h"
 #include "GameManager.h"
 #include "ModelManager.h"
+#include "SoundManager.h"
 
 using namespace KamataEngine;
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	// エンジンの初期化
-	::Initialize(L"LE2C_14_タナカ_コウヘイ");
+	::Initialize(L"2145_天使ちゃんのガラクタ掃討大作戦");
 	
 	// DirectXCommonインスタンスの取得
 	DirectXCommon* dXCommon = DirectXCommon::GetInstance();
 
 	// ImGuiManagerインスタンスの取得
 	ImGuiManager* imGuiManager = ImGuiManager::GetInstance();
+
+	// サウンドの読み込み
+	SoundManager::GetInstance()->Initialize();
 
 	// ゲームマネージャーの生成
 	std::unique_ptr<GameManager> gameManager = std::make_unique<GameManager>();

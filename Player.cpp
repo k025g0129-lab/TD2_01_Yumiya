@@ -11,6 +11,7 @@
 #include <numbers>
 #include "ModelManager.h"
 #include <cmath>
+#include"SoundManager.h"
 
 using namespace KamataEngine;
 
@@ -412,6 +413,11 @@ void Player::BehaviorChargeUpdate() {
 
 	chargeTime_++;
 
+	// 1秒に一回チャージSEを鳴らす
+	if (chargeTime_ % 60 == 0) {
+		SoundManager::GetInstance()->PlaySe(SeType::kCharge);
+	}
+
 	// 攻撃キーリリース時に弾生成
 	if (GameInput::GetInstance()->IsRelease(GameAction::kAttack)) {
 		// チャージ段階
@@ -434,23 +440,37 @@ void Player::BehaviorChargeUpdate() {
 		// 通常状態へのリクエスト
 		behaviorRequest_ = Behavior::kRoot;
 
-		if (chargeStep == 1) {
+		switch (chargeStep) {
+		case 0:
+			// SEを鳴らす
+			SoundManager::GetInstance()->PlaySe(SeType::kShot1);
+
+			break;
+
+		case 1:
+			// SEを鳴らす
+			SoundManager::GetInstance()->PlaySe(SeType::kShot2);
 
 			// 下降
 			if (direction_ == Direction::kUp) {
 				isJumpThrough_ = true;
 				isGround_ = false;
 			}
-		} else if (chargeStep >= 2) {
-			// 2階分上昇する処理
+			break;
+
+		case 2:
+			// SEを鳴らす
+			SoundManager::GetInstance()->PlaySe(SeType::kShot3);
+
+			// 2階分下降する処理
 			// 仮置きで1段階の処理をコピペ
-
-			// 下降
 			if (direction_ == Direction::kUp) {
 				isJumpThrough_ = true;
 				isGround_ = false;
 			}
+			break;
 		}
+
 
 		// ジャンプ
 		if (direction_ == Direction::kDown) {
@@ -1063,12 +1083,18 @@ void Player::OnCollision() {
 
 	// HPが残っているなら終了
 	if (HP_ > 0) {
+		// ダメージSEを鳴らす
+		SoundManager::GetInstance()->PlaySe(SeType::kPlayerDamage);
+
 		return;
 	}
 
 	// 通常死亡状態にする
 	deathType_ = DeathType::kNormal;
 	isDead_ = true;
+
+	// 死亡SEを鳴らす
+	SoundManager::GetInstance()->PlaySe(SeType::kPlayerDeath);
 }
 
 Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
