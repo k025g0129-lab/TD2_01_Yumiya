@@ -42,7 +42,30 @@ void EnemyDeath::Initialize() {
 	deathStartRotationZ_ = enemy_->GetRotationZ();
 }
 
-void EnemyDeath::Update() {}
+void EnemyDeath::Update() {
+	switch (deathPhase) {
+
+	case DeathPhase::HEAD_SHOT:
+		break;
+
+	case DeathPhase::ASCENSION:
+
+		Vector4 color = enemy_->GetObjectColorRGBA();
+
+		color.x += 0.01f;
+		color.y += 0.01f;
+		color.z += 0.01f;
+		color.w -= 0.01f;
+
+		color.x = std::clamp(color.x, 0.0f, 10.0f);
+		color.y = std::clamp(color.y, 0.0f, 10.0f);
+		color.z = std::clamp(color.z, 0.0f, 10.0f);
+		color.w = std::clamp(color.w, 0.0f, 1.0f);
+
+		enemy_->SetObjectColorRGBA(color);
+		break;
+	}
+}
 
 void EnemyDeath::UpdateMotion() {
 
