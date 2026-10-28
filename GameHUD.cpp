@@ -347,34 +347,6 @@ void GameHUD::Draw() {
 		}
 	}
 
-	// 生きてる間だけ表示
-	if (!player_->IsDead()) {
-
-		// チャージゲージの背景
-		chargeGaugeBackgroundSprite_->Draw();
-
-		// チャージゲージ本体
-		chargeGaugeSprite_->Draw();
-
-		// 矢印
-		for (std::unique_ptr<Sprite>& arrowSprite : arrowSprite_) {
-			arrowSprite->Draw();
-		}
-
-		// 1段階以上チャージしている場合
-		if (player_->GetChargeTime() >= Player::kChargeStepOneTime) {
-
-			Direction direction = player_->GetDirection();
-
-			// Jump、Down
-			if (direction == Direction::kUp) {
-				downSprite_->Draw();
-			} else if (direction == Direction::kDown) {
-				jumpSprite_->Draw();
-			}
-		}
-	}
-
 	//============================================================
 	// ウェーブ表示
 	//============================================================
@@ -416,6 +388,36 @@ void GameHUD::Draw() {
 
 	// 総敵数を描画
 	numberRenderer_.DrawNumber(totalEnemyCount, kEnemyTotalCountPosition, kEnemyCountFontSize, kEnemyCountColor);
+
+
+
+	// 生きてる間だけ表示
+	if (!player_->IsDead()) {
+
+		// チャージゲージの背景
+		chargeGaugeBackgroundSprite_->Draw();
+
+		// チャージゲージ本体
+		chargeGaugeSprite_->Draw();
+
+		// 矢印
+		for (std::unique_ptr<Sprite>& arrowSprite : arrowSprite_) {
+			arrowSprite->Draw();
+		}
+
+		// 1段階以上チャージしている場合
+		if (player_->GetChargeTime() >= Player::kChargeStepOneTime) {
+
+			Direction direction = player_->GetDirection();
+
+			// Jump、Down
+			if (direction == Direction::kUp) {
+				downSprite_->Draw();
+			} else if (direction == Direction::kDown) {
+				jumpSprite_->Draw();
+			}
+		}
+	}
 
 	Sprite::PostDraw();
 }
