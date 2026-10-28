@@ -2,6 +2,7 @@
 #include "KamataEngine.h"
 #include "Fade.h"
 #include "IScene.h"
+#include "time.h"
 
 class TitleScene : public IScene {
   public:
@@ -37,11 +38,20 @@ class TitleScene : public IScene {
 	// プレイヤー見た目用モデル
 	KamataEngine::Model* modelPlayer_;
 
+	// 敵見た目用モデル
+	KamataEngine::Model* modelEnemys_[4];
+
 	// タイトル用ワールド変換
 	KamataEngine::WorldTransform worldTransformTitle_;
 
 	// プレイヤー見た目用ワールド変換
 	KamataEngine::WorldTransform worldTransformPlayer_;
+
+	// 敵見た目用ワールド変換
+	KamataEngine::WorldTransform worldTransformEnemys_[4];
+
+	//敵速度
+	KamataEngine::Vector3 enemysVelocty_[4] = {};
 
 	// アニメーション用タイマー
 	float animationTimer_ = 0.0f;

@@ -73,7 +73,7 @@ void EnemyBoomerangAttack::Initialize() {
 	// 円の中心点
 	verticalCircleCenterPoint = boomerangEnemy_->GetWorldPosition();
 	distanceCircleCenterPoint = boomerangEnemy_->GetWorldPosition();
-	distanceCircleCenterPoint.x = 2.5f;
+	distanceCircleCenterPoint.x = 15.0f;
 
 	// 初期化
 	translation_ = boomerangEnemy_->GetTranslation();

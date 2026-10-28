@@ -22,18 +22,36 @@ void TitleScene::Initialize() {
 	ModelManager* modelManager = ModelManager::GetInstance();
 
 	// モデル読み込み
-	modelTitle_ = modelManager->Load("titleFont", true);
+	modelTitle_ = modelManager->Load("TitleText", true);
 	modelPlayer_ = modelManager->Load("player", true);
+	modelEnemys_[0] = modelManager->Load("RotateEnemy", true);
+	modelEnemys_[1] = modelManager->Load("BoomerangEnemy", true);
+	modelEnemys_[2] = modelManager->Load("JumpEnemy", true);
+	modelEnemys_[3] = modelManager->Load("ThrowingBorn", true);
 
 	// タイトル文字のワールド変換
 	worldTransformTitle_.Initialize();
-	worldTransformTitle_.translation_ = {0.0f, 3.0f, 0.0f};
-	worldTransformTitle_.scale_ = {0.5f, 0.5f, 0.5f};
+	worldTransformTitle_.translation_ = {0.5f, 0.0f, 0.0f};
+	worldTransformTitle_.scale_ = {1.5f, 1.5f, 1.5f};
 
 	// プレイヤーモデルのワールド変換
 	worldTransformPlayer_.Initialize();
 	worldTransformPlayer_.translation_ = {0.0f, -1.0f, 0.0f};
 	worldTransformPlayer_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
+
+
+	for (int i = 0; i < 4; i++) {
+		//敵モデルのワールド変換
+		worldTransformEnemys_[i].Initialize();
+		worldTransformEnemys_[i].translation_ = {float(rand() % 9 - 4), float(rand() % 3 + 2), 0.0f};
+		worldTransformEnemys_[i].rotation_.y = std::numbers::pi_v<float> / 2.0f;
+		enemysVelocty_[i] = {
+		    float(rand() % 5 - 2) / 100.0f,
+		     - float(rand() % 6 + 3) / 100.0f,
+		};
+
+	}
+
 
 	// フェード
 	fade_ = std::make_unique<Fade>();
@@ -56,9 +74,27 @@ void TitleScene::Update() {
 	float titleFloating = std::sin(2.0f * kPi * animationTimer_ * 0.5f) * 0.1f;
 	worldTransformTitle_.translation_.y = 3.0f + titleFloating;
 
+
+	//敵の落下
+	for (int i = 0; i < 4; i++) {
+		//worldTransformEnemys_[i].translation_.x += enemysVelocty_[i].x;
+		worldTransformEnemys_[i].translation_.y += enemysVelocty_[i].y;
+
+
+		if (worldTransformEnemys_[i].translation_.y <= -5.0f) {
+			worldTransformEnemys_[i].translation_ = {float(rand() % 9 - 4), float(rand() % 5 + 5), 0.0f};
+		}
+
+	}
+
+
 	// ワールド行列更新
 	WorldTransformUpdate(worldTransformTitle_);
 	WorldTransformUpdate(worldTransformPlayer_);
+	for (int i = 0; i < 4; i++) {
+		WorldTransformUpdate(worldTransformEnemys_[i]);
+	}
+
 
 	// カメラ行列更新
 	camera_->UpdateMatrix();
@@ -99,6 +135,14 @@ void TitleScene::Draw() {
 
 	if (modelPlayer_) {
 		modelPlayer_->Draw(worldTransformPlayer_, *camera_);
+	}
+
+	for (int i = 0; i < 4; i++) {
+		if (modelEnemys_[i]) {
+			modelEnemys_[i]->Draw(worldTransformEnemys_[i], *camera_);
+		}
+	
+	
 	}
 
 	Model::PostDraw();
