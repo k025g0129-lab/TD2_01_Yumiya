@@ -57,6 +57,12 @@ public:
 
 	void PlaySe(SeType type);
 
+	// BGMフェードアウト開始
+	void FadeOutBgm(float duration);
+
+	// BGMの更新
+	void Update();
+
 private:
 	// シングルトンパターンにする
 	SoundManager() = default;
@@ -98,4 +104,23 @@ private:
 	        1.0f, // Game
 	        1.0f, // Clear
 	};
+
+
+	// BGMフェードアウト中か
+	bool isBgmFadingOut_ = false;
+
+	// フェード経過時間
+	float bgmFadeTimer_ = 0.0f;
+
+	// フェード時間
+	float bgmFadeDuration_ = 0.0f;
+
+	// フェード開始時の音量
+	float bgmFadeStartVolume_ = 0.0f;
+
+	// 現在のBGM音量
+	float currentBgmVolume_ = 0.0f;
+
+	// 1フレームの時間
+	static inline constexpr float kSoundDeltaTime = 1.0f / 60.0f;
 };

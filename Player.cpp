@@ -12,6 +12,7 @@
 #include "ModelManager.h"
 #include <cmath>
 #include"SoundManager.h"
+#include "CameraController.h"
 
 using namespace KamataEngine;
 
@@ -140,6 +141,10 @@ void Player::Update() {
 		case Behavior::kSqueezeDeath:
 			BehaviorSqueezeDeathInitialize();
 			break;
+
+		case Behavior::kClear:
+			BehaviorClearInitialize();
+			break;
 		}
 
 		// 振る舞いリクエストの初期化
@@ -163,6 +168,10 @@ void Player::Update() {
 
 	case Behavior::kSqueezeDeath:
 		BehaviorSqueezeDeathUpdate();
+		break;
+
+	case Behavior::kClear:
+		BehaviorClearUpdate();
 		break;
 	}
 
@@ -414,7 +423,8 @@ void Player::BehaviorChargeUpdate() {
 	chargeTime_++;
 
 	// 1秒に一回チャージSEを鳴らす
-	if (chargeTime_ % 60 == 0) {
+	// 1回目のSEがチャージ1段階と同時になる時間
+	if (chargeTime_ % 60 == 30) {
 		SoundManager::GetInstance()->PlaySe(SeType::kCharge);
 	}
 
@@ -1081,6 +1091,9 @@ void Player::OnCollision() {
 	// ヒットフラッシュ表示開始
 	damageColorTimer_ = kDamageColorTime;
 
+	// 被ダメージシェイク
+	cameraController_->StartShake(0.2f, 9);
+
 	// HPが残っているなら終了
 	if (HP_ > 0) {
 		// ダメージSEを鳴らす
@@ -1373,4 +1386,91 @@ void Player::UpdateDamageVisual() {
 	objectColorValue_ = {1.0f, 1.0f, 1.0f, 1.0f};
 
 	objectColor_.SetColor(objectColorValue_);
+}
+
+
+void Player::BehaviorClearInitialize() {
+
+	// 攻撃時の変形を解除
+	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
+
+	// 照準角を戻す
+	worldTransform_.rotation_.z = 0.0f;
+
+	// 既存の旋回処理を停止
+	turnTimer_ = 0.0f;
+
+	// ノックバック要求を解除
+	isKnockbackRequested_ = false;
+
+	// クリアモーションの初期化
+	clearPhase_ = ClearPhase::kJump;
+	hasClearJumpStarted_ = false;
+	clearTurnTimer_ = 0.0f;
+
+	// ジャンプ開始
+	velocity_ = {0.0f, kClearJumpVelocity, 0.0f};
+	isGround_ = false;
+}
+
+void Player::BehaviorClearUpdate() {
+
+	switch (clearPhase_) {
+
+	case ClearPhase::kJump: {
+
+		// 重力を適用
+		velocity_.y -= kGravityAcceleration;
+
+		// 落下速度制限
+		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+
+		// 地形との衝突処理
+		ResolveMapChipCollision(velocity_);
+
+		// 空中に出たことを記録
+		if (!isGround_) {
+			hasClearJumpStarted_ = true;
+		}
+
+		// 着地したら旋回に移行
+		if (hasClearJumpStarted_ && isGround_) {
+
+			velocity_ = {};
+
+			clearPhase_ = ClearPhase::kTurn;
+			clearTurnTimer_ = 0.0f;
+
+			clearTurnStartRotationY_ = worldTransform_.rotation_.y;
+
+			// 最短方向への角度差
+			float difference = std::remainder(kClearFrontRotationY - clearTurnStartRotationY_, 2.0f * kPi);
+
+			clearTurnTargetRotationY_ = clearTurnStartRotationY_ + difference;
+		}
+
+		break;
+	}
+
+	case ClearPhase::kTurn: {
+
+		clearTurnTimer_ += 1.0f / 60.0f;
+
+		float t = std::clamp(clearTurnTimer_ / kClearTurnTime, 0.0f, 1.0f);
+
+		float easedT = Ease::EaseInOut(t);
+
+		worldTransform_.rotation_.y = std::lerp(clearTurnStartRotationY_, clearTurnTargetRotationY_, easedT);
+
+		if (clearTurnTimer_ >= kClearTurnTime) {
+			worldTransform_.rotation_.y = clearTurnTargetRotationY_;
+			clearPhase_ = ClearPhase::kFinished;
+		}
+
+		break;
+	}
+
+	case ClearPhase::kFinished:
+		break;
+	}
 }

@@ -11,6 +11,8 @@
 #include "StageManager.h"
 #include "ModelManager.h"
 #include "SoundManager.h"
+#include "GameInput.h"
+#include <algorithm>
 
 using namespace KamataEngine;
 
@@ -49,6 +51,18 @@ void GameScene::Initialize() {
 	// 天球の生成
 	skydome_ = std::make_unique<Skydome>();
 	skydome_->Initialize(modelManager->Load("SkyDome", true), camera_.get());
+
+	// CLEARモデルの読み込み
+	// 仮置きタイトルフォント
+	modelClear_ = modelManager->Load("titleFont", true);
+
+	// CLEARモデルのワールド変換を初期化
+	worldTransformClear_.Initialize();
+	worldTransformClear_.scale_ = {0.5f, 0.5f, 0.5f};
+
+	// CLEARモデルの落下初期化
+	clearModelTimer_ = 0.0f;
+	isClearModelStarted_ = false;
 
 	// マップチップフィールドの生成
 	mapChipField_ = std::make_unique<MapChipField>();
@@ -135,14 +149,22 @@ void GameScene::Update() {
 		UpdateDeathPhase();
 		break;
 
+	case Phase::kClear:
+		UpdateClearPhase();
+		break;
+
 	case Phase::kFadeOut:
-		UpdateDeathPhase();
 		fade_->Update();
 		break;
 	}
 
 	// パーティクル更新
 	bulletTrailParticles_->Update();
+
+	// 通常のカメラ更新が止まっている間もシェイクを更新
+	if (phase_ == Phase::kDeath || phase_ == Phase::kFadeOut || (phase_ == Phase::kClear && !isClearCameraStarted_)) {
+		cameraController_->UpdateShake();
+	}
 
 	gameHUD->Update();
 
@@ -187,6 +209,16 @@ void GameScene::Draw() {
 
 	Model::PostDraw();
 
+	// CLEARモデルの描画
+	if (isClearModelStarted_) {
+
+		Model::PreDraw();
+
+		modelClear_->Draw(worldTransformClear_, *camera_);
+
+		Model::PostDraw();
+	}
+
 
 	player_->Draw();
 
@@ -207,7 +239,10 @@ void GameScene::Draw() {
 		deathParticles_->Draw();
 	}
 
-	gameHUD->Draw();
+	// クリアカメラ接近開始前まではHUDを表示
+	if (!isClearCameraStarted_) {
+		gameHUD->Draw();
+	}
 
 	if (fade_) {
 		fade_->Draw();
@@ -250,6 +285,7 @@ void GameScene::GenerateFieldObjects() {
 
 				player_ = std::make_unique<Player>();
 				player_->SetMapChipField(mapChipField_.get());
+				player_->SetCameraController(cameraController_.get());
 				player_->SetBulletTrailParticles(bulletTrailParticles_.get());
 				player_->Initialize(camera_.get(), mapPosition);
 
@@ -557,8 +593,17 @@ void GameScene::UpdateWave() {
 }
 
 void GameScene::AdvanceWave() {
+	// 最終ウェーブを突破したらクリア
+	if (currentWave_ >= kFinalWave) {
+		StartClear();
+		return;
+	}
+
 	// ウェーブ開始SE
 	SoundManager::GetInstance()->PlaySe(SeType::kWave);
+
+	// シェイク
+	cameraController_->StartShake(0.5f, 10);
 
 	// 現在のウェーブを終了
 	ClearWave();
@@ -625,4 +670,137 @@ void GameScene::SpawnWaveEnemies() {
 
 	// ウェーブ開始時の総敵数を記録
 	totalEnemyCount_ = static_cast<int>(enemies_.size());
+}
+
+void GameScene::StartClear() {
+
+	// クリアフェーズに移行
+	phase_ = Phase::kClear;
+
+	// 敵と弾を削除
+	ClearWave();
+
+	// クリア演出の初期化
+	clearTimer_ = 0.0f;
+	isClearCameraStarted_ = false;
+
+	// ステージBGMのフェードアウト
+	SoundManager::GetInstance()->FadeOutBgm(kClearWaitDuration);
+}
+
+void GameScene::UpdateClearPhase() {
+
+	// クリア演出の経過時間を更新
+	clearTimer_ += kWaveDeltaTime;
+
+	//============================================================
+	// クリア直後の待機
+	//============================================================
+
+	if (clearTimer_ < kClearWaitDuration) {
+		return;
+	}
+
+	//============================================================
+	// カメラ接近開始
+	//============================================================
+
+	if (!isClearCameraStarted_) {
+
+		// プレイヤーのクリアモーション開始
+		player_->RequestClearBehavior();
+
+		// クリアカメラへ切り替え
+		cameraController_->StartClearApproach();
+
+		// 開始済みとして記録
+		isClearCameraStarted_ = true;
+
+		// クリアBGMの再生
+		SoundManager::GetInstance()->PlayBgm(BgmType::kClear);
+	}
+
+	// カメラを更新
+	cameraController_->Update();
+
+	// クリアモーション更新
+	player_->Update();
+
+	//============================================================
+	// 接近完了後
+	//============================================================
+
+	// カメラ接近中は何もしない
+	if (!cameraController_->IsClearApproachFinished()) {
+		return;
+	}
+
+	// CLEARモデルの落下開始
+	if (!isClearModelStarted_) {
+		StartClearModelDrop();
+	}
+
+	// CLEARモデルの落下更新
+	UpdateClearModelDrop();
+
+	// 落下が終わるまで入力を受け付けない
+	if (clearModelTimer_ < kClearModelDuration) {
+		return;
+	}
+
+	// Space入力でタイトルへのフェードアウト開始
+	if (GameInput::GetInstance()->IsTrigger(GameAction::kUiConfirm)) {
+
+		phase_ = Phase::kFadeOut;
+
+		fade_->Start(Fade::Status::kFadeOut, 1.0f);
+	}
+}
+
+void GameScene::StartClearModelDrop() {
+
+	// プレイヤーの位置を取得
+	Vector3 playerPosition = player_->GetWorldPosition();
+
+	// 落下開始位置
+	clearModelStartPosition_ = playerPosition;
+	clearModelStartPosition_.y += kClearModelStartHeight;
+
+	// 落下終了位置
+	clearModelEndPosition_ = playerPosition;
+	clearModelEndPosition_.y += kClearModelEndHeight;
+
+	// モデルを画面上部に配置
+	worldTransformClear_.translation_ = clearModelStartPosition_;
+
+	// ワールド行列更新
+	WorldTransformUpdate(worldTransformClear_);
+
+	// 落下タイマー初期化
+	clearModelTimer_ = 0.0f;
+
+	// 落下開始
+	isClearModelStarted_ = true;
+}
+
+void GameScene::UpdateClearModelDrop() {
+
+	// 落下経過時間を更新
+	clearModelTimer_ += kWaveDeltaTime;
+
+	// 進行率を取得
+	float t = std::clamp(clearModelTimer_ / kClearModelDuration, 0.0f, 1.0f);
+
+	// EaseOutBack
+	constexpr float kOvershoot = 1.70158f;
+
+	float easedT = 1.0f + (kOvershoot + 1.0f) * std::pow(t - 1.0f, 3.0f) + kOvershoot * std::pow(t - 1.0f, 2.0f);
+
+	// モデルの落下位置を補間
+	worldTransformClear_.translation_.x = std::lerp(clearModelStartPosition_.x, clearModelEndPosition_.x, easedT);
+	worldTransformClear_.translation_.y = std::lerp(clearModelStartPosition_.y, clearModelEndPosition_.y, easedT);
+	worldTransformClear_.translation_.z = std::lerp(clearModelStartPosition_.z, clearModelEndPosition_.z, easedT);
+
+	// ワールド行列更新
+	WorldTransformUpdate(worldTransformClear_);
 }

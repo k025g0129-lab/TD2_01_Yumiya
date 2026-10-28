@@ -6,6 +6,7 @@
 #include "GlobalVariables.h"
 #include <fstream>
 #include <string>
+#include "SoundManager.h"
 
 void GameManager::Initialize() {
 	// ステージデータファイルを読み込む
@@ -28,6 +29,9 @@ void GameManager::Initialize() {
 void GameManager::Update() {
 	// ゲームインプットの更新
 	GameInput::GetInstance()->Update();
+
+	//　サウンドの更新
+	SoundManager::GetInstance()->Update();
 
 	// 現在のシーンを更新
 	scene_->Update();

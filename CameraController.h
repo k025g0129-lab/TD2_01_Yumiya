@@ -8,6 +8,7 @@ class Player;
 enum class CameraMode {
 	kFollow,       // プレイヤー追従
 	kForcedScroll, // 強制スクロール
+	kClear,
 };
 
 class CameraController {
@@ -16,7 +17,11 @@ public:
 	void Update();
 	void Reset();
 
+	// カメラシェイク開始
+	void StartShake(float power, int32_t durationFrames);
 
+	// カメラシェイクだけ更新
+	void UpdateShake();
 
 	//============================================================
 	// ゲッター・セッター
@@ -33,6 +38,12 @@ public:
 		movableArea_.bottom = bottom;
 		movableArea_.top = top;
 	}
+
+	// クリア用カメラへの接近開始
+	void StartClearApproach();
+
+	// クリアカメラの接近が完了したか
+	bool IsClearApproachFinished() const { return clearCameraTimer_ >= kClearCameraDuration; }
 
 private:
 	// カメラ
@@ -72,6 +83,53 @@ private:
 
 	// 強制スクロール速度
 	static inline const float kForcedScrollSpeed = 0.05f;
+
+	//============================================================
+	// クリアカメラ
+	//============================================================
+
+	// クリアカメラ更新
+	void UpdateClearApproach();
+
+	// 接近開始時のカメラ座標
+	KamataEngine::Vector3 clearCameraStartPosition_ = {};
+
+	// 接近先のカメラ座標
+	KamataEngine::Vector3 clearCameraEndPosition_ = {};
+
+	// 接近経過時間
+	float clearCameraTimer_ = 0.0f;
+
+	// 接近時間
+	static inline constexpr float kClearCameraDuration = 0.6f;
+
+	// 1フレームの経過時間
+	static inline constexpr float kCameraDeltaTime = 1.0f / 60.0f;
+
+	// プレイヤーから見たクリアカメラの位置
+	static inline const KamataEngine::Vector3 kClearCameraOffset = {0.0f, 1.5f, -10.0f};
+
+	//============================================================
+	// カメラシェイク
+	//============================================================
+
+	// シェイク処理内部
+	void ApplyShake();
+
+	// 前フレームで適用した揺れの移動量
+	KamataEngine::Vector3 shakeOffset_ = {};
+
+	// シェイクの強さ
+	float shakePower_ = 0.0f;
+
+	// シェイクの残りフレーム数
+	int32_t shakeTimer_ = 0;
+
+	// シェイクの持続フレーム数
+	int32_t shakeDuration_ = 0;
+
+	// シェイク用の経過フレーム数
+	int32_t shakeElapsedFrames_ = 0;
 
 	//============================================================
 	// 移動範囲の基礎値

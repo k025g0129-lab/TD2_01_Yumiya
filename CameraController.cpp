@@ -30,7 +30,14 @@ void CameraController::Update() {
 	case CameraMode::kForcedScroll:
 		UpdateForcedScroll();
 		break;
+
+	case CameraMode::kClear:
+		UpdateClearApproach();
+		break;
 	}
+
+	// シェイクを適用
+	ApplyShake();
 
 	// 行列の更新
 	camera_->UpdateMatrix();
@@ -76,4 +83,92 @@ void CameraController::UpdateForcedScroll() {
 	// カメラの移動範囲制限
 	camera_->translation_.x = std::clamp(camera_->translation_.x, movableArea_.left, movableArea_.right);
 	camera_->translation_.y = std::clamp(camera_->translation_.y, movableArea_.bottom, movableArea_.top);
+}
+
+void CameraController::StartClearApproach() {
+
+	// 現在のカメラ位置を開始位置として保存
+	clearCameraStartPosition_ = camera_->translation_;
+
+	// プレイヤー位置から接近先を決定
+	clearCameraEndPosition_ = target_->GetWorldTransform().translation_ + kClearCameraOffset;
+
+	// 経過時間を初期化
+	clearCameraTimer_ = 0.0f;
+
+	// クリア用カメラに切り替え
+	mode_ = CameraMode::kClear;
+}
+
+void CameraController::UpdateClearApproach() {
+
+	// 経過時間を更新
+	clearCameraTimer_ += kCameraDeltaTime;
+
+	// 進行率を取得
+	float t = std::clamp(clearCameraTimer_ / kClearCameraDuration, 0.0f, 1.0f);
+
+	// EaseOutCubic
+	float easedT = 1.0f - (1.0f - t) * (1.0f - t) * (1.0f - t);
+
+	// カメラ座標を補間
+	camera_->translation_.x = Lerp(clearCameraStartPosition_.x, clearCameraEndPosition_.x, easedT);
+	camera_->translation_.y = Lerp(clearCameraStartPosition_.y, clearCameraEndPosition_.y, easedT);
+	camera_->translation_.z = Lerp(clearCameraStartPosition_.z, clearCameraEndPosition_.z, easedT);
+}
+
+void CameraController::StartShake(float power, int32_t durationFrames) {
+	// 不正な設定なら何もしない
+	if (power <= 0.0f || durationFrames <= 0) {
+		return;
+	}
+
+	// より強いシェイクが要求された場合は更新
+	if (shakeTimer_ > 0 && power < shakePower_) {
+		return;
+	}
+
+	shakePower_ = power;
+	shakeDuration_ = durationFrames;
+	shakeTimer_ = durationFrames;
+	shakeElapsedFrames_ = 0;
+}
+
+void CameraController::UpdateShake() {
+	// カメラシェイクを更新
+	ApplyShake();
+
+	// カメラの行列を更新
+	camera_->UpdateMatrix();
+}
+
+void CameraController::ApplyShake() {
+	// 前フレームの揺れを除去
+	camera_->translation_ -= shakeOffset_;
+
+	// オフセットをリセット
+	shakeOffset_ = {};
+
+	// シェイクしていなければ終了
+	if (shakeTimer_ <= 0) {
+		return;
+	}
+
+	// 残り時間に応じて揺れを弱くする
+	float t = static_cast<float>(shakeTimer_) / static_cast<float>(shakeDuration_);
+
+	float currentPower = shakePower_ * t;
+
+	// 時間経過によって揺れの向きを変える
+	float phase = static_cast<float>(shakeElapsedFrames_);
+
+	shakeOffset_.x = std::sin(phase * 2.4f) * currentPower;
+	shakeOffset_.y = std::cos(phase * 3.1f) * currentPower;
+
+	// カメラに揺れを適用
+	camera_->translation_ += shakeOffset_;
+
+	// タイマー更新
+	--shakeTimer_;
+	++shakeElapsedFrames_;
 }

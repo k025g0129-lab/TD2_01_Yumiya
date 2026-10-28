@@ -1,4 +1,5 @@
 #include "SoundManager.h"
+#include <algorithm>
 
 using namespace KamataEngine;
 
@@ -19,7 +20,7 @@ void SoundManager::Initialize() {
 
 	bgmSoundHandles_[static_cast<size_t>(BgmType::kGame)] = audio->LoadWave("sound/bgm/game.mp3");
 
-	bgmSoundHandles_[static_cast<size_t>(BgmType::kClear)] = audio->LoadWave("sound/bgm/stage_select.mp3");
+	bgmSoundHandles_[static_cast<size_t>(BgmType::kClear)] = audio->LoadWave("sound/bgm/clear.mp3");
 
 
 	//============================================================
@@ -68,6 +69,12 @@ void SoundManager::PlayBgm(BgmType type) {
 	// 総括音量と個別音量から実際の再生音量を計算
 	float volume = kBgmMasterVolume * kBgmIndividualVolumes[index];
 
+	// 現在のBGM音量を保存
+	currentBgmVolume_ = volume;
+
+	// フェード状態をリセット
+	isBgmFadingOut_ = false;
+
 	bgmVoiceHandle_ = audio->PlayWave(bgmSoundHandles_[index], true, volume);
 
 	currentBgm_ = type;
@@ -85,10 +92,63 @@ void SoundManager::StopBgm() {
 	bgmVoiceHandle_ = 0;
 
 	currentBgm_ = BgmType::kCount;
+
+	// フェード状態をリセット
+	isBgmFadingOut_ = false;
+	bgmFadeTimer_ = 0.0f;
+	currentBgmVolume_ = 0.0f;
 }
 
 void SoundManager::PlaySe(SeType type) {
 	size_t index = static_cast<size_t>(type);
 
 	Audio::GetInstance()->PlayWave(seSoundHandles_[index], false, kSeVolume);
+}
+
+void SoundManager::FadeOutBgm(float duration) {
+
+	// BGMが再生されていなければ何もしない
+	if (bgmVoiceHandle_ == 0) {
+		return;
+	}
+
+	// 即座に停止する場合
+	if (duration <= 0.0f) {
+		StopBgm();
+		return;
+	}
+
+	// フェード開始時の音量を記録
+	bgmFadeStartVolume_ = currentBgmVolume_;
+
+	// フェード時間の設定
+	bgmFadeDuration_ = duration;
+	bgmFadeTimer_ = 0.0f;
+
+	// フェード開始
+	isBgmFadingOut_ = true;
+}
+
+void SoundManager::Update() {
+
+	if (!isBgmFadingOut_) {
+		return;
+	}
+
+	// 経過時間を進める
+	bgmFadeTimer_ += kSoundDeltaTime;
+
+	// 進行率
+	float t = std::clamp(bgmFadeTimer_ / bgmFadeDuration_, 0.0f, 1.0f);
+
+	// 音量を徐々に減らす
+	currentBgmVolume_ = bgmFadeStartVolume_ * (1.0f - t);
+
+	// 現在再生中のBGMに音量を反映
+	Audio::GetInstance()->SetVolume(bgmVoiceHandle_, currentBgmVolume_);
+
+	// フェード完了
+	if (t >= 1.0f) {
+		StopBgm();
+	}
 }

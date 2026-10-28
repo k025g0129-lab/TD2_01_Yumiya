@@ -8,11 +8,7 @@ enum class GameAction {
 	kDirectionRight, // 弓矢の向き 右
 	kAttack, // 通常攻撃
 
-	// 仮置き移動　後で消す
-	kMoveUp, // 移動 上
-	kMoveDown, // 移動 下
-	kMoveRight, // 移動 右
-	kMoveLeft,  // 移動 左
+	kUiConfirm
 };
 
 class GameInput final {
